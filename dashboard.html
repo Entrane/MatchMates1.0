@@ -15,6 +15,273 @@
 
   <!-- Ton CSS global -->
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Styles spécifiques carrousel jeux -->
+  <style>
+    :root {
+      --card-radius: 22px;
+    }
+
+    .games-section {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .games-section h2 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .games-section small {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    /* Bloc favoris */
+    .favorites-box {
+      background: rgba(10, 16, 28, 0.9);
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 14px 16px;
+    }
+
+    .favorites-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .favorites-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 24px;
+    }
+
+    .favorite-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      font-size: 0.75rem;
+      color: #e5e7eb;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .favorite-pill:hover {
+      background: rgba(30, 64, 175, 0.95);
+      transform: translateY(-1px);
+    }
+
+    .favorite-pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .favorites-empty {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Barre de recherche */
+    .games-search {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .games-search-input-wrapper {
+      position: relative;
+      flex: 1;
+    }
+
+    .games-search-input-wrapper input {
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      padding: 9px 12px 9px 32px;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .games-search-input-wrapper input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .games-search-input-wrapper input:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4);
+      background: rgba(15, 23, 42, 1);
+    }
+
+    .games-search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Carrousel */
+    .games-carousel {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent),
+                  radial-gradient(circle at bottom right, rgba(94, 234, 212, 0.11), transparent),
+                  rgba(15, 23, 42, 0.95);
+      border-radius: 26px;
+      border: 1px solid rgba(15, 23, 42, 1);
+      padding: 16px 18px 18px;
+      overflow: hidden;
+    }
+
+    .games-carousel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .carousel-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .carousel-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .carousel-btn:hover {
+      background: rgba(30, 64, 175, 0.95);
+      border-color: rgba(191, 219, 254, 0.8);
+      transform: translateY(-1px);
+    }
+
+    .carousel-viewport {
+      overflow: hidden;
+    }
+
+    .carousel-track {
+      display: flex;
+      gap: 16px;
+      transition: transform 0.45s ease;
+      will-change: transform;
+    }
+
+    .game-card {
+      position: relative;
+      flex: 0 0 230px;
+      height: 140px;
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      background: #020617;
+      border: 1px solid rgba(15, 23, 42, 1);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.75);
+      cursor: pointer;
+    }
+
+    .game-gradient {
+      position: absolute;
+      inset: 0;
+    }
+
+    .game-fav-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      cursor: pointer;
+      z-index: 2;
+      transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .game-fav-btn:hover {
+      background: rgba(15, 118, 110, 0.95);
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.8);
+    }
+
+    .game-fav-btn.active {
+      color: #facc15;
+      box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.8);
+      background: rgba(15, 23, 42, 1);
+    }
+
+    .game-info {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px 12px 11px;
+      background: linear-gradient(to top, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.65));
+      backdrop-filter: blur(12px);
+      z-index: 1;
+    }
+
+    .game-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #f9fafb;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .game-tags {
+      margin-top: 3px;
+      font-size: 0.75rem;
+      color: rgba(209, 213, 219, 0.9);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (max-width: 900px) {
+      .game-card {
+        flex: 0 0 70%;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .game-card {
+        flex: 0 0 85%;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -73,6 +340,59 @@
             </div>
           </div>
         </div>
+
+        <!-- ====== SECTION JEUX / FAVORIS / CARROUSEL ====== -->
+        <section class="games-section">
+          <!-- Bibliothèque de favoris -->
+          <div class="favorites-box">
+            <div class="favorites-header">
+              <div>
+                <h2>Jeux suivis</h2>
+                <small>Ajoute des jeux à tes favoris pour les retrouver rapidement.</small>
+              </div>
+              <small id="favorites-count">0 jeu en favoris</small>
+            </div>
+            <div id="favorites-list" class="favorites-list">
+              <span class="favorites-empty">
+                Aucun favori pour l’instant. Clique sur ★ sur un jeu pour l’ajouter ici.
+              </span>
+            </div>
+          </div>
+
+          <!-- Barre de recherche -->
+          <div class="games-search">
+            <div class="games-search-input-wrapper">
+              <span class="games-search-icon">🔍</span>
+              <input
+                type="text"
+                id="game-search"
+                placeholder="Rechercher un jeu (nom, mode, type...)"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <!-- Carrousel -->
+          <div class="games-carousel">
+            <div class="games-carousel-header">
+              <div>
+                <h2>Jeux populaires</h2>
+                <small id="games-result-count"></small>
+              </div>
+              <div class="carousel-controls">
+                <button class="carousel-btn" id="carousel-prev" aria-label="Précédent">◀</button>
+                <button class="carousel-btn" id="carousel-next" aria-label="Suivant">▶</button>
+              </div>
+            </div>
+
+            <div class="carousel-viewport">
+              <div class="carousel-track" id="games-track">
+                <!-- Cartes jeux injectées en JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- ====== FIN SECTION JEUX ====== -->
       </section>
     </main>
 
@@ -92,6 +412,293 @@
       </div>
     </footer>
   </div>
+
+  <!-- Script carrousel / favoris -->
+  <script>
+    (function () {
+      const GAMES = [
+        {
+          id: "lol",
+          name: "League of Legends",
+          tags: ["MOBA", "Ranked", "Flex"],
+          from: "#1d4ed8",
+          to: "#22c55e",
+        },
+        {
+          id: "valorant",
+          name: "Valorant",
+          tags: ["FPS", "Compétitif", "5v5"],
+          from: "#b91c1c",
+          to: "#7f1d1d",
+        },
+        {
+          id: "wow",
+          name: "World of Warcraft",
+          tags: ["MMORPG", "Donjons", "Raids"],
+          from: "#eab308",
+          to: "#1d4ed8",
+        },
+        {
+          id: "rocketleague",
+          name: "Rocket League",
+          tags: ["2v2", "3v3", "Ranked"],
+          from: "#06b6d4",
+          to: "#2563eb",
+        },
+        {
+          id: "gta",
+          name: "GTA Online / RP",
+          tags: ["RP", "Heists", "Free roam"],
+          from: "#ea580c",
+          to: "#7c2d12",
+        },
+        {
+          id: "amongus",
+          name: "Among Us",
+          tags: ["Party game", "Social"],
+          from: "#db2777",
+          to: "#7c3aed",
+        },
+      ];
+
+      const FAVORITES_KEY = "matchmates_favorite_games";
+
+      const track = document.getElementById("games-track");
+      const searchInput = document.getElementById("game-search");
+      const favoritesList = document.getElementById("favorites-list");
+      const favoritesCount = document.getElementById("favorites-count");
+      const resultCount = document.getElementById("games-result-count");
+      const prevBtn = document.getElementById("carousel-prev");
+      const nextBtn = document.getElementById("carousel-next");
+
+      let favorites = [];
+      let filteredGames = [...GAMES];
+      let currentIndex = 0;
+      let autoSlideInterval = null;
+
+      // ----- Favoris : storage -----
+      function loadFavorites() {
+        try {
+          const raw = localStorage.getItem(FAVORITES_KEY);
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            favorites = parsed;
+          }
+        } catch (e) {
+          console.warn("Impossible de charger les favoris", e);
+        }
+      }
+
+      function saveFavorites() {
+        try {
+          localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+        } catch (e) {
+          console.warn("Impossible d’enregistrer les favoris", e);
+        }
+      }
+
+      function isFavorite(id) {
+        return favorites.includes(id);
+      }
+
+      function toggleFavorite(id) {
+        if (isFavorite(id)) {
+          favorites = favorites.filter((fid) => fid !== id);
+        } else {
+          favorites.push(id);
+        }
+        saveFavorites();
+        renderFavorites();
+        updateFavoriteButtonsState();
+      }
+
+      // ----- Rendu des favoris -----
+      function renderFavorites() {
+        favoritesList.innerHTML = "";
+
+        if (!favorites.length) {
+          favoritesList.innerHTML =
+            '<span class="favorites-empty">Aucun favori pour l’instant. Clique sur ★ sur un jeu pour l’ajouter ici.</span>';
+          favoritesCount.textContent = "0 jeu en favoris";
+          return;
+        }
+
+        const favGames = GAMES.filter((g) => favorites.includes(g.id));
+        favoritesCount.textContent =
+          favGames.length + (favGames.length > 1 ? " jeux en favoris" : " jeu en favoris");
+
+        favGames.forEach((game) => {
+          const pill = document.createElement("button");
+          pill.className = "favorite-pill";
+          pill.type = "button";
+          pill.innerHTML = '<span class="favorite-pill-dot"></span>' + game.name;
+
+          pill.addEventListener("click", () => {
+            searchInput.value = game.name;
+            applySearch();
+          });
+
+          favoritesList.appendChild(pill);
+        });
+      }
+
+      // ----- Rendu des cartes jeux -----
+      function createGameCard(game) {
+        const card = document.createElement("div");
+        card.className = "game-card";
+        card.dataset.id = game.id;
+
+        const gradient = document.createElement("div");
+        gradient.className = "game-gradient";
+        gradient.style.background = `linear-gradient(135deg, ${game.from}, ${game.to})`;
+        card.appendChild(gradient);
+
+        const favBtn = document.createElement("button");
+        favBtn.type = "button";
+        favBtn.className = "game-fav-btn";
+        favBtn.innerHTML = "☆";
+        favBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          toggleFavorite(game.id);
+        });
+        card.appendChild(favBtn);
+
+        const info = document.createElement("div");
+        info.className = "game-info";
+        const title = document.createElement("div");
+        title.className = "game-title";
+        title.textContent = game.name;
+        const tags = document.createElement("div");
+        tags.className = "game-tags";
+        tags.textContent = game.tags.join(" · ");
+
+        info.appendChild(title);
+        info.appendChild(tags);
+        card.appendChild(info);
+
+        return card;
+      }
+
+      function renderGames() {
+        track.innerHTML = "";
+        filteredGames.forEach((game) => {
+          track.appendChild(createGameCard(game));
+        });
+        updateFavoriteButtonsState();
+        updateResultCount();
+        resetCarouselPosition();
+      }
+
+      function updateFavoriteButtonsState() {
+        const cards = track.querySelectorAll(".game-card");
+        cards.forEach((card) => {
+          const gameId = card.dataset.id;
+          const btn = card.querySelector(".game-fav-btn");
+          if (!btn) return;
+
+          if (isFavorite(gameId)) {
+            btn.classList.add("active");
+            btn.innerHTML = "★";
+          } else {
+            btn.classList.remove("active");
+            btn.innerHTML = "☆";
+          }
+        });
+      }
+
+      function updateResultCount() {
+        if (!filteredGames.length) {
+          resultCount.textContent = "Aucun jeu trouvé";
+        } else if (filteredGames.length === GAMES.length) {
+          resultCount.textContent = filteredGames.length + " jeux disponibles";
+        } else {
+          resultCount.textContent =
+            filteredGames.length +
+            (filteredGames.length > 1 ? " jeux correspondent à la recherche" : " jeu correspond à la recherche");
+        }
+      }
+
+      // ----- Recherche -----
+      function applySearch() {
+        const q = searchInput.value.toLowerCase().trim();
+        if (!q) {
+          filteredGames = [...GAMES];
+        } else {
+          filteredGames = GAMES.filter((game) => {
+            const inName = game.name.toLowerCase().includes(q);
+            const inTags = game.tags.some((t) =>
+              t.toLowerCase().includes(q)
+            );
+            return inName || inTags;
+          });
+        }
+        renderGames();
+      }
+
+      searchInput.addEventListener("input", applySearch);
+
+      // ----- Carrousel -----
+      function getCardStep() {
+        const firstCard = track.querySelector(".game-card");
+        if (!firstCard) return 0;
+
+        const style = window.getComputedStyle(firstCard);
+        const marginRight = parseFloat(style.marginRight) || 0;
+        return firstCard.offsetWidth + marginRight;
+      }
+
+      function updateCarouselTransform() {
+        const step = getCardStep();
+        const offset = step * currentIndex;
+        track.style.transform = "translateX(" + -offset + "px)";
+      }
+
+      function resetCarouselPosition() {
+        currentIndex = 0;
+        updateCarouselTransform();
+        restartAutoSlide();
+      }
+
+      function goToNext() {
+        if (!filteredGames.length) return;
+        currentIndex = (currentIndex + 1) % filteredGames.length;
+        updateCarouselTransform();
+      }
+
+      function goToPrev() {
+        if (!filteredGames.length) return;
+        currentIndex =
+          currentIndex === 0 ? filteredGames.length - 1 : currentIndex - 1;
+        updateCarouselTransform();
+      }
+
+      prevBtn.addEventListener("click", () => {
+        goToPrev();
+        restartAutoSlide();
+      });
+
+      nextBtn.addEventListener("click", () => {
+        goToNext();
+        restartAutoSlide();
+      });
+
+      function restartAutoSlide() {
+        if (autoSlideInterval) clearInterval(autoSlideInterval);
+        autoSlideInterval = setInterval(goToNext, 3500);
+      }
+
+      window.addEventListener("resize", () => {
+        // recalc largeur carte
+        updateCarouselTransform();
+      });
+
+      // ----- Init -----
+      loadFavorites();
+      renderFavorites();
+      renderGames();
+      restartAutoSlide();
+    })();
+  </script>
 </body>
 </html>
-
