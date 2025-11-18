@@ -579,6 +579,47 @@
       font-weight: 600;
       white-space: nowrap;
     }
+
+    /* Demandes d'amis (barre en haut de la liste) */
+
+    .friend-request-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin: 4px 0;
+    }
+
+    .friend-request-card {
+      border-color: rgba(234, 179, 8, 0.7);
+      cursor: default;
+    }
+
+    .friend-request-actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .friend-request-accept {
+      border-radius: 999px;
+      border: none;
+      background: #16a34a;
+      color: #020617;
+      font-size: 0.75rem;
+      padding: 3px 7px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .friend-request-reject {
+      border-radius: 999px;
+      border: 1px solid rgba(248, 113, 113, 0.9);
+      background: transparent;
+      color: #fecaca;
+      font-size: 0.75rem;
+      padding: 3px 7px;
+      cursor: pointer;
+      font-weight: 500;
+    }
   </style>
 </head>
 
@@ -1072,6 +1113,7 @@
 
       let friends = [];
       let selectedFriend = null;
+      let messagesPollInterval = null;
 
       function showFriendError(message) {
         friendError.textContent = message || "";
@@ -1090,7 +1132,7 @@
         friendsCount.textContent =
           friends.length + (friends.length > 1 ? " amis" : " ami");
 
-        friends.forEach((friend, index) => {
+        friends.forEach((friend) => {
           const card = document.createElement("div");
           card.className = "friend-card";
 
@@ -1148,32 +1190,37 @@
         if (incoming.length) {
           const title = document.createElement("p");
           title.textContent = "Demandes reçues";
-          title.style.fontSize = "0.8rem";
-          title.style.color = "var(--text-muted)";
-          title.style.margin = "4px 0";
+          title.className = "friend-request-title";
           requestsContainer.appendChild(title);
 
           incoming.forEach((req) => {
             const row = document.createElement("div");
-            row.className = "friend-card";
-            row.style.marginBottom = "4px";
+            row.className = "friend-card friend-request-card";
 
             const txt = document.createElement("div");
             txt.className = "friend-name";
-            txt.textContent = `${req.from_username} t’a ajouté en ami`;
+            txt.textContent = `${req.from_username} souhaite t’ajouter`;
 
             const actions = document.createElement("div");
+            actions.className = "friend-request-actions";
 
             const acceptBtn = document.createElement("button");
-            acceptBtn.className = "friend-remove-btn";
-            acceptBtn.textContent = "Accepter";
-            acceptBtn.style.color = "#4ade80";
-            acceptBtn.onclick = () => respondToRequest(req.id, true);
+            acceptBtn.className = "friend-request-accept";
+            acceptBtn.textContent = "✔";
+            acceptBtn.title = "Accepter";
+            acceptBtn.onclick = (e) => {
+              e.stopPropagation();
+              respondToRequest(req.id, true);
+            };
 
             const rejectBtn = document.createElement("button");
-            rejectBtn.className = "friend-remove-btn";
-            rejectBtn.textContent = "Refuser";
-            rejectBtn.onclick = () => respondToRequest(req.id, false);
+            rejectBtn.className = "friend-request-reject";
+            rejectBtn.textContent = "✕";
+            rejectBtn.title = "Refuser";
+            rejectBtn.onclick = (e) => {
+              e.stopPropagation();
+              respondToRequest(req.id, false);
+            };
 
             actions.appendChild(acceptBtn);
             actions.appendChild(rejectBtn);
@@ -1187,15 +1234,13 @@
         if (outgoing.length) {
           const title = document.createElement("p");
           title.textContent = "Demandes envoyées";
-          title.style.fontSize = "0.8rem";
-          title.style.color = "var(--text-muted)";
-          title.style.margin = "4px 0";
+          title.className = "friend-request-title";
           requestsContainer.appendChild(title);
 
           outgoing.forEach((req) => {
             const row = document.createElement("div");
-            row.className = "friend-card";
-            row.style.marginBottom = "4px";
+            row.className = "friend-card friend-request-card";
+            row.style.borderColor = "rgba(59,130,246,0.7)";
 
             const txt = document.createElement("div");
             txt.className = "friend-name";
@@ -1347,10 +1392,20 @@
         }
       }
 
+      function restartMessagesPolling() {
+        if (messagesPollInterval) clearInterval(messagesPollInterval);
+        if (!selectedFriend) return;
+
+        messagesPollInterval = setInterval(() => {
+          loadMessages(selectedFriend.username);
+        }, 4000);
+      }
+
       function openChat(friend) {
         selectedFriend = friend;
         chatFriendNameEl.textContent = friend.username;
         loadMessages(friend.username);
+        restartMessagesPolling();
       }
 
       async function sendMessageToSelectedFriend(text) {
@@ -1389,6 +1444,9 @@
 
       // chargement initial de la liste d'amis + demandes
       loadFriendData();
+
+      // rafraîchissement auto des amis & demandes toutes les 5s
+      setInterval(loadFriendData, 5000);
     })();
   </script>
 </body>
