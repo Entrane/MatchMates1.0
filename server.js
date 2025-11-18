@@ -150,7 +150,12 @@ app.get("/logout", (req, res) => {
   });
 });
 // ---------- API : infos du profil connecté ---------- //
-app.get("/api/me", requireLogin, (req, res) => {
+app.get("/api/me", (req, res) => {
+  // si pas connecté → 401
+  if (!req.session.userId) {
+    return res.status(401).json({ error: "Non connecté" });
+  }
+
   db.get(
     "SELECT id, username, email, created_at FROM users WHERE id = ?",
     [req.session.userId],
