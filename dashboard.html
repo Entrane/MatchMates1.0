@@ -16,7 +16,7 @@
   <!-- Ton CSS global -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Styles spécifiques carrousel jeux + amis -->
+  <!-- Styles spécifiques carrousel jeux + amis + chat -->
   <style>
     :root {
       --card-radius: 22px;
@@ -407,6 +407,7 @@
       background: rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(30, 64, 175, 0.7);
       margin-bottom: 6px;
+      cursor: pointer;
     }
 
     .friend-main {
@@ -485,6 +486,98 @@
         max-height: none;
         position: static;
       }
+    }
+
+    /* CHAT PANEL */
+
+    .chat-panel {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(31, 41, 55, 0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .chat-header {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .chat-header strong {
+      color: #e5e7eb;
+    }
+
+    .chat-messages {
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 10px;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      padding: 8px;
+      height: 140px;
+      overflow-y: auto;
+      font-size: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .chat-message {
+      max-width: 85%;
+      padding: 4px 8px;
+      border-radius: 10px;
+      word-wrap: break-word;
+    }
+
+    .chat-message.me {
+      align-self: flex-end;
+      background: rgba(34, 197, 94, 0.15);
+    }
+
+    .chat-message.them {
+      align-self: flex-start;
+      background: rgba(30, 64, 175, 0.3);
+    }
+
+    .chat-message-time {
+      display: block;
+      font-size: 0.65rem;
+      opacity: 0.6;
+      margin-top: 1px;
+    }
+
+    .chat-form {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .chat-form input {
+      flex: 1;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.95);
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      color: #e5e7eb;
+      outline: none;
+    }
+
+    .chat-form input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .chat-form button {
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #020617;
+      font-size: 0.8rem;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: 600;
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -609,6 +702,30 @@
             <small id="friends-count">0 ami</small>
           </div>
 
+          <!-- PANEL DE MESSAGERIE -->
+          <div class="chat-panel">
+            <div class="chat-header">
+              <span>Discussion avec</span>
+              <strong id="chat-friend-name">aucun ami sélectionné</strong>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+              <p style="font-size: 0.75rem; color: var(--text-muted);">
+                Clique sur un ami dans la liste pour ouvrir une conversation.
+              </p>
+            </div>
+
+            <form id="chat-form" class="chat-form">
+              <input
+                type="text"
+                id="chat-input"
+                placeholder="Écrire un message..."
+                autocomplete="off"
+              />
+              <button type="submit">Envoyer</button>
+            </form>
+          </div>
+
           <p class="friends-username">
             Connecté en tant que <strong id="current-username">Utilisateur</strong>
           </p>
@@ -647,7 +764,7 @@
     </footer>
   </div>
 
-  <!-- Script carrousel / favoris / amis -->
+  <!-- Script carrousel / favoris / amis / chat -->
   <script>
     (function () {
       /* ========= GESTION JEUX / CARROUSEL ========= */
@@ -928,7 +1045,7 @@
       renderGames();
       restartAutoSlide();
 
-      /* ========= GESTION LISTE D'AMIS AVEC DEMANDES ========= */
+      /* ========= GESTION LISTE D'AMIS + DEMANDES + CHAT ========= */
 
       const friendsListEl = document.getElementById("friends-list");
       const friendsCount = document.getElementById("friends-count");
@@ -936,6 +1053,12 @@
       const addFriendInput = document.getElementById("friend-username");
       const friendError = document.getElementById("friend-error");
       const currentUsernameEl = document.getElementById("current-username");
+
+      // éléments de chat
+      const chatFriendNameEl = document.getElementById("chat-friend-name");
+      const chatMessagesEl = document.getElementById("chat-messages");
+      const chatForm = document.getElementById("chat-form");
+      const chatInput = document.getElementById("chat-input");
 
       // pseudo du joueur connecté, injecté via data-current-username
       const bodyUsername = document.body.getAttribute("data-current-username");
@@ -948,6 +1071,7 @@
       friendsListEl.parentNode.insertBefore(requestsContainer, friendsListEl);
 
       let friends = [];
+      let selectedFriend = null;
 
       function showFriendError(message) {
         friendError.textContent = message || "";
@@ -969,6 +1093,11 @@
         friends.forEach((friend, index) => {
           const card = document.createElement("div");
           card.className = "friend-card";
+
+          // Ouverture du chat au clic sur la carte
+          card.addEventListener("click", () => {
+            openChat(friend);
+          });
 
           const main = document.createElement("div");
           main.className = "friend-main";
@@ -1000,8 +1129,8 @@
           removeBtn.type = "button";
           removeBtn.textContent = "✕";
           removeBtn.title = "Retirer cet ami";
-          removeBtn.addEventListener("click", () => {
-            // Optionnel : route DELETE côté backend
+          removeBtn.addEventListener("click", (e) => {
+            e.stopPropagation(); // évite d'ouvrir le chat en cliquant sur la croix
             console.warn("Suppression d'ami non encore implémentée côté backend");
           });
 
@@ -1164,6 +1293,101 @@
         }
       }
 
+      /* ========= MESSAGERIE ========= */
+
+      function renderMessages(messages) {
+        chatMessagesEl.innerHTML = "";
+
+        if (!messages.length) {
+          chatMessagesEl.innerHTML =
+            '<p style="font-size: 0.75rem; color: var(--text-muted);">Aucun message pour le moment. Commence la conversation !</p>';
+          return;
+        }
+
+        messages.forEach((m) => {
+          const bubble = document.createElement("div");
+          bubble.className = "chat-message " + (m.fromSelf ? "me" : "them");
+          const text = document.createElement("div");
+          text.textContent = m.content;
+
+          const time = document.createElement("span");
+          time.className = "chat-message-time";
+          time.textContent = m.created_at
+            ? new Date(m.created_at).toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "";
+
+          bubble.appendChild(text);
+          bubble.appendChild(time);
+          chatMessagesEl.appendChild(bubble);
+        });
+
+        chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+      }
+
+      async function loadMessages(friendUsername) {
+        try {
+          const res = await fetch("/api/messages/" + encodeURIComponent(friendUsername));
+          const data = await res.json();
+
+          if (!res.ok) {
+            console.error("Erreur chargement messages", data);
+            chatMessagesEl.innerHTML =
+              '<p style="font-size: 0.75rem; color: #f97316;">Impossible de charger les messages.</p>';
+            return;
+          }
+
+          renderMessages(data.messages || []);
+        } catch (e) {
+          console.error(e);
+          chatMessagesEl.innerHTML =
+            '<p style="font-size: 0.75rem; color: #f97316;">Erreur réseau lors du chargement des messages.</p>';
+        }
+      }
+
+      function openChat(friend) {
+        selectedFriend = friend;
+        chatFriendNameEl.textContent = friend.username;
+        loadMessages(friend.username);
+      }
+
+      async function sendMessageToSelectedFriend(text) {
+        if (!selectedFriend) return;
+
+        try {
+          const res = await fetch("/api/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              toUsername: selectedFriend.username,
+              content: text,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            console.error("Erreur envoi message", data);
+            return;
+          }
+
+          chatInput.value = "";
+          loadMessages(selectedFriend.username);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      chatForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const text = chatInput.value.trim();
+        if (!text || !selectedFriend) return;
+        sendMessageToSelectedFriend(text);
+      });
+
+      // chargement initial de la liste d'amis + demandes
       loadFriendData();
     })();
   </script>
