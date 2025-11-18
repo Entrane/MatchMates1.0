@@ -154,16 +154,22 @@ app.post('/signup', (req, res) => {
 
 // connexion
 app.post('/login', (req, res) => {
-  const { email, password } = req.body;
+  const email = (req.body.email || '').trim();
+  const password = req.body.password || '';
+
+  if (!email || !password) {
+    return res.status(400).send('Champs manquants');
+  }
 
   db.get(
     'SELECT * FROM users WHERE email = ?',
-    [email.trim()],
+    [email],
     (err, user) => {
       if (err) {
         console.error(err);
         return res.status(500).send('Erreur serveur');
       }
+
       if (!user || user.password !== password) {
         return res.status(401).send('Email ou mot de passe incorrect');
       }
