@@ -16,14 +16,34 @@
   <!-- Ton CSS global -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Styles spécifiques carrousel jeux -->
+  <!-- Styles spécifiques carrousel jeux + amis -->
   <style>
     :root {
       --card-radius: 22px;
     }
 
-    .games-section {
+    /* Layout principale : contenu + bandeau amis */
+    .dashboard-layout {
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
       margin-top: 40px;
+    }
+
+    .dashboard-layout > section {
+      flex: 1;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-layout {
+        flex-direction: column;
+      }
+    }
+
+    /* SECTION JEUX */
+
+    .games-section {
+      margin-top: 32px;
       display: flex;
       flex-direction: column;
       gap: 24px;
@@ -281,6 +301,191 @@
         flex: 0 0 85%;
       }
     }
+
+    /* BANDEAU LISTE D'AMIS */
+
+    .friends-sidebar {
+      width: 270px;
+      background: rgba(10, 16, 28, 0.98);
+      border-radius: 20px;
+      border: 1px solid rgba(15, 23, 42, 1);
+      padding: 16px 14px 14px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.85);
+      position: sticky;
+      top: 80px;
+      max-height: calc(100vh - 120px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .friends-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .friends-header h2 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .friends-header small {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .friends-username {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .friends-username strong {
+      color: #e5e7eb;
+    }
+
+    .friends-add-form {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .friends-add-form input {
+      flex: 1;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.95);
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      color: #e5e7eb;
+      outline: none;
+    }
+
+    .friends-add-form input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .friends-add-form button {
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #020617;
+      font-size: 0.8rem;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .friends-add-form button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(34, 197, 94, 0.4);
+    }
+
+    .friends-error {
+      font-size: 0.75rem;
+      color: #f97316;
+      min-height: 14px;
+    }
+
+    .friends-list {
+      margin-top: 4px;
+      overflow-y: auto;
+      padding-right: 4px;
+      flex: 1;
+    }
+
+    .friend-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 9px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(30, 64, 175, 0.7);
+      margin-bottom: 6px;
+    }
+
+    .friend-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .friend-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, #60a5fa, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      flex-shrink: 0;
+    }
+
+    .friend-info {
+      min-width: 0;
+    }
+
+    .friend-name {
+      font-size: 0.82rem;
+      color: #e5e7eb;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .friend-status {
+      font-size: 0.7rem;
+      color: #22c55e;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .friend-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .friend-remove-btn {
+      border: none;
+      background: transparent;
+      color: #9ca3af;
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 3px 4px;
+      border-radius: 999px;
+      transition: background 0.1s ease, color 0.1s ease;
+    }
+
+    .friend-remove-btn:hover {
+      background: rgba(30, 64, 175, 0.3);
+      color: #fca5a5;
+    }
+
+    .friends-empty {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    @media (max-width: 900px) {
+      .friends-sidebar {
+        width: 100%;
+        max-height: none;
+        position: static;
+      }
+    }
   </style>
 </head>
 
@@ -308,92 +513,121 @@
 
     <!-- CONTENU PRINCIPAL -->
     <main>
-      <section style="margin-top: 40px;">
-        <h1 class="section-title">Tableau de bord</h1>
-        <p class="section-subtitle">
-          Ici, tu pourras voir un résumé rapide de ton activité MatchMates :
-          derniers matchs, coéquipiers récents, jeux les plus joués, et plus encore.
-        </p>
+      <div class="dashboard-layout">
+        <!-- Colonne principale -->
+        <section>
+          <h1 class="section-title">Tableau de bord</h1>
+          <p class="section-subtitle">
+            Ici, tu pourras voir un résumé rapide de ton activité MatchMates :
+            derniers matchs, coéquipiers récents, jeux les plus joués, et plus encore.
+          </p>
 
-        <div class="steps">
-          <div class="step-card">
-            <div class="step-icon">🎮</div>
-            <div class="step-title">Activité récente</div>
-            <div class="step-text">
-              Plus tard : historique de tes parties, coéquipiers joués récemment, etc.
-            </div>
-          </div>
-
-          <div class="step-card">
-            <div class="step-icon">⭐</div>
-            <div class="step-title">Stats & progression</div>
-            <div class="step-text">
-              Plus tard : ton niveau par jeu, ton style de jeu, ton taux de victoire…
-            </div>
-          </div>
-
-          <div class="step-card">
-            <div class="step-icon">👥</div>
-            <div class="step-title">Coéquipiers favoris</div>
-            <div class="step-text">
-              Plus tard : joueurs avec qui tu joues le plus et accès rapide à leur profil.
-            </div>
-          </div>
-        </div>
-
-        <!-- ====== SECTION JEUX / FAVORIS / CARROUSEL ====== -->
-        <section class="games-section">
-          <!-- Bibliothèque de favoris -->
-          <div class="favorites-box">
-            <div class="favorites-header">
-              <div>
-                <h2>Jeux suivis</h2>
-                <small>Ajoute des jeux à tes favoris pour les retrouver rapidement.</small>
-              </div>
-              <small id="favorites-count">0 jeu en favoris</small>
-            </div>
-            <div id="favorites-list" class="favorites-list">
-              <span class="favorites-empty">
-                Aucun favori pour l’instant. Clique sur ★ sur un jeu pour l’ajouter ici.
-              </span>
-            </div>
-          </div>
-
-          <!-- Barre de recherche -->
-          <div class="games-search">
-            <div class="games-search-input-wrapper">
-              <span class="games-search-icon">🔍</span>
-              <input
-                type="text"
-                id="game-search"
-                placeholder="Rechercher un jeu (nom, mode, type...)"
-                autocomplete="off"
-              />
-            </div>
-          </div>
-
-          <!-- Carrousel -->
-          <div class="games-carousel">
-            <div class="games-carousel-header">
-              <div>
-                <h2>Jeux populaires</h2>
-                <small id="games-result-count"></small>
-              </div>
-              <div class="carousel-controls">
-                <button class="carousel-btn" id="carousel-prev" aria-label="Précédent">◀</button>
-                <button class="carousel-btn" id="carousel-next" aria-label="Suivant">▶</button>
+          <div class="steps">
+            <div class="step-card">
+              <div class="step-icon">🎮</div>
+              <div class="step-title">Activité récente</div>
+              <div class="step-text">
+                Plus tard : historique de tes parties, coéquipiers joués récemment, etc.
               </div>
             </div>
 
-            <div class="carousel-viewport">
-              <div class="carousel-track" id="games-track">
-                <!-- Cartes jeux injectées en JS -->
+            <div class="step-card">
+              <div class="step-icon">⭐</div>
+              <div class="step-title">Stats & progression</div>
+              <div class="step-text">
+                Plus tard : ton niveau par jeu, ton style de jeu, ton taux de victoire…
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-icon">👥</div>
+              <div class="step-title">Coéquipiers favoris</div>
+              <div class="step-text">
+                Plus tard : joueurs avec qui tu joues le plus et accès rapide à leur profil.
               </div>
             </div>
           </div>
+
+          <!-- ====== SECTION JEUX / FAVORIS / CARROUSEL ====== -->
+          <section class="games-section">
+            <!-- Bibliothèque de favoris -->
+            <div class="favorites-box">
+              <div class="favorites-header">
+                <div>
+                  <h2>Jeux suivis</h2>
+                  <small>Ajoute des jeux à tes favoris pour les retrouver rapidement.</small>
+                </div>
+                <small id="favorites-count">0 jeu en favoris</small>
+              </div>
+              <div id="favorites-list" class="favorites-list">
+                <span class="favorites-empty">
+                  Aucun favori pour l’instant. Clique sur ★ sur un jeu pour l’ajouter ici.
+                </span>
+              </div>
+            </div>
+
+            <!-- Barre de recherche -->
+            <div class="games-search">
+              <div class="games-search-input-wrapper">
+                <span class="games-search-icon">🔍</span>
+                <input
+                  type="text"
+                  id="game-search"
+                  placeholder="Rechercher un jeu (nom, mode, type...)"
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+
+            <!-- Carrousel -->
+            <div class="games-carousel">
+              <div class="games-carousel-header">
+                <div>
+                  <h2>Jeux populaires</h2>
+                  <small id="games-result-count"></small>
+                </div>
+                <div class="carousel-controls">
+                  <button class="carousel-btn" id="carousel-prev" aria-label="Précédent">◀</button>
+                  <button class="carousel-btn" id="carousel-next" aria-label="Suivant">▶</button>
+                </div>
+              </div>
+
+              <div class="carousel-viewport">
+                <div class="carousel-track" id="games-track">
+                  <!-- Cartes jeux injectées en JS -->
+                </div>
+              </div>
+            </div>
+          </section>
+          <!-- ====== FIN SECTION JEUX ====== -->
         </section>
-        <!-- ====== FIN SECTION JEUX ====== -->
-      </section>
+
+        <!-- BANDEAU LISTE D'AMIS -->
+        <aside class="friends-sidebar">
+          <div class="friends-header">
+            <h2>Liste d’amis</h2>
+            <small id="friends-count">0 ami</small>
+          </div>
+
+          <p class="friends-username">
+            Connecté en tant que <strong id="current-username">Utilisateur</strong>
+          </p>
+
+          <form id="add-friend-form" class="friends-add-form" autocomplete="off">
+            <input
+              type="text"
+              id="friend-username"
+              placeholder="Pseudo de ton ami"
+            />
+            <button type="submit">Ajouter</button>
+          </form>
+          <div id="friend-error" class="friends-error"></div>
+
+          <div class="friends-list" id="friends-list">
+            <p class="friends-empty">Tu n’as encore aucun ami ajouté.</p>
+          </div>
+        </aside>
+      </div>
     </main>
 
     <!-- FOOTER -->
@@ -413,9 +647,11 @@
     </footer>
   </div>
 
-  <!-- Script carrousel / favoris -->
+  <!-- Script carrousel / favoris / amis -->
   <script>
     (function () {
+      /* ========= GESTION JEUX / CARROUSEL ========= */
+
       const GAMES = [
         {
           id: "lol",
@@ -476,7 +712,6 @@
       let currentIndex = 0;
       let autoSlideInterval = null;
 
-      // ----- Favoris : storage -----
       function loadFavorites() {
         try {
           const raw = localStorage.getItem(FAVORITES_KEY);
@@ -513,7 +748,6 @@
         updateFavoriteButtonsState();
       }
 
-      // ----- Rendu des favoris -----
       function renderFavorites() {
         favoritesList.innerHTML = "";
 
@@ -543,7 +777,6 @@
         });
       }
 
-      // ----- Rendu des cartes jeux -----
       function createGameCard(game) {
         const card = document.createElement("div");
         card.className = "game-card";
@@ -619,7 +852,6 @@
         }
       }
 
-      // ----- Recherche -----
       function applySearch() {
         const q = searchInput.value.toLowerCase().trim();
         if (!q) {
@@ -638,7 +870,6 @@
 
       searchInput.addEventListener("input", applySearch);
 
-      // ----- Carrousel -----
       function getCardStep() {
         const firstCard = track.querySelector(".game-card");
         if (!firstCard) return 0;
@@ -689,15 +920,148 @@
       }
 
       window.addEventListener("resize", () => {
-        // recalc largeur carte
         updateCarouselTransform();
       });
 
-      // ----- Init -----
       loadFavorites();
       renderFavorites();
       renderGames();
       restartAutoSlide();
+
+      /* ========= GESTION LISTE D'AMIS ========= */
+
+      const FRIENDS_KEY = "matchmates_friends";
+      const friendsList = document.getElementById("friends-list");
+      const friendsCount = document.getElementById("friends-count");
+      const addFriendForm = document.getElementById("add-friend-form");
+      const addFriendInput = document.getElementById("friend-username");
+      const friendError = document.getElementById("friend-error");
+      const currentUsernameEl = document.getElementById("current-username");
+
+      // Récupérer le pseudo dans le header (span avant le bouton déconnexion)
+      const headerUserSpan = document.querySelector("header nav span");
+      const currentUsername = headerUserSpan
+        ? headerUserSpan.textContent.trim()
+        : "Moi";
+      currentUsernameEl.textContent = currentUsername;
+
+      let friends = [];
+
+      function loadFriends() {
+        try {
+          const raw = localStorage.getItem(FRIENDS_KEY);
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            friends = parsed;
+          }
+        } catch (e) {
+          console.warn("Impossible de charger les amis", e);
+        }
+      }
+
+      function saveFriends() {
+        try {
+          localStorage.setItem(FRIENDS_KEY, JSON.stringify(friends));
+        } catch (e) {
+          console.warn("Impossible d’enregistrer les amis", e);
+        }
+      }
+
+      function renderFriends() {
+        friendsList.innerHTML = "";
+
+        if (!friends.length) {
+          friendsList.innerHTML =
+            '<p class="friends-empty">Tu n’as encore aucun ami ajouté.</p>';
+          friendsCount.textContent = "0 ami";
+          return;
+        }
+
+        friendsCount.textContent =
+          friends.length + (friends.length > 1 ? " amis" : " ami");
+
+        friends.forEach((friend, index) => {
+          const card = document.createElement("div");
+          card.className = "friend-card";
+
+          const main = document.createElement("div");
+          main.className = "friend-main";
+
+          const avatar = document.createElement("div");
+          avatar.className = "friend-avatar";
+          avatar.textContent = friend.username.charAt(0).toUpperCase();
+
+          const info = document.createElement("div");
+          info.className = "friend-info";
+
+          const name = document.createElement("div");
+          name.className = "friend-name";
+          name.textContent = friend.username;
+
+          const status = document.createElement("div");
+          status.className = "friend-status";
+          status.innerHTML =
+            '<span class="friend-status-dot"></span>En ligne';
+
+          info.appendChild(name);
+          info.appendChild(status);
+
+          main.appendChild(avatar);
+          main.appendChild(info);
+
+          const removeBtn = document.createElement("button");
+          removeBtn.className = "friend-remove-btn";
+          removeBtn.type = "button";
+          removeBtn.textContent = "✕";
+          removeBtn.title = "Retirer cet ami";
+          removeBtn.addEventListener("click", () => {
+            friends.splice(index, 1);
+            saveFriends();
+            renderFriends();
+          });
+
+          card.appendChild(main);
+          card.appendChild(removeBtn);
+          friendsList.appendChild(card);
+        });
+      }
+
+      function showFriendError(message) {
+        friendError.textContent = message || "";
+      }
+
+      addFriendForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const username = addFriendInput.value.trim();
+
+        if (!username) {
+          showFriendError("Entre un pseudo pour ajouter un ami.");
+          return;
+        }
+
+        if (username.toLowerCase() === currentUsername.toLowerCase()) {
+          showFriendError("Tu ne peux pas t’ajouter toi-même 😅");
+          return;
+        }
+
+        const already = friends.some(
+          (f) => f.username.toLowerCase() === username.toLowerCase()
+        );
+        if (already) {
+          showFriendError("Ce joueur est déjà dans ta liste.");
+          return;
+        }
+
+        friends.push({ username: username });
+        saveFriends();
+        renderFriends();
+        showFriendError("");
+        addFriendInput.value = "";
+      });
+
+      loadFriends();
+      renderFriends();
     })();
   </script>
 </body>
