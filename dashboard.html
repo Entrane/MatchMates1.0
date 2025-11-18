@@ -488,26 +488,95 @@
       }
     }
 
-    /* CHAT PANEL */
+    /* CHAT : fenêtres flottantes façon Messenger */
 
-    .chat-panel {
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(31, 41, 55, 0.9);
+    .chat-windows-container {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      display: flex;
+      flex-direction: row-reverse;
+      gap: 8px;
+      z-index: 50;
+      pointer-events: none; /* clics passent au travers sauf sur les fenêtres */
+    }
+
+    .chat-window {
+      width: 260px;
+      background: rgba(10, 16, 28, 0.98);
+      border-radius: 18px 18px 0 0;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.9);
       display: flex;
       flex-direction: column;
+      pointer-events: auto;
+      overflow: hidden;
+    }
+
+    .chat-window-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+      background: rgba(15, 23, 42, 1);
+    }
+
+    .chat-window-title {
+      display: flex;
+      align-items: center;
       gap: 6px;
+      font-size: 0.8rem;
+      color: #e5e7eb;
     }
 
-    .chat-header {
+    .chat-window-title .avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, #60a5fa, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .chat-window-controls {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .chat-window-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(15, 23, 42, 0.9);
+      color: #9ca3af;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-window-btn:hover {
+      background: rgba(30, 64, 175, 0.9);
+      color: #e5e7eb;
+    }
+
+    .chat-window-body {
+      padding: 6px 6px 8px;
       display: flex;
       flex-direction: column;
-      font-size: 0.8rem;
-      color: var(--text-muted);
+      gap: 4px;
     }
 
-    .chat-header strong {
-      color: #e5e7eb;
+    .chat-window.minimized .chat-window-body {
+      display: none;
     }
 
     .chat-messages {
@@ -515,7 +584,7 @@
       border-radius: 10px;
       border: 1px solid rgba(31, 41, 55, 0.9);
       padding: 8px;
-      height: 140px;
+      height: 170px;
       overflow-y: auto;
       font-size: 0.8rem;
       display: flex;
@@ -580,7 +649,7 @@
       white-space: nowrap;
     }
 
-    /* Demandes d'amis (barre en haut de la liste) */
+    /* Demandes d'amis */
 
     .friend-request-title {
       font-size: 0.8rem;
@@ -743,30 +812,6 @@
             <small id="friends-count">0 ami</small>
           </div>
 
-          <!-- PANEL DE MESSAGERIE -->
-          <div class="chat-panel">
-            <div class="chat-header">
-              <span>Discussion avec</span>
-              <strong id="chat-friend-name">aucun ami sélectionné</strong>
-            </div>
-
-            <div class="chat-messages" id="chat-messages">
-              <p style="font-size: 0.75rem; color: var(--text-muted);">
-                Clique sur un ami dans la liste pour ouvrir une conversation.
-              </p>
-            </div>
-
-            <form id="chat-form" class="chat-form">
-              <input
-                type="text"
-                id="chat-input"
-                placeholder="Écrire un message..."
-                autocomplete="off"
-              />
-              <button type="submit">Envoyer</button>
-            </form>
-          </div>
-
           <p class="friends-username">
             Connecté en tant que <strong id="current-username">Utilisateur</strong>
           </p>
@@ -804,6 +849,9 @@
       </div>
     </footer>
   </div>
+
+  <!-- Conteneur des fenêtres de chat flottantes -->
+  <div id="chat-windows-container" class="chat-windows-container"></div>
 
   <!-- Script carrousel / favoris / amis / chat -->
   <script>
@@ -1095,11 +1143,7 @@
       const friendError = document.getElementById("friend-error");
       const currentUsernameEl = document.getElementById("current-username");
 
-      // éléments de chat
-      const chatFriendNameEl = document.getElementById("chat-friend-name");
-      const chatMessagesEl = document.getElementById("chat-messages");
-      const chatForm = document.getElementById("chat-form");
-      const chatInput = document.getElementById("chat-input");
+      const chatWindowsContainer = document.getElementById("chat-windows-container");
 
       // pseudo du joueur connecté, injecté via data-current-username
       const bodyUsername = document.body.getAttribute("data-current-username");
@@ -1112,8 +1156,7 @@
       friendsListEl.parentNode.insertBefore(requestsContainer, friendsListEl);
 
       let friends = [];
-      let selectedFriend = null;
-      let messagesPollInterval = null;
+      const openChats = {}; // username -> { friend, windowEl, messagesEl, inputEl, form, intervalId }
 
       function showFriendError(message) {
         friendError.textContent = message || "";
@@ -1338,13 +1381,14 @@
         }
       }
 
-      /* ========= MESSAGERIE ========= */
+      /* ========= MESSAGERIE : fenêtres multiples ========= */
 
-      function renderMessages(messages) {
-        chatMessagesEl.innerHTML = "";
+      function renderMessages(chat, messages) {
+        const el = chat.messagesEl;
+        el.innerHTML = "";
 
         if (!messages.length) {
-          chatMessagesEl.innerHTML =
+          el.innerHTML =
             '<p style="font-size: 0.75rem; color: var(--text-muted);">Aucun message pour le moment. Commence la conversation !</p>';
           return;
         }
@@ -1366,57 +1410,60 @@
 
           bubble.appendChild(text);
           bubble.appendChild(time);
-          chatMessagesEl.appendChild(bubble);
+          el.appendChild(bubble);
         });
 
-        chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+        el.scrollTop = el.scrollHeight;
       }
 
-      async function loadMessages(friendUsername) {
+      async function loadMessagesForChat(chat) {
         try {
-          const res = await fetch("/api/messages/" + encodeURIComponent(friendUsername));
+          const res = await fetch(
+            "/api/messages/" + encodeURIComponent(chat.friend.username)
+          );
           const data = await res.json();
 
           if (!res.ok) {
             console.error("Erreur chargement messages", data);
-            chatMessagesEl.innerHTML =
+            chat.messagesEl.innerHTML =
               '<p style="font-size: 0.75rem; color: #f97316;">Impossible de charger les messages.</p>';
             return;
           }
 
-          renderMessages(data.messages || []);
+          renderMessages(chat, data.messages || []);
         } catch (e) {
           console.error(e);
-          chatMessagesEl.innerHTML =
+          chat.messagesEl.innerHTML =
             '<p style="font-size: 0.75rem; color: #f97316;">Erreur réseau lors du chargement des messages.</p>';
         }
       }
 
-      function restartMessagesPolling() {
-        if (messagesPollInterval) clearInterval(messagesPollInterval);
-        if (!selectedFriend) return;
-
-        messagesPollInterval = setInterval(() => {
-          loadMessages(selectedFriend.username);
+      function startPolling(chat) {
+        if (chat.intervalId) clearInterval(chat.intervalId);
+        chat.intervalId = setInterval(() => {
+          loadMessagesForChat(chat);
         }, 4000);
       }
 
-      function openChat(friend) {
-        selectedFriend = friend;
-        chatFriendNameEl.textContent = friend.username;
-        loadMessages(friend.username);
-        restartMessagesPolling();
+      function toggleMinimize(chat) {
+        chat.windowEl.classList.toggle("minimized");
       }
 
-      async function sendMessageToSelectedFriend(text) {
-        if (!selectedFriend) return;
+      function closeChat(chat) {
+        if (chat.intervalId) clearInterval(chat.intervalId);
+        if (chat.windowEl.parentNode) {
+          chat.windowEl.parentNode.removeChild(chat.windowEl);
+        }
+        delete openChats[chat.friend.username];
+      }
 
+      async function sendMessage(chat, text) {
         try {
           const res = await fetch("/api/messages", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              toUsername: selectedFriend.username,
+              toUsername: chat.friend.username,
               content: text,
             }),
           });
@@ -1428,19 +1475,127 @@
             return;
           }
 
-          chatInput.value = "";
-          loadMessages(selectedFriend.username);
+          chat.inputEl.value = "";
+          loadMessagesForChat(chat);
         } catch (e) {
           console.error(e);
         }
       }
 
-      chatForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const text = chatInput.value.trim();
-        if (!text || !selectedFriend) return;
-        sendMessageToSelectedFriend(text);
-      });
+      function createChatWindow(friend) {
+        const windowEl = document.createElement("div");
+        windowEl.className = "chat-window";
+
+        const header = document.createElement("div");
+        header.className = "chat-window-header";
+
+        const title = document.createElement("div");
+        title.className = "chat-window-title";
+
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+        avatar.textContent = friend.username.charAt(0).toUpperCase();
+
+        const name = document.createElement("span");
+        name.textContent = friend.username;
+
+        title.appendChild(avatar);
+        title.appendChild(name);
+
+        const controls = document.createElement("div");
+        controls.className = "chat-window-controls";
+
+        const minimizeBtn = document.createElement("button");
+        minimizeBtn.className = "chat-window-btn";
+        minimizeBtn.textContent = "–";
+        minimizeBtn.title = "Réduire";
+
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "chat-window-btn";
+        closeBtn.textContent = "✕";
+        closeBtn.title = "Fermer";
+
+        controls.appendChild(minimizeBtn);
+        controls.appendChild(closeBtn);
+
+        header.appendChild(title);
+        header.appendChild(controls);
+
+        const body = document.createElement("div");
+        body.className = "chat-window-body";
+
+        const messagesEl = document.createElement("div");
+        messagesEl.className = "chat-messages";
+
+        const form = document.createElement("form");
+        form.className = "chat-form";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.placeholder = "Écrire un message...";
+        input.autocomplete = "off";
+
+        const sendBtn = document.createElement("button");
+        sendBtn.type = "submit";
+        sendBtn.textContent = "Envoyer";
+
+        form.appendChild(input);
+        form.appendChild(sendBtn);
+
+        body.appendChild(messagesEl);
+        body.appendChild(form);
+
+        windowEl.appendChild(header);
+        windowEl.appendChild(body);
+
+        const chat = {
+          friend,
+          windowEl,
+          messagesEl,
+          inputEl: input,
+          form,
+          intervalId: null,
+        };
+
+        minimizeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          toggleMinimize(chat);
+        });
+
+        closeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          closeChat(chat);
+        });
+
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const text = chat.inputEl.value.trim();
+          if (!text) return;
+          sendMessage(chat, text);
+        });
+
+        return chat;
+      }
+
+      function openChat(friend) {
+        const key = friend.username;
+        if (openChats[key]) {
+          // mettre la fenêtre au premier plan (tout à droite)
+          const existing = openChats[key].windowEl;
+          if (existing.parentNode === chatWindowsContainer) {
+            chatWindowsContainer.removeChild(existing);
+            chatWindowsContainer.prepend(existing);
+          }
+          return;
+        }
+
+        const chat = createChatWindow(friend);
+        openChats[key] = chat;
+        chatWindowsContainer.prepend(chat.windowEl);
+
+        loadMessagesForChat(chat);
+        startPolling(chat);
+      }
 
       // chargement initial de la liste d'amis + demandes
       loadFriendData();
