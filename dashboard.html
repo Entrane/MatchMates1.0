@@ -489,8 +489,7 @@
   </style>
 </head>
 
-<body>
-  <body data-current-username="{{ username }}">
+<body data-current-username="{{ username }}">
   <div class="page-wrapper">
     <!-- HEADER -->
     <header>
@@ -929,49 +928,36 @@
       renderGames();
       restartAutoSlide();
 
-      /* ========= GESTION LISTE D'AMIS ========= */
+      /* ========= GESTION LISTE D'AMIS AVEC DEMANDES ========= */
 
-      const FRIENDS_KEY = "matchmates_friends";
-      const friendsList = document.getElementById("friends-list");
+      const friendsListEl = document.getElementById("friends-list");
       const friendsCount = document.getElementById("friends-count");
       const addFriendForm = document.getElementById("add-friend-form");
       const addFriendInput = document.getElementById("friend-username");
       const friendError = document.getElementById("friend-error");
       const currentUsernameEl = document.getElementById("current-username");
 
-      // Récupérer le pseudo depuis l'attribut data du <body>
-const bodyUsername = document.body.getAttribute("data-current-username");
-const currentUsername = bodyUsername && bodyUsername.trim() ? bodyUsername.trim() : "Moi";
-currentUsernameEl.textContent = currentUsername;
+      // pseudo du joueur connecté, injecté via data-current-username
+      const bodyUsername = document.body.getAttribute("data-current-username");
+      const currentUsername = bodyUsername && bodyUsername.trim() ? bodyUsername.trim() : "Moi";
+      currentUsernameEl.textContent = currentUsername;
+
+      // conteneur pour les demandes d'amis
+      const requestsContainer = document.createElement("div");
+      requestsContainer.id = "friends-requests";
+      friendsListEl.parentNode.insertBefore(requestsContainer, friendsListEl);
 
       let friends = [];
 
-      function loadFriends() {
-        try {
-          const raw = localStorage.getItem(FRIENDS_KEY);
-          if (!raw) return;
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            friends = parsed;
-          }
-        } catch (e) {
-          console.warn("Impossible de charger les amis", e);
-        }
-      }
-
-      function saveFriends() {
-        try {
-          localStorage.setItem(FRIENDS_KEY, JSON.stringify(friends));
-        } catch (e) {
-          console.warn("Impossible d’enregistrer les amis", e);
-        }
+      function showFriendError(message) {
+        friendError.textContent = message || "";
       }
 
       function renderFriends() {
-        friendsList.innerHTML = "";
+        friendsListEl.innerHTML = "";
 
         if (!friends.length) {
-          friendsList.innerHTML =
+          friendsListEl.innerHTML =
             '<p class="friends-empty">Tu n’as encore aucun ami ajouté.</p>';
           friendsCount.textContent = "0 ami";
           return;
@@ -1015,24 +1001,106 @@ currentUsernameEl.textContent = currentUsername;
           removeBtn.textContent = "✕";
           removeBtn.title = "Retirer cet ami";
           removeBtn.addEventListener("click", () => {
-            friends.splice(index, 1);
-            saveFriends();
-            renderFriends();
+            // Optionnel : route DELETE côté backend
+            console.warn("Suppression d'ami non encore implémentée côté backend");
           });
 
           card.appendChild(main);
           card.appendChild(removeBtn);
-          friendsList.appendChild(card);
+          friendsListEl.appendChild(card);
         });
       }
 
-      function showFriendError(message) {
-        friendError.textContent = message || "";
+      function renderFriendRequests(incoming, outgoing) {
+        requestsContainer.innerHTML = "";
+
+        if (!incoming.length && !outgoing.length) return;
+
+        if (incoming.length) {
+          const title = document.createElement("p");
+          title.textContent = "Demandes reçues";
+          title.style.fontSize = "0.8rem";
+          title.style.color = "var(--text-muted)";
+          title.style.margin = "4px 0";
+          requestsContainer.appendChild(title);
+
+          incoming.forEach((req) => {
+            const row = document.createElement("div");
+            row.className = "friend-card";
+            row.style.marginBottom = "4px";
+
+            const txt = document.createElement("div");
+            txt.className = "friend-name";
+            txt.textContent = `${req.from_username} t’a ajouté en ami`;
+
+            const actions = document.createElement("div");
+
+            const acceptBtn = document.createElement("button");
+            acceptBtn.className = "friend-remove-btn";
+            acceptBtn.textContent = "Accepter";
+            acceptBtn.style.color = "#4ade80";
+            acceptBtn.onclick = () => respondToRequest(req.id, true);
+
+            const rejectBtn = document.createElement("button");
+            rejectBtn.className = "friend-remove-btn";
+            rejectBtn.textContent = "Refuser";
+            rejectBtn.onclick = () => respondToRequest(req.id, false);
+
+            actions.appendChild(acceptBtn);
+            actions.appendChild(rejectBtn);
+
+            row.appendChild(txt);
+            row.appendChild(actions);
+            requestsContainer.appendChild(row);
+          });
+        }
+
+        if (outgoing.length) {
+          const title = document.createElement("p");
+          title.textContent = "Demandes envoyées";
+          title.style.fontSize = "0.8rem";
+          title.style.color = "var(--text-muted)";
+          title.style.margin = "4px 0";
+          requestsContainer.appendChild(title);
+
+          outgoing.forEach((req) => {
+            const row = document.createElement("div");
+            row.className = "friend-card";
+            row.style.marginBottom = "4px";
+
+            const txt = document.createElement("div");
+            txt.className = "friend-name";
+            txt.textContent = `En attente : ${req.to_username}`;
+
+            row.appendChild(txt);
+            requestsContainer.appendChild(row);
+          });
+        }
       }
 
-      addFriendForm.addEventListener("submit", function (e) {
+      async function respondToRequest(requestId, accept) {
+        try {
+          const res = await fetch(
+            "/api/friends/requests/" + requestId + (accept ? "/accept" : "/reject"),
+            { method: "POST" }
+          );
+
+          if (!res.ok) {
+            console.error("Erreur réponse à la demande");
+            return;
+          }
+
+          // Recharger amis + demandes
+          loadFriendData();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      addFriendForm.addEventListener("submit", async function (e) {
         e.preventDefault();
         const username = addFriendInput.value.trim();
+        showFriendError("");
 
         if (!username) {
           showFriendError("Entre un pseudo pour ajouter un ami.");
@@ -1044,23 +1112,59 @@ currentUsernameEl.textContent = currentUsername;
           return;
         }
 
-        const already = friends.some(
-          (f) => f.username.toLowerCase() === username.toLowerCase()
-        );
-        if (already) {
-          showFriendError("Ce joueur est déjà dans ta liste.");
-          return;
-        }
+        try {
+          const res = await fetch("/api/friends/request", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ toUsername: username }),
+          });
 
-        friends.push({ username: username });
-        saveFriends();
-        renderFriends();
-        showFriendError("");
-        addFriendInput.value = "";
+          const data = await res.json();
+
+          if (!res.ok) {
+            if (data.error === "user_not_found") {
+              showFriendError("Cet utilisateur n’existe pas.");
+            } else if (data.error === "already_friends") {
+              showFriendError("Vous êtes déjà amis.");
+            } else if (data.error === "request_already_pending") {
+              showFriendError("Une demande est déjà en attente.");
+            } else if (data.error === "cannot_add_self") {
+              showFriendError("Tu ne peux pas t’ajouter toi-même.");
+            } else {
+              showFriendError("Erreur lors de l’envoi de la demande.");
+            }
+            return;
+          }
+
+          addFriendInput.value = "";
+          showFriendError("Demande envoyée ✅");
+          loadFriendData();
+        } catch (err) {
+          console.error(err);
+          showFriendError("Erreur réseau.");
+        }
       });
 
-      loadFriends();
-      renderFriends();
+      async function loadFriendData() {
+        try {
+          const [friendsRes, requestsRes] = await Promise.all([
+            fetch("/api/friends"),
+            fetch("/api/friends/requests"),
+          ]);
+
+          const friendsData = await friendsRes.json();
+          const reqData = await requestsRes.json();
+
+          friends = friendsData.friends || [];
+          renderFriends();
+
+          renderFriendRequests(reqData.incoming || [], reqData.outgoing || []);
+        } catch (e) {
+          console.error("Erreur chargement amis/demandes", e);
+        }
+      }
+
+      loadFriendData();
     })();
   </script>
 </body>
