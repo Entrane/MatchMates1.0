@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 // === Connexion SQLite ===
 const db = new sqlite3.Database('./database.sqlite');
 
-// === Création des tables (users + amis) ===
+// === Création des tables (users + amis + messages) ===
 db.serialize(() => {
   // Comptes utilisateurs
   db.run(`
@@ -46,6 +46,19 @@ db.serialize(() => {
       UNIQUE (user_id, friend_id),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Messages privés entre amis
+  db.run(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sender_id INTEGER NOT NULL,
+      receiver_id INTEGER NOT NULL,
+      content TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
 });
@@ -188,6 +201,7 @@ app.post('/login', (req, res) => {
     }
   );
 });
+
 // === API AMIS ===
 
 // envoyer une demande d'ami
@@ -411,6 +425,132 @@ app.post('/api/friends/requests/:id/reject', requireAuth, (req, res) => {
             return res.status(500).json({ error: 'server_error' });
           }
           res.json({ ok: true });
+        }
+      );
+    }
+  );
+});
+
+// === API MESSAGES ===
+
+// Récupérer les messages avec un ami
+app.get('/api/messages/:friendUsername', requireAuth, (req, res) => {
+  const currentUserId = req.user.id;
+  const friendUsername = req.params.friendUsername;
+
+  // 1. trouver l'utilisateur ami
+  db.get(
+    'SELECT id FROM users WHERE username = ?',
+    [friendUsername],
+    (err, friend) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'server_error' });
+      }
+      if (!friend) {
+        return res.status(404).json({ error: 'user_not_found' });
+      }
+
+      const friendId = friend.id;
+
+      // 2. vérifier qu'ils sont amis
+      db.get(
+        'SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?',
+        [currentUserId, friendId],
+        (err2, row) => {
+          if (err2) {
+            console.error(err2);
+            return res.status(500).json({ error: 'server_error' });
+          }
+          if (!row) {
+            return res.status(403).json({ error: 'not_friends' });
+          }
+
+          // 3. récupérer la conversation
+          db.all(
+            `SELECT sender_id, receiver_id, content, created_at
+             FROM messages
+             WHERE (sender_id = ? AND receiver_id = ?)
+                OR (sender_id = ? AND receiver_id = ?)
+             ORDER BY created_at ASC`,
+            [currentUserId, friendId, friendId, currentUserId],
+            (err3, rows) => {
+              if (err3) {
+                console.error(err3);
+                return res.status(500).json({ error: 'server_error' });
+              }
+
+              // on marque si le message vient de l'utilisateur connecté
+              const messages = rows.map((m) => ({
+                fromSelf: m.sender_id === currentUserId,
+                content: m.content,
+                created_at: m.created_at,
+              }));
+
+              res.json({ messages });
+            }
+          );
+        }
+      );
+    }
+  );
+});
+
+// Envoyer un message à un ami
+app.post('/api/messages', requireAuth, (req, res) => {
+  const currentUserId = req.user.id;
+  const { toUsername, content } = req.body;
+
+  if (!toUsername || !content || !content.trim()) {
+    return res.status(400).json({ error: 'missing_fields' });
+  }
+
+  const cleanContent = content.trim();
+
+  // 1. trouver le receveur
+  db.get(
+    'SELECT id FROM users WHERE username = ?',
+    [toUsername],
+    (err, friend) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'server_error' });
+      }
+      if (!friend) {
+        return res.status(404).json({ error: 'user_not_found' });
+      }
+
+      const receiverId = friend.id;
+
+      // 2. vérifier qu'ils sont amis
+      db.get(
+        'SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?',
+        [currentUserId, receiverId],
+        (err2, row) => {
+          if (err2) {
+            console.error(err2);
+            return res.status(500).json({ error: 'server_error' });
+          }
+          if (!row) {
+            return res.status(403).json({ error: 'not_friends' });
+          }
+
+          // 3. insérer le message
+          db.run(
+            'INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)',
+            [currentUserId, receiverId, cleanContent],
+            function (err3) {
+              if (err3) {
+                console.error(err3);
+                return res.status(500).json({ error: 'server_error' });
+              }
+
+              res.json({
+                ok: true,
+                messageId: this.lastID,
+              });
+            }
+          );
         }
       );
     }
