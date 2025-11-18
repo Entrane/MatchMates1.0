@@ -153,25 +153,28 @@ app.post('/signup', (req, res) => {
 });
 
 // connexion
-app.post('/login', (req, res) => {
-  const email = (req.body.email || '').trim();
+aapp.post('/login', (req, res) => {
+  // peut être email OU username
+  const identifier = (req.body.identifier || '').trim();
   const password = req.body.password || '';
 
-  if (!email || !password) {
+  if (!identifier || !password) {
+    console.log('Champs manquants:', req.body);
     return res.status(400).send('Champs manquants');
   }
 
+  // on cherche soit par email, soit par username
   db.get(
-    'SELECT * FROM users WHERE email = ?',
-    [email],
+    'SELECT * FROM users WHERE email = ? OR username = ?',
+    [identifier, identifier],
     (err, user) => {
       if (err) {
-        console.error(err);
+        console.error('Erreur DB login:', err);
         return res.status(500).send('Erreur serveur');
       }
 
       if (!user || user.password !== password) {
-        return res.status(401).send('Email ou mot de passe incorrect');
+        return res.status(401).send('Email / pseudo ou mot de passe incorrect');
       }
 
       // on stocke l'utilisateur en session
@@ -185,7 +188,6 @@ app.post('/login', (req, res) => {
     }
   );
 });
-
 // === API AMIS ===
 
 // envoyer une demande d'ami
