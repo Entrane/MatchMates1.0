@@ -150,48 +150,38 @@
 
   <!-- Script pour récupérer les infos du joueur connecté -->
   <script>
-    fetch("/api/me")
-      .then((res) => {
-        if (!res.ok) {
-          // si la session n'est plus valide, on renvoie vers la page de login
-          window.location.href = "/login.html";
-          return null;
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (!data) return;
+  fetch('/api/me')
+    .then(async (res) => {
+      // Si pas connecté → on redirige vers la page de connexion
+      if (res.status === 401) {
+        window.location.href = '/login.html';
+        return;
+      }
 
-        // Remplir les infos dans la page
-        const username = data.username || "Utilisateur";
-        const email = data.email || "—";
+      const data = await res.json();
 
-        document.getElementById("profile-username").textContent = username;
-        document.getElementById("profile-username-main").textContent = username;
-        document.getElementById("nav-username").textContent = username;
-        document.getElementById("profile-email").textContent = email;
-        document.getElementById("profile-id").textContent = "ID #" + data.id;
+      if (!data.loggedIn) {
+        window.location.href = '/login.html';
+        return;
+      }
 
-        // avatar = première lettre du pseudo
-        document.getElementById("profile-avatar").textContent =
-          username.charAt(0).toUpperCase();
+      // Ici tu peux remplir le profil avec les infos renvoyées
+      // Exemple si tu as des spans avec des IDs :
+      const nameElt = document.getElementById("profile-username");
+      const emailElt = document.getElementById("profile-email");
+      const memberSinceElt = document.getElementById("profile-created");
 
-        // date formatée
-        if (data.created_at) {
-          const d = new Date(data.created_at);
-          const formatted = d.toLocaleDateString("fr-FR", {
-            year: "numeric",
-            month: "short",
-            day: "2-digit",
-          });
-          document.getElementById("profile-created").textContent = formatted;
-        }
-      })
-      .catch((err) => {
-        console.error("Erreur /api/me :", err);
-        window.location.href = "/login.html";
-      });
-  </script>
+      if (nameElt) nameElt.textContent = data.username;
+      if (emailElt) emailElt.textContent = data.email;
+      if (memberSinceElt) memberSinceElt.textContent = data.created_at?.slice(0, 10);
+    })
+    .catch((err) => {
+      console.error("Erreur /api/me :", err);
+      // En cas d’erreur réseau, tu peux soit rester sur la page,
+      // soit décider de renvoyer vers login si tu veux :
+      // window.location.href = '/login.html';
+    });
+</script>
 </body>
 </html>
 
