@@ -185,6 +185,10 @@ app.get("/profile.html", requireLogin, (req, res) => {
   console.log("Accès à profile.html par :", req.session.username);
   return res.sendFile(path.join(__dirname, "profile.html"));
 });
+app.get("/dashboard.html", requireLogin, (req, res) => {
+  console.log("Accès à dashboard.html par :", req.session.username);
+  return res.sendFile(path.join(__dirname, "dashboard.html"));
+});
 
 // ---------- FICHIERS STATIQUES (HTML / CSS) ---------- //
 app.use(express.static(__dirname));
