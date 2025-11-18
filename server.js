@@ -153,7 +153,7 @@ app.post('/signup', (req, res) => {
 });
 
 // connexion
-aapp.post('/login', (req, res) => {
+app.post('/login', (req, res) => {
   // peut être email OU username
   const identifier = (req.body.identifier || '').trim();
   const password = req.body.password || '';
