@@ -151,9 +151,9 @@ app.get("/logout", (req, res) => {
 });
 // ---------- API : infos du profil connecté ---------- //
 app.get("/api/me", (req, res) => {
-  // si pas connecté → 401
+  // Si pas connecté → on ne redirige PAS, on répond 401
   if (!req.session.userId) {
-    return res.status(401).json({ error: "Non connecté" });
+    return res.status(401).json({ loggedIn: false });
   }
 
   db.get(
@@ -170,6 +170,7 @@ app.get("/api/me", (req, res) => {
       }
 
       return res.json({
+        loggedIn: true,
         id: user.id,
         username: user.username,
         email: user.email,
