@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Connexion – MatchMates</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Police Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Ton fichier CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="page-wrapper">
+
+    <!-- HEADER -->
+    <header>
+      <div class="logo">
+        <div class="logo-mark">MM</div>
+        <div class="logo-text">MatchMates</div>
+      </div>
+
+      <nav>
+        <a href="index.html">Accueil</a>
+        <a href="#">Jeux</a>
+        <a href="#">Communauté</a>
+
+        <div class="nav-cta">
+          <a class="btn btn-outline" href="login.html">Connexion</a>
+          <a class="btn btn-primary" href="signup.html">Inscription</a>
+        </div>
+      </nav>
+    </header>
+
+    <!-- FORMULAIRE DE CONNEXION -->
+    <main>
+      <section style="max-width: 420px; margin: 40px auto;">
+
+        <h1 class="section-title">Connexion</h1>
+        <p class="section-subtitle">
+          Heureux de vous revoir ! Connectez-vous pour retrouver vos coéquipiers.
+        </p>
+
+        <form action="/api/login" method="POST" class="login-form"
+          style="display: flex; flex-direction: column; gap: 16px;
+          background: rgba(15,23,42,0.95); padding: 22px;
+          border-radius: 16px; border: 1px solid rgba(55,65,81,0.8);
+          box-shadow: var(--shadow-soft);">
+
+          <!-- Identifiant : email OU username -->
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="identifier" style="font-size: 13px;">Email ou nom d'utilisateur</label>
+            <input id="identifier" name="identifier" type="text" required
+              class="hero-input"
+              placeholder="Ex : joueur@example.com ou ShadowWolf42">
+          </div>
+
+          <!-- Mot de passe -->
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="password" style="font-size: 13px;">Mot de passe</label>
+            <input id="password" name="password" type="password" required
+              class="hero-input"
+              placeholder="Votre mot de passe">
+          </div>
+
+          <a href="#" style="font-size: 12px; color: var(--accent); text-align: right;">
+            Mot de passe oublié ?
+          </a>
+
+          <!-- Bouton -->
+          <button type="submit" class="btn btn-primary hero-btn-cta"
+            style="margin-top: 10px; width: 100%; justify-content: center;">
+            Se connecter
+          </button>
+
+          <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 4px;">
+            Pas encore de compte ?
+            <a href="signup.html" style="color: var(--accent);">Créer un compte</a>
+          </p>
+
+        </form>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="footer-links">
+        <a href="#">À propos</a>
+        <a href="#">Contact</a>
+        <a href="#">Conditions d’utilisation</a>
+        <a href="#">Confidentialité</a>
+      </div>
+
+      <div class="footer-socials">
+        <div class="footer-pill">Rejoindre le Discord</div>
+        <div class="footer-pill">Twitter</div>
+        <div class="footer-pill">Instagram</div>
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>

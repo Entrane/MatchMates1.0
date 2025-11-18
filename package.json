@@ -1,0 +1,19 @@
+{
+  "name": "matchmates",
+  "version": "1.0.0",
+  "description": "Backend MatchMates",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "sqlite3": "^5.1.7"
+  },
+  "author": "",
+  "license": "ISC"
+}
