@@ -939,12 +939,10 @@
       const friendError = document.getElementById("friend-error");
       const currentUsernameEl = document.getElementById("current-username");
 
-      // Récupérer le pseudo dans le header (span avant le bouton déconnexion)
-      const headerUserSpan = document.querySelector("header nav span");
-      const currentUsername = headerUserSpan
-        ? headerUserSpan.textContent.trim()
-        : "Moi";
-      currentUsernameEl.textContent = currentUsername;
+      // Récupérer le pseudo depuis l'attribut data du <body>
+const bodyUsername = document.body.getAttribute("data-current-username");
+const currentUsername = bodyUsername && bodyUsername.trim() ? bodyUsername.trim() : "Moi";
+currentUsernameEl.textContent = currentUsername;
 
       let friends = [];
 
