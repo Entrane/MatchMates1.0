@@ -490,6 +490,7 @@
 </head>
 
 <body>
+  <body data-current-username="{{ username }}">
   <div class="page-wrapper">
     <!-- HEADER -->
     <header>
@@ -504,7 +505,7 @@
         <a href="#">Paramètres</a>
 
         <span style="margin-left:auto; margin-right: 12px; color: var(--text-muted);">
-          Entrane
+          {{ username }}
         </span>
 
         <a href="/logout" class="btn btn-outline">Déconnexion</a>
