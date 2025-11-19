@@ -105,9 +105,10 @@
       transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    /* NOUVELLES RÈGLES POUR LE BOUTON ACTIF (basé sur la classe 'active' ajoutée par JS) */
+    /* NOUVELLES RÈGLES POUR LE BOUTON ACTIF */
     .toggle-friends-btn.active {
-        right: calc(20px + var(--sidebar-width) - 40px); /* Déplace le bouton vers la gauche de la sidebar - 40px */
+        /* Déplace le bouton vers la gauche: 320px (sidebar) + 20px (marge initiale) */
+        right: calc(var(--sidebar-width) + 20px); 
         background: #ef4444; 
         color: white;
     }
@@ -118,14 +119,21 @@
         content: "✕"; 
     }
 
-    /* --- SIDEBAR --- */
+    /* --- SIDEBAR CORRIGÉE --- */
     .friends-sidebar {
-      position: fixed; top: 0; right: calc(0px - var(--sidebar-width)); /* Cache la sidebar complètement */
+      position: fixed; top: 0; 
+      /* Position cachée: -320px (largeur de la sidebar) */
+      right: calc(0px - var(--sidebar-width)); 
       width: var(--sidebar-width); height: 100vh;
       background: rgba(15, 23, 42, 0.98); border-left: 1px solid rgba(255,255,255,0.1);
-      box-shadow: -10px 0 30px rgba(0,0,0,0.5); padding: 80px 15px 20px; z-index: 1000;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.5); 
+      padding: 80px 15px 20px; 
+      z-index: 1000;
       transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(12px);
+      /* --- CORRECTION ESSENTIELLE --- */
+      /* S'assure que le padding est inclus dans la largeur de 320px */
+      box-sizing: border-box; 
     }
     .friends-sidebar.active { right: 0; } /* Révèle la sidebar */
 
@@ -338,20 +346,9 @@
     function toggleSidebar() { 
         const sidebar = document.getElementById('friendsSidebar');
         const button = document.querySelector('.toggle-friends-btn');
-        // Bascule la classe 'active' sur la sidebar
+        // Bascule la classe 'active' sur la sidebar ET le bouton
         sidebar.classList.toggle('active');
-        // CORRECTION: Bascule la classe 'active' sur le bouton
         button.classList.toggle('active');
-        
-        // CORRECTION: Si la sidebar est ouverte, on pourrait vouloir ajuster la position du chat
-        const chatContainer = document.getElementById('chat-container');
-        if(chatContainer) {
-            // Le chat a besoin de la classe 'sidebar-active' ou autre pour s'ajuster
-            // Basé sur le CSS mis à jour, il est géré par la relation `friends-sidebar.active + .chat-container`
-            // Je supprime le besoin de basculer la classe 'active' sur le bouton du code JS précédent
-            // Je laisse le bouton se gérer via la classe 'active' sur la sidebar.
-            // **RE-CORRECTION:** Puisque l'ordre HTML a été modifié, le tilde n'est pas le meilleur, je reviens à l'approche de basculer sur le bouton ET la sidebar.
-        }
     }
 
     // Variables globales (variables sociales réintégrées)
