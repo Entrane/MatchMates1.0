@@ -11,6 +11,7 @@
     /* On réutilise les mêmes variables et styles de base pour la cohérence */
     :root { 
         --primary-color: #22c55e; 
+        --sidebar-width: 320px; /* RE-ADDED: Largeur de la sidebar sociale */
         --game-info-width: 280px; /* Largeur du bandeau Info Jeu */
         --bg-dark: #0f172a; 
         --bg-card: #1e293b; 
@@ -93,6 +94,50 @@
     .btn-secondary { background-color: var(--bg-card); color: var(--primary-color); border: 1px solid var(--primary-color); }
     .btn-secondary:hover { background-color: rgba(34, 197, 94, 0.1); }
     .action-btn:disabled { background-color: var(--text-muted); cursor: not-allowed; }
+
+    /* --- BOUTON SIDEBAR --- */
+    .toggle-friends-btn {
+      position: fixed; top: 80px; right: 20px; z-index: 1100;
+      background: var(--primary-color); color: #020617; border: none;
+      padding: 10px 16px; border-radius: 30px; cursor: pointer;
+      display: flex; align-items: center; gap: 8px; font-weight: 600;
+      box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* --- SIDEBAR --- */
+    .friends-sidebar {
+      position: fixed; top: 0; right: -340px; width: var(--sidebar-width); height: 100vh;
+      background: rgba(15, 23, 42, 0.98); border-left: 1px solid rgba(255,255,255,0.1);
+      box-shadow: -10px 0 30px rgba(0,0,0,0.5); padding: 80px 15px 20px; z-index: 1000;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(12px);
+    }
+    .friends-sidebar.active { right: 0; }
+    .friends-sidebar.active ~ .toggle-friends-btn { right: 280px; background: #ef4444; color: white; }
+    .friends-sidebar.active ~ .toggle-friends-btn span { display: none; }
+    .friends-sidebar.active ~ .toggle-friends-btn::after { content: "✕"; }
+
+    .sidebar-section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-top: 15px; font-weight: 700; }
+    .friend-card { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); cursor: pointer; margin-bottom: 5px;}
+    .friend-card:hover { background: rgba(255,255,255,0.08); }
+    .friend-avatar { width: 32px; height: 32px; border-radius: 50%; background: #3b82f6; display: flex; justify-content: center; align-items: center; font-weight: bold; margin-right: 10px; }
+    .friend-status.pending { color: #fbbf24; }
+    .add-friend-box { display: flex; gap: 5px; }
+    .add-friend-box input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid #334155; border-radius: 20px; padding: 6px 12px; color: white; outline: none; }
+    .add-friend-box button { background: var(--primary-color); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold; }
+
+    /* CHAT */
+    .chat-container { position: fixed; bottom: 0; right: 360px; display: flex; flex-direction: row-reverse; gap: 15px; z-index: 900; pointer-events: none; }
+    @media(max-width: 900px) { .chat-container { right: 10px; } }
+    .chat-window { width: 300px; height: 400px; background: var(--bg-card); border-radius: 12px 12px 0 0; display: flex; flex-direction: column; pointer-events: auto; border: 1px solid #334155; }
+    .chat-header { background: #0f172a; padding: 10px; cursor: pointer; display: flex; justify-content: space-between; border-bottom: 1px solid #334155; }
+    .chat-body { flex: 1; padding: 10px; overflow-y: auto; background: #020617; display: flex; flex-direction: column; gap: 8px; }
+    .chat-input-area { padding: 10px; background: #1e293b; border-top: 1px solid #334155; display: flex; }
+    .chat-input-area input { flex: 1; padding: 8px; border-radius: 20px; border: none; background: #334155; color: white; outline: none; }
+    .msg { padding: 6px 12px; border-radius: 12px; max-width: 80%; font-size: 0.85rem; }
+    .msg.me { align-self: flex-end; background: var(--primary-color); color: #020617; }
+    .msg.them { align-self: flex-start; background: #334155; color: white; }
 
     /* RESPONSIVE */
     @media (max-width: 1200px) {
@@ -241,12 +286,44 @@
     </div>
   </main>
 
+  <button class="toggle-friends-btn" onclick="toggleSidebar()">
+    <span>💬 Amis</span>
+  </button>
+
+  <aside class="friends-sidebar" id="friendsSidebar">
+    <h2 style="margin: 0; font-size: 1.1rem;">Social</h2>
+    <div class="sidebar-section-title">Ajouter</div>
+    <form class="add-friend-box" id="add-friend-form">
+        <input type="text" id="friend-input" placeholder="Pseudo..." autocomplete="off">
+        <button type="submit">+</button>
+    </form>
+    <div id="friend-notif" style="font-size:0.75rem; margin-top:5px; min-height:1em;"></div>
+    <div id="section-requests-in" style="display:none;">
+        <div class="sidebar-section-title">Reçues</div>
+        <div id="list-requests-in"></div>
+    </div>
+    <div id="section-requests-out" style="display:none;">
+        <div class="sidebar-section-title">Envoyées</div>
+        <div id="list-requests-out"></div>
+    </div>
+    <div class="sidebar-section-title">Mes Amis (<span id="friend-count">0</span>)</div>
+    <div id="friends-list" style="overflow-y: auto; flex: 1;"></div>
+  </aside>
+
+  <div id="chat-container" class="chat-container"></div>
+
   <script>
-    // Variables globales (variables sociales retirées)
+    // Rétablissement de la fonction de bascule de la barre latérale
+    function toggleSidebar() { document.getElementById('friendsSidebar').classList.toggle('active'); }
+
+    // Variables globales (variables sociales réintégrées)
     const pathSegments = window.location.pathname.split('/');
     const gameId = pathSegments[pathSegments.length - 1];
     let currentRankSelection = null;
     let currentPartnerRankSelection = null;
+    const friendNotif = document.getElementById('friend-notif');
+    const chatContainer = document.getElementById('chat-container');
+    const activeChats = {}; 
 
     // Définitions des rangs (à adapter par jeu)
     const RANKS = {
@@ -625,12 +702,79 @@
                     <div style="color: var(--text-muted); font-size: 0.85rem;">${rankText}</div>
                 </div>
                 <div class="actions-bar" style="margin: 0; gap: 5px;">
-                    <button class="action-btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="alert('Contacter ${match.username}. Veuillez utiliser un outil externe pour le contacter.')"> Contacter </button>
+                    <button class="action-btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="sendFriendRequest('${match.username}')"> + Ami </button>
+                    <button class="action-btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="openChat('${match.username}')"> 💬 Chat </button>
                 </div>`;
 
             matchList.appendChild(card);
         });
     }
+
+    // Fonction d'envoi de demande d'ami rapide depuis la liste de match
+    window.sendFriendRequest = async function(username) {
+        const res=await fetch('/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:username})});
+        const d=await res.json(); 
+        alert(d.ok ? `Demande d'ami envoyée à ${username} !` : d.error || `Erreur: impossible d'ajouter ${username}`);
+        loadSocial();
+    }
+
+    
+    // ====================================================
+    // --- LOGIQUE SOCIALE (Chat & Amis) --- (Réintégrée)
+    // ====================================================
+    
+    async function loadSocial() {
+        try {
+            const [fRes, rRes] = await Promise.all([fetch('/api/friends'), fetch('/api/friends/requests')]);
+            const fData = await fRes.json();
+            const rData = await rRes.json();
+            renderFriends(fData.friends);
+            renderRequests(rData.incoming, rData.outgoing);
+        } catch(e) {}
+    }
+
+    function renderFriends(list) {
+        const c = document.getElementById('friends-list');
+        document.getElementById('friend-count').innerText = list.length;
+        c.innerHTML = "";
+        if(list.length===0) { c.innerHTML='<div style="text-align:center;color:#64748b;font-size:0.8rem;margin-top:10px;">Aucun ami.</div>'; return; }
+        list.forEach(f => {
+            const d = document.createElement('div'); d.className='friend-card'; d.onclick=()=>openChat(f.username);
+            d.innerHTML=`<div style="display:flex;align-items:center;"><div class="friend-avatar">${f.username[0].toUpperCase()}</div><div><div style="font-size:0.9rem;font-weight:500;color:white;">${f.username}</div><div class="friend-status">● En ligne</div></div></div><span>💬</span>`;
+            c.appendChild(d);
+        });
+    }
+
+    function renderRequests(inc, out) {
+        const iC=document.getElementById('list-requests-in'); document.getElementById('section-requests-in').style.display=inc.length?'block':'none'; iC.innerHTML="";
+        inc.forEach(r=>{ const d=document.createElement('div'); d.className='friend-card'; d.style.border='1px solid #eab308';
+            d.innerHTML=`<span style="font-size:0.85rem;">${r.from_username}</span><div><button onclick="hReq(${r.id},'accept')" style="background:#22c55e;border:none;border-radius:4px;cursor:pointer;">✔</button><button onclick="hReq(${r.id},'reject')" style="background:#ef4444;border:none;border-radius:4px;cursor:pointer;margin-left:5px;">✖</button></div>`; iC.appendChild(d); });
+        
+        const oC=document.getElementById('list-requests-out'); document.getElementById('section-requests-out').style.display=out.length?'block':'none'; oC.innerHTML="";
+        out.forEach(r=>{ const d=document.createElement('div'); d.className='friend-card'; d.style.cursor='default';
+            d.innerHTML=`<div style="display:flex;align-items:center;opacity:0.7;"><div class="friend-avatar" style="background:#64748b;width:24px;height:24px;font-size:0.7rem;">?</div><div><div style="font-size:0.85rem;">${r.to_username}</div><div class="friend-status pending">En attente...</div></div></div>`; oC.appendChild(d); });
+    }
+
+    document.getElementById('add-friend-form').addEventListener('submit', async(e)=>{
+        e.preventDefault(); const i=document.getElementById('friend-input'); if(!i.value.trim()) return;
+        const res=await fetch('/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:i.value.trim()})});
+        const d=await res.json(); friendNotif.innerText=d.ok?"Envoyé !":d.error; friendNotif.style.color=d.ok?"#22c55e":"#ef4444";
+        i.value=""; loadSocial(); setTimeout(()=>friendNotif.innerText="",3000);
+    });
+
+    window.hReq = async(id,a)=>{ await fetch(`/api/friends/requests/${id}/${a}`,{method:'POST'}); loadSocial(); };
+
+    window.openChat=(u)=>{ if(document.getElementById(`cw-${u}`)) return;
+        const d=document.createElement('div'); d.className='chat-window'; d.id=`cw-${u}`;
+        d.innerHTML=`<div class="chat-header" onclick="closeChat('${u}')"><span>${u}</span><span>✖</span></div><div class="chat-body" id="msg-${u}"></div><form class="chat-input-area" onsubmit="sM(event,'${u}')"><input type="text" placeholder="..." autocomplete="off"></form>`;
+        chatContainer.appendChild(d); fM(u); activeChats[u]=setInterval(()=>fM(u),3000);
+    };
+    window.closeChat=(u)=>{ const el=document.getElementById(`cw-${u}`); if(el) el.remove(); if(activeChats[u]){clearInterval(activeChats[u]);delete activeChats[u];} };
+    window.sM=async(e,u)=>{ e.preventDefault(); const i=e.target.querySelector('input'); if(!i.value.trim()) return;
+        await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:u,content:i.value.trim()})}); i.value=\"\"; fM(u); };
+    async function fM(u){ const c=document.getElementById(`msg-${u}`); if(!c) return;
+        const res=await fetch(`/api/messages/${u}`); const d=await res.json();
+        c.innerHTML=d.messages.map(m=>`<div class="msg ${m.fromSelf?'me':'them'}">${m.content}</div>`).join(''); c.scrollTop=c.scrollHeight; }
 
     
     // ====================================================
@@ -648,7 +792,9 @@
 
         await loadGameInfo(); 
 
-        // Les appels loadSocial() et setInterval(loadSocial) ont été retirés.
+        // Initialisation de la logique sociale réintégrée
+        loadSocial(); 
+        setInterval(loadSocial, 5000);
     })();
   </script>
 </body>
