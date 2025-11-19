@@ -314,7 +314,17 @@ app.post('/api/messages', requireAuth, (req, res) => {
         }
     });
 });
-
+// Route pour la page de détail d'un jeu
+app.get('/game/:id', requireAuth, (req, res) => {
+  const filePath = path.join(__dirname, 'game.html');
+  fs.readFile(filePath, 'utf8', (err, html) => {
+    if (err) return res.status(500).send('Erreur serveur chargement page jeu.');
+    // On injecte le pseudo et l'ID du jeu si besoin
+    let finalHtml = html.replace(/{{ username }}/g, req.user.username);
+    finalHtml = finalHtml.replace(/{{ gameId }}/g, req.params.id);
+    res.send(finalHtml);
+  });
+});
 // ====================================================
 // LANCEMENT SERVEUR
 // ====================================================
