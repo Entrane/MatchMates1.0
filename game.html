@@ -97,7 +97,7 @@
 
     /* --- BOUTON SIDEBAR --- */
     .toggle-friends-btn {
-      position: fixed; top: 80px; right: 20px; z-index: 1100;
+      position: fixed; top: 80px; right: 20px; z-index: 9999; /* CORRECTION DU Z-INDEX */
       background: var(--primary-color); color: #020617; border: none;
       padding: 10px 16px; border-radius: 30px; cursor: pointer;
       display: flex; align-items: center; gap: 8px; font-weight: 600;
@@ -314,7 +314,11 @@
 
   <script>
     // Rétablissement de la fonction de bascule de la barre latérale
-    function toggleSidebar() { document.getElementById('friendsSidebar').classList.toggle('active'); }
+    function toggleSidebar() { 
+        document.getElementById('friendsSidebar').classList.toggle('active');
+        // On assure que le chat ne chevauche pas le bouton
+        document.querySelector('.toggle-friends-btn').classList.toggle('active'); 
+    }
 
     // Variables globales (variables sociales réintégrées)
     const pathSegments = window.location.pathname.split('/');
