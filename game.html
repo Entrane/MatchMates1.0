@@ -78,6 +78,7 @@
     /* CONTRÔLES FORMULAIRE */
     .profile-controls { display: flex; gap: 20px; margin-bottom: 15px; }
     .checkbox-group { display: flex; gap: 10px; align-items: center; margin-right: 20px; }
+    .checkbox-group input[type="radio"],
     .checkbox-group input[type="checkbox"] { margin-right: 5px; transform: scale(1.2); }
     .rank-selector-grid { 
         display: grid; 
@@ -203,7 +204,7 @@
                 <div class="profile-controls">
                     <div id="ranked-options" style="display: none;">
                         <div class="checkbox-group">
-                            <input type="radio" id="ranked" name="mode" value="ranked" onchange="toggleRanks()" checked>
+                            <input type="radio" id="ranked" name="mode" value="ranked" onchange="toggleRanks()">
                             <label for="ranked">Classé</label>
                         </div>
                         <div class="checkbox-group">
@@ -213,7 +214,7 @@
                     </div>
                     
                     <div class="checkbox-group">
-                        <input type="checkbox" id="discord-vocal">
+                        <input type="checkbox" id="discord-vocal" onchange="saveGameSettings()">
                         <label for="discord-vocal">Vocal Discord</label>
                     </div>
                 </div>
@@ -263,31 +264,56 @@
             'apex': { name: 'Apex Legends', genre: 'Battle Royale', img: 'https://placehold.co/400x533/e74c3c/fff?text=Apex+Legends', desc: 'Maîtrisez des personnages légendaires...', ranks: ['Bronze', 'Argent', 'Or', 'Platine', 'Diamant', 'Maître', 'Prédateur'] },
             'overwatch': { name: 'Overwatch 2', genre: 'FPS Héroïque', img: 'https://placehold.co/400x533/e67e22/fff?text=Overwatch+2', desc: 'Overwatch 2 est un jeu d\'action en équipe...', ranks: OVERWATCH_RANKS },
             'csgo': { name: 'CS:GO 2', genre: 'FPS', img: 'https://placehold.co/400x533/333/fff?text=CS:GO+2', desc: 'La nouvelle ère de Counter-Strike...', ranks: ['Argent', 'Or', 'Nova', 'Maître Gardien', 'Aigle Légendaire', 'Suprême', 'Global'] },
-            'fifa': { name: 'EA FC 24', genre: 'Sport', img: 'https://placehold.co/400x533/222/fff?text=EA+FC+24', desc: 'Le jeu de football le plus réaliste au monde.', ranks: null } // Généralement EAFC a des divisions mais on le laisse non classé pour l'exemple
+            'fifa': { name: 'EA FC 24', genre: 'Sport', img: 'https://placehold.co/400x533/222/fff?text=EA+FC+24', desc: 'Le jeu de football le plus réaliste au monde.', ranks: null }
         };
 
         const gameId = document.body.getAttribute('data-game-id');
         const gameData = GAMES_DB[gameId];
         let currentRankSelection = null;
+        let settingsKey = `mm_game_settings_${gameId}`;
 
-        // --- Logique d'affichage des éléments de la page ---
+        // --- Fonctions de gestion de l'état ---
 
-        if (gameData) {
-            document.getElementById('game-title').textContent = gameData.name;
-            document.getElementById('game-img-sidebar').src = gameData.img;
-            document.getElementById('game-genre').textContent = gameData.genre;
-            document.getElementById('game-desc').textContent = gameData.desc;
-            document.title = `${gameData.name} – MatchMates`;
+        // Sauvegarde les paramètres actuels du jeu dans localStorage
+        window.saveGameSettings = function() {
+            const settings = {
+                mode: document.getElementById('ranked').checked ? 'ranked' : 'unrank',
+                rank: currentRankSelection ? currentRankSelection.getAttribute('data-rank') : null,
+                vocal: document.getElementById('discord-vocal').checked
+            };
+            localStorage.setItem(settingsKey, JSON.stringify(settings));
+        };
 
-            // Afficher les options Classé/Unrank si le jeu a des rangs
-            if (gameData.ranks && gameData.ranks.length > 0) {
-                document.getElementById('ranked-options').style.display = 'flex';
-                renderRanks(gameData.ranks);
-                toggleRanks(); // Initialiser l'affichage des rangs (caché si 'unrank' est coché, mais 'ranked' est checked par défaut)
+        // Charge les paramètres depuis localStorage et met à jour l'interface
+        function loadGameSettings() {
+            const savedSettings = JSON.parse(localStorage.getItem(settingsKey));
+            
+            // Paramètres par défaut
+            let settings = { mode: 'ranked', rank: null, vocal: false };
+
+            if (savedSettings) {
+                settings = savedSettings;
             }
-        } else {
-            // ... gestion des jeux introuvables ...
+
+            // 1. Mode Classé/Unrank
+            if (gameData.ranks && gameData.ranks.length > 0) {
+                document.getElementById('ranked').checked = settings.mode === 'ranked';
+                document.getElementById('unrank').checked = settings.mode === 'unrank';
+                window.toggleRanks(false); // Mise à jour de l'affichage du sélecteur de rangs
+            }
+
+            // 2. Vocal Discord
+            document.getElementById('discord-vocal').checked = settings.vocal;
+
+            // 3. Rang sélectionné (si en mode classé et rang sauvegardé)
+            if (settings.mode === 'ranked' && settings.rank) {
+                const rankEl = document.querySelector(`.rank-option[data-rank="${settings.rank}"]`);
+                if (rankEl) {
+                    selectRank(rankEl, false); // Sélectionne le rang sans sauvegarder (on charge juste)
+                }
+            }
         }
+
 
         // --- Fonctions d'interaction utilisateur ---
 
@@ -300,13 +326,13 @@
                 rankEl.className = 'rank-option';
                 rankEl.textContent = rank;
                 rankEl.setAttribute('data-rank', rank);
-                rankEl.onclick = () => selectRank(rankEl);
+                rankEl.onclick = () => selectRank(rankEl, true); // Appel à selectRank avec sauvegarde
                 rankGrid.appendChild(rankEl);
             });
         }
 
         // Fonction pour sélectionner un rang
-        function selectRank(el) {
+        window.selectRank = function(el, shouldSave = true) {
             // Désélectionner l'ancien rang
             if (currentRankSelection) {
                 currentRankSelection.classList.remove('selected');
@@ -314,11 +340,15 @@
             // Sélectionner le nouveau rang
             el.classList.add('selected');
             currentRankSelection = el;
-            console.log('Nouveau rang sélectionné:', el.getAttribute('data-rank'));
+            
+            if (shouldSave) {
+                saveGameSettings();
+                console.log('Nouveau rang sélectionné et sauvegardé:', el.getAttribute('data-rank'));
+            }
         }
 
         // Fonction pour afficher/cacher le sélecteur de rangs
-        window.toggleRanks = function() {
+        window.toggleRanks = function(shouldSave = true) {
             const isRanked = document.getElementById('ranked').checked;
             const rankSelector = document.getElementById('rank-selector');
 
@@ -326,15 +356,44 @@
                 rankSelector.style.display = 'block';
             } else {
                 rankSelector.style.display = 'none';
+                // Désélectionner le rang quand on passe en Non classé
                 if (currentRankSelection) {
                     currentRankSelection.classList.remove('selected');
                     currentRankSelection = null;
                 }
             }
+
+            if (shouldSave) {
+                saveGameSettings();
+            }
         };
 
 
-        // 2. Gestion Favoris sur cette page (inchangé)
+        // --- Initialisation de la page ---
+
+        if (gameData) {
+            document.getElementById('game-title').textContent = gameData.name;
+            document.getElementById('game-img-sidebar').src = gameData.img;
+            document.getElementById('game-genre').textContent = gameData.genre;
+            document.getElementById('game-desc').textContent = gameData.desc;
+            document.title = `${gameData.name} – MatchMates`;
+
+            // 1. Afficher les options Classé/Unrank si le jeu a des rangs
+            if (gameData.ranks && gameData.ranks.length > 0) {
+                document.getElementById('ranked-options').style.display = 'flex';
+                renderRanks(gameData.ranks);
+            }
+            
+            // 2. Charger les paramètres spécifiques au jeu
+            loadGameSettings();
+
+        } else {
+            document.getElementById('game-title').textContent = "Jeu introuvable";
+            document.getElementById('game-genre').textContent = "Vérifiez l'URL.";
+            document.getElementById('game-desc').textContent = "Les données pour ce jeu n'ont pas été trouvées.";
+        }
+
+        // 3. Gestion Favoris sur cette page (inchangé)
         let favorites = JSON.parse(localStorage.getItem('mm_favorites')) || [];
         const favBtn = document.getElementById('fav-action-btn');
 
