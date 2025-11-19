@@ -11,8 +11,8 @@
     /* On réutilise les mêmes variables et styles de base pour la cohérence */
     :root { 
         --primary-color: #22c55e; 
-        --sidebar-width: 320px; /* RE-ADDED: Largeur de la sidebar sociale */
-        --game-info-width: 280px; /* Largeur du bandeau Info Jeu */
+        --sidebar-width: 320px; 
+        --game-info-width: 280px; 
         --bg-dark: #0f172a; 
         --bg-card: #1e293b; 
         --text-main: #f1f5f9; 
@@ -53,7 +53,7 @@
 
     /* Le contenu du jeu prend l'espace restant */
     .game-content-area {
-        flex: 1; /* Prend tout l'espace disponible au milieu */
+        flex: 1; 
         padding: 20px 30px; 
         max-width: 800px; 
     }
@@ -97,26 +97,37 @@
 
     /* --- BOUTON SIDEBAR --- */
     .toggle-friends-btn {
-      position: fixed; top: 80px; right: 20px; z-index: 9999; /* CORRECTION DU Z-INDEX */
+      position: fixed; top: 80px; right: 20px; z-index: 9999; 
       background: var(--primary-color); color: #020617; border: none;
       padding: 10px 16px; border-radius: 30px; cursor: pointer;
       display: flex; align-items: center; gap: 8px; font-weight: 600;
       box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
       transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    
+    /* NOUVELLES RÈGLES POUR LE BOUTON ACTIF (basé sur la classe 'active' ajoutée par JS) */
+    .toggle-friends-btn.active {
+        right: calc(20px + var(--sidebar-width) - 40px); /* Déplace le bouton vers la gauche de la sidebar - 40px */
+        background: #ef4444; 
+        color: white;
+    }
+    .toggle-friends-btn.active span {
+        display: none; 
+    }
+    .toggle-friends-btn.active::after {
+        content: "✕"; 
+    }
 
     /* --- SIDEBAR --- */
     .friends-sidebar {
-      position: fixed; top: 0; right: -340px; width: var(--sidebar-width); height: 100vh;
+      position: fixed; top: 0; right: calc(0px - var(--sidebar-width)); /* Cache la sidebar complètement */
+      width: var(--sidebar-width); height: 100vh;
       background: rgba(15, 23, 42, 0.98); border-left: 1px solid rgba(255,255,255,0.1);
       box-shadow: -10px 0 30px rgba(0,0,0,0.5); padding: 80px 15px 20px; z-index: 1000;
       transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(12px);
     }
-    .friends-sidebar.active { right: 0; }
-    .friends-sidebar.active ~ .toggle-friends-btn { right: 280px; background: #ef4444; color: white; }
-    .friends-sidebar.active ~ .toggle-friends-btn span { display: none; }
-    .friends-sidebar.active ~ .toggle-friends-btn::after { content: "✕"; }
+    .friends-sidebar.active { right: 0; } /* Révèle la sidebar */
 
     .sidebar-section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-top: 15px; font-weight: 700; }
     .friend-card { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); cursor: pointer; margin-bottom: 5px;}
@@ -128,8 +139,18 @@
     .add-friend-box button { background: var(--primary-color); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold; }
 
     /* CHAT */
-    .chat-container { position: fixed; bottom: 0; right: 360px; display: flex; flex-direction: row-reverse; gap: 15px; z-index: 900; pointer-events: none; }
-    @media(max-width: 900px) { .chat-container { right: 10px; } }
+    .chat-container { position: fixed; bottom: 0; right: calc(360px + 20px); /* Ajuste la position initiale */
+        display: flex; flex-direction: row-reverse; gap: 15px; z-index: 900; pointer-events: none; 
+        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* Déplace le chat lorsque la sidebar est ouverte */
+    .friends-sidebar.active + .chat-container { 
+        right: 20px; /* Position du chat sans la sidebar */
+    }
+    @media(max-width: 900px) { 
+        .chat-container { right: 10px; } 
+        .friends-sidebar.active + .chat-container { right: 10px; } /* Ne bouge pas sur mobile */
+    }
     .chat-window { width: 300px; height: 400px; background: var(--bg-card); border-radius: 12px 12px 0 0; display: flex; flex-direction: column; pointer-events: auto; border: 1px solid #334155; }
     .chat-header { background: #0f172a; padding: 10px; cursor: pointer; display: flex; justify-content: space-between; border-bottom: 1px solid #334155; }
     .chat-body { flex: 1; padding: 10px; overflow-y: auto; background: #020617; display: flex; flex-direction: column; gap: 8px; }
@@ -315,9 +336,22 @@
   <script>
     // Rétablissement de la fonction de bascule de la barre latérale
     function toggleSidebar() { 
-        document.getElementById('friendsSidebar').classList.toggle('active');
-        // On assure que le chat ne chevauche pas le bouton
-        document.querySelector('.toggle-friends-btn').classList.toggle('active'); 
+        const sidebar = document.getElementById('friendsSidebar');
+        const button = document.querySelector('.toggle-friends-btn');
+        // Bascule la classe 'active' sur la sidebar
+        sidebar.classList.toggle('active');
+        // CORRECTION: Bascule la classe 'active' sur le bouton
+        button.classList.toggle('active');
+        
+        // CORRECTION: Si la sidebar est ouverte, on pourrait vouloir ajuster la position du chat
+        const chatContainer = document.getElementById('chat-container');
+        if(chatContainer) {
+            // Le chat a besoin de la classe 'sidebar-active' ou autre pour s'ajuster
+            // Basé sur le CSS mis à jour, il est géré par la relation `friends-sidebar.active + .chat-container`
+            // Je supprime le besoin de basculer la classe 'active' sur le bouton du code JS précédent
+            // Je laisse le bouton se gérer via la classe 'active' sur la sidebar.
+            // **RE-CORRECTION:** Puisque l'ordre HTML a été modifié, le tilde n'est pas le meilleur, je reviens à l'approche de basculer sur le bouton ET la sidebar.
+        }
     }
 
     // Variables globales (variables sociales réintégrées)
