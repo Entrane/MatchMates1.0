@@ -25,6 +25,7 @@
     /* Layout principale : contenu + bandeau amis */
     .dashboard-layout {
       display: flex;
+      flex-direction: row-reverse; /* Met le bandeau amis à droite */
       align-items: flex-start;
       gap: 24px;
       margin-top: 40px;
@@ -36,7 +37,7 @@
 
     @media (max-width: 900px) {
       .dashboard-layout {
-        flex-direction: column;
+        flex-direction: column-reverse; /* Empile le contenu au-dessus des amis */
       }
     }
 
@@ -826,6 +827,12 @@
           </form>
           <div id="friend-error" class="friends-error"></div>
 
+          <button id="create-group-btn" class="btn btn-outline" style="width: 100%; margin-top: 12px;">Créer une discussion de groupe</button>
+
+          <div class="friends-list" id="groups-list" style="margin-top: 12px;">
+
+          </div>
+
           <div class="friends-list" id="friends-list">
             <p class="friends-empty">Tu n’as encore aucun ami ajouté.</p>
           </div>
@@ -1417,10 +1424,13 @@
       }
 
       async function loadMessagesForChat(chat) {
+        const isGroup = chat.friend.isGroup;
+        const url = isGroup
+          ? `/api/groups/${chat.friend.id}/messages`
+          : `/api/messages/${encodeURIComponent(chat.friend.username)}`;
+
         try {
-          const res = await fetch(
-            "/api/messages/" + encodeURIComponent(chat.friend.username)
-          );
+          const res = await fetch(url);
           const data = await res.json();
 
           if (!res.ok) {
@@ -1458,14 +1468,17 @@
       }
 
       async function sendMessage(chat, text) {
+        const isGroup = chat.friend.isGroup;
+        const url = isGroup ? `/api/groups/${chat.friend.id}/messages` : "/api/messages";
+        const body = isGroup
+          ? { content: text }
+          : { toUsername: chat.friend.username, content: text };
+
         try {
-          const res = await fetch("/api/messages", {
+          const res = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              toUsername: chat.friend.username,
-              content: text,
-            }),
+            body: JSON.stringify(body),
           });
 
           const data = await res.json();
@@ -1602,6 +1615,68 @@
 
       // rafraîchissement auto des amis & demandes toutes les 5s
       setInterval(loadFriendData, 5000);
+
+
+      /* ========= GESTION GROUPES ========= */
+
+      const createGroupBtn = document.getElementById("create-group-btn");
+      const groupsListEl = document.getElementById("groups-list");
+
+      async function loadGroups() {
+        try {
+          const res = await fetch("/api/groups");
+          const data = await res.json();
+          if (res.ok) {
+            renderGroups(data.groups || []);
+          }
+        } catch (e) {
+          console.error("Erreur chargement groupes", e);
+        }
+      }
+
+      function renderGroups(groups) {
+        groupsListEl.innerHTML = "";
+        if (!groups.length) return;
+
+        const title = document.createElement("p");
+        title.textContent = "Discussions de groupe";
+        title.className = "friend-request-title";
+        groupsListEl.appendChild(title);
+
+        groups.forEach(group => {
+          const card = document.createElement("div");
+          card.className = "friend-card";
+          card.textContent = group.name;
+          card.addEventListener("click", () => {
+            openChat({ username: group.name, isGroup: true, id: group.id });
+          });
+          groupsListEl.appendChild(card);
+        });
+      }
+
+      createGroupBtn.addEventListener("click", () => {
+        const groupName = prompt("Nom du groupe :");
+        if (!groupName || !groupName.trim()) return;
+
+        // Pour l'instant, on ajoute tous les amis au groupe
+        const memberIds = friends.map(f => f.id);
+
+        fetch("/api/groups", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: groupName, members: memberIds }),
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.ok) {
+            loadGroups();
+          }
+        })
+        .catch(err => console.error("Erreur création groupe", err));
+      });
+
+      loadGroups();
+      setInterval(loadGroups, 5000);
     })();
   </script>
 </body>
