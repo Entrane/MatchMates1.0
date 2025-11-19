@@ -1,6 +1,6 @@
 // ====================================================
 // FICHIER : server.js
-// VERSION : Complète (Chat + Amis + Suivi Demandes)
+// VERSION : Complète (Chat + Amis + Favoris Utilisateur)
 // ====================================================
 
 const express = require('express');
@@ -74,6 +74,16 @@ db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS groups (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, creator_id INTEGER NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
   db.run(`CREATE TABLE IF NOT EXISTS group_members (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER NOT NULL, user_id INTEGER NOT NULL, added_at DATETIME DEFAULT CURRENT_TIMESTAMP, UNIQUE(group_id, user_id))`);
   db.run(`CREATE TABLE IF NOT EXISTS group_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER NOT NULL, sender_id INTEGER NOT NULL, content TEXT NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
+
+  // 6. FAVORIS UTILISATEUR (NOUVELLE TABLE)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS user_favorites (
+      user_id INTEGER NOT NULL,
+      game_id TEXT NOT NULL,
+      PRIMARY KEY (user_id, game_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
 });
 
 // ====================================================
@@ -139,6 +149,18 @@ app.get('/dashboard', requireAuth, (req, res) => {
 // Déconnexion
 app.get('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login.html'));
+});
+
+// Route pour la page de détail d'un jeu
+app.get('/game/:id', requireAuth, (req, res) => {
+  const filePath = path.join(__dirname, 'game.html');
+  fs.readFile(filePath, 'utf8', (err, html) => {
+    if (err) return res.status(500).send('Erreur serveur chargement page jeu.');
+    // On injecte le pseudo et l'ID du jeu si besoin
+    let finalHtml = html.replace(/{{ username }}/g, req.user.username);
+    finalHtml = finalHtml.replace(/{{ gameId }}/g, req.params.id);
+    res.send(finalHtml);
+  });
 });
 
 // ====================================================
@@ -314,17 +336,60 @@ app.post('/api/messages', requireAuth, (req, res) => {
         }
     });
 });
-// Route pour la page de détail d'un jeu
-app.get('/game/:id', requireAuth, (req, res) => {
-  const filePath = path.join(__dirname, 'game.html');
-  fs.readFile(filePath, 'utf8', (err, html) => {
-    if (err) return res.status(500).send('Erreur serveur chargement page jeu.');
-    // On injecte le pseudo et l'ID du jeu si besoin
-    let finalHtml = html.replace(/{{ username }}/g, req.user.username);
-    finalHtml = finalHtml.replace(/{{ gameId }}/g, req.params.id);
-    res.send(finalHtml);
+
+
+// ====================================================
+// 7. API FAVORIS (PROPRE AU COMPTE UTILISATEUR)
+// ====================================================
+
+// 1. Récupérer la liste des favoris de l'utilisateur actuel
+app.get('/api/favorites', requireAuth, (req, res) => {
+  db.all('SELECT game_id FROM user_favorites WHERE user_id = ?', [req.user.id], (err, rows) => {
+    if (err) {
+      console.error('Erreur GET /api/favorites:', err);
+      return res.status(500).json({ error: 'server_error' });
+    }
+    // Renvoie un tableau simple d'IDs de jeu (ex: ['valorant', 'lol'])
+    const favorites = rows.map(row => row.game_id);
+    res.json({ favorites });
   });
 });
+
+// 2. Ajouter ou retirer un jeu des favoris
+app.post('/api/favorites/:gameId', requireAuth, (req, res) => {
+  const { gameId } = req.params;
+  const userId = req.user.id;
+  
+  // 1. Vérifie si le jeu est déjà en favori
+  db.get('SELECT 1 FROM user_favorites WHERE user_id = ? AND game_id = ?', [userId, gameId], (err, row) => {
+    if (err) {
+      console.error('Erreur POST /api/favorites:', err);
+      return res.status(500).json({ error: 'server_error' });
+    }
+
+    if (row) {
+      // Existe -> Suppression (Retirer)
+      db.run('DELETE FROM user_favorites WHERE user_id = ? AND game_id = ?', [userId, gameId], function (err) {
+        if (err) {
+          console.error('Erreur DELETE favorite:', err);
+          return res.status(500).json({ error: 'server_error' });
+        }
+        res.json({ status: 'removed' });
+      });
+    } else {
+      // N'existe pas -> Insertion (Ajouter)
+      db.run('INSERT INTO user_favorites (user_id, game_id) VALUES (?, ?)', [userId, gameId], function (err) {
+        if (err) {
+          console.error('Erreur INSERT favorite:', err);
+          return res.status(500).json({ error: 'server_error' });
+        }
+        res.json({ status: 'added' });
+      });
+    }
+  });
+});
+
+
 // ====================================================
 // LANCEMENT SERVEUR
 // ====================================================
