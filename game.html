@@ -12,6 +12,7 @@
     :root { 
         --primary-color: #22c55e; 
         --sidebar-width: 320px; 
+        --game-info-width: 280px; /* NOUVEAU: Largeur du bandeau Info Jeu */
         --bg-dark: #0f172a; 
         --bg-card: #1e293b; 
         --text-main: #f1f5f9; 
@@ -26,7 +27,7 @@
     .nav-links a:hover { color: var(--primary-color); }
     .user-info { color: var(--text-main); font-weight: 500; }
     
-    /* LAYOUT PRINCIPAL (CORRIGÉ : Utilisation de Flexbox pour le conteneur principal) */
+    /* LAYOUT PRINCIPAL (CORRIGÉ : Structure à 3 zones avec Flexbox) */
     main { 
         padding-top: 80px; 
         display: flex;
@@ -35,11 +36,26 @@
         min-height: calc(100vh - 80px); 
     }
 
+    /* NOUVEAU: Bandeau d'information du jeu à gauche (Statique) */
+    .game-info-sidebar {
+        width: var(--game-info-width);
+        min-height: calc(100vh - 80px);
+        background-color: #172031;
+        padding: 20px;
+        position: sticky;
+        top: 80px;
+        z-index: 700;
+        border-right: 1px solid rgba(255,255,255,0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
     /* Le contenu du jeu prend l'espace restant */
     .game-content-area {
-        flex: 1; /* Prend tout l'espace disponible à gauche de la sidebar */
-        padding: 20px 30px; /* Marges autour du contenu */
-        max-width: 100%; /* S'assure de ne pas forcer le débordement */
+        flex: 1; /* Prend tout l'espace disponible au milieu */
+        padding: 20px 30px; 
+        max-width: 100%; 
     }
     
     /* Structure 2 colonnes du contenu spécifique au jeu */
@@ -87,23 +103,21 @@
         min-height: calc(100vh - 80px); 
         background-color: #172031; 
         padding: 20px; 
-        position: sticky; /* NOUVEAU: Maintient la sidebar visible lors du scroll */
-        top: 80px; /* Ancré sous le header fixe */
+        position: sticky; 
+        top: 80px; 
         z-index: 700; 
         border-left: 1px solid rgba(255,255,255,0.05); 
-        transition: margin-right 0.3s ease; /* NOUVEAU: Transition par marge */
+        transition: margin-right 0.3s ease; 
     }
-    /* CORRIGÉ : Fait sortir la sidebar en utilisant une marge négative pour la rétracter */
+    
     .social-sidebar.collapsed {
         margin-right: calc(-1 * var(--sidebar-width)); 
     }
     
     /* Bouton pour basculer la sidebar */
     #sidebar-toggle {
-        /* NOUVEAU: Le bouton n'est plus un sibling de la sidebar pour des raisons de layout flex. 
-           Il est mieux de le positionner par rapport au contenu */
-        position: fixed; /* Il doit rester fixe pour fonctionner */
-        right: var(--sidebar-width); /* Le positionne à côté de la sidebar non rétractée */
+        position: fixed; 
+        right: var(--sidebar-width); 
         top: 150px;
         z-index: 701;
         background: var(--bg-card);
@@ -115,7 +129,6 @@
         cursor: pointer;
         transition: transform 0.3s ease;
     }
-    /* CORRIGÉ: Déplace le bouton quand la sidebar est rétractée. On utilise une classe sur la sidebar elle-même dans le JS. */
     .collapsed-mode-toggle {
         transform: translateX(var(--sidebar-width));
     }
@@ -133,20 +146,20 @@
     .request-actions .btn-secondary { border-color: #ef4444; color: #ef4444; }
     #friend-notif { text-align: center; color: var(--primary-color); font-size: 0.9rem; margin-top: 10px; }
 
-    /* CHAT WINDOWS */
-    /* Position de la fenêtre de chat ajustée pour la nouvelle logique de sidebar */
+    /* CHAT WINDOWS (AJUSTÉ pour la sidebar de gauche) */
     .chat-container { 
         position: fixed; 
         bottom: 0; 
-        right: calc(var(--sidebar-width) + 20px); /* Espace le chat de la sidebar non-rétractée */
+        right: calc(var(--sidebar-width) + 20px); /* Ancré à droite par rapport à la sidebar sociale */
+        left: calc(var(--game-info-width) + 20px); /* NOUVEAU: Espace à gauche pour le bandeau info jeu */
+        justify-content: flex-end; /* Pour coller les fenêtres à droite */
         display: flex; 
         gap: 10px; 
         z-index: 900; 
         transition: right 0.3s ease;
     }
-    /* NOUVEAU: Décalage du chat si la sidebar est repliée */
     .chat-container.sidebar-collapsed {
-        right: 20px; /* Place le chat à 20px du bord droit si la sidebar est repliée */
+        right: 20px; 
     }
     
     .chat-window { width: 300px; height: 400px; background-color: var(--bg-card); border-radius: 8px 8px 0 0; overflow: hidden; box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; }
@@ -159,11 +172,12 @@
     .chat-input-area { padding: 10px; border-top: 1px solid #334155; }
     .chat-input-area input { width: 100%; padding: 8px; border: 1px solid #475569; border-radius: 4px; background-color: #1e293b; color: var(--text-main); outline: none; }
 
-    /* RESPONSIVE */
+    /* RESPONSIVE (AJUSTÉ) */
     @media (max-width: 1200px) {
         /* Ajustement des variables pour les petits écrans */
         .social-sidebar { width: 280px; --sidebar-width: 280px; }
-        .chat-container { right: calc(280px + 20px); }
+        .game-info-sidebar { --game-info-width: 250px; }
+        .chat-container { right: calc(280px + 20px); left: calc(250px + 20px); }
         .chat-container.sidebar-collapsed { right: 20px; }
         #sidebar-toggle { right: 280px; }
         .collapsed-mode-toggle { transform: translateX(280px); }
@@ -171,18 +185,30 @@
     @media (max-width: 900px) {
         /* En mode mobile, empilement vertical */
         main { flex-direction: column; }
+        
+        .game-info-sidebar { 
+            position: relative; 
+            width: 100%; 
+            top: auto; 
+            border-right: none; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            gap: 10px; /* Moins d'espace en mode mobile */
+        }
+        .game-info-sidebar > * { /* Réduire les marges et les paddings */
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .game-info-sidebar img { margin-bottom: 5px !important; }
+
         .game-content-area { padding: 20px; }
         .game-settings-layout { flex-direction: column; gap: 0; }
         
-        /* La sidebar sociale redevient relative et se place en bas du contenu */
         .social-sidebar { position: relative; width: 100%; top: auto; margin-right: 0 !important; border-left: none; border-bottom: 1px solid rgba(255,255,255,0.05); transform: none !important; padding: 20px; }
-        .social-sidebar.collapsed { margin-right: 0 !important; } /* Annule l'effet de rétraction */
+        .social-sidebar.collapsed { margin-right: 0 !important; } 
 
-        #sidebar-toggle { display: none; } /* On cache le bouton de bascule */
+        #sidebar-toggle { display: none; } 
 
-        /* Le chat ne se décale plus, il reste à droite */
-        .chat-container { right: 10px; } 
-        .chat-container.sidebar-collapsed { right: 10px; }
+        .chat-container { right: 10px; left: 10px; } 
     }
   </style>
 </head>
@@ -197,6 +223,29 @@
   </header>
 
   <main>
+    
+    <div class="game-info-sidebar">
+        <img id="game-image" src="/img/games/default.png" alt="Logo du Jeu" 
+             style="width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px; object-fit: cover; aspect-ratio: 16/9;">
+
+        <h2 id="game-short-name" style="margin: -10px 0 5px; font-size: 1.8rem; font-weight: 700; color: var(--primary-color);">Jeu...</h2>
+        
+        <p id="game-description" style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0;">
+            Description du jeu...
+        </p>
+
+        <button class="action-btn btn-secondary" id="favorite-toggle-btn" onclick="toggleFavorite()" style="width: 100%; font-size: 0.9rem; padding: 10px;">
+            ⭐ Charger...
+        </button>
+
+        <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.05);">
+
+        <div style="font-size: 0.9rem;">
+            <p style="margin-bottom: 5px;">**Joueurs Actifs:** <span style="float: right;">...</span></p>
+            <p style="margin-bottom: 5px;">**Meilleur Rank:** <span style="float: right;">...</span></p>
+            <p style="margin-bottom: 0;">**Publié:** <span style="float: right;">...</span></p>
+        </div>
+    </div>
     
     <div class="game-content-area">
         <h1 id="game-title">Chargement du Jeu...</h1>
@@ -341,8 +390,8 @@
   <script>
     // Variables globales
     const chatContainer = document.getElementById('chat-container');
-    const socialSidebar = document.getElementById('social-sidebar'); // Ajouté pour faciliter l'accès
-    const sidebarToggle = document.getElementById('sidebar-toggle'); // Ajouté pour faciliter l'accès
+    const socialSidebar = document.getElementById('social-sidebar'); 
+    const sidebarToggle = document.getElementById('sidebar-toggle'); 
     const friendNotif = document.getElementById('friend-notif');
     const friendsListEl = document.getElementById('friends-list');
     const friendRequestsListEl = document.getElementById('friend-requests-list');
@@ -368,26 +417,109 @@
       ]
     };
 
+    // Définitions des jeux (pour simuler le chargement des infos)
+    const GAME_INFOS = {
+        'valorant': {
+            name: 'VALORANT',
+            description: '**Type:** FPS Tactique 5v5 | **Plateforme:** PC | **Modèles:** Classé, Non classé, Spécial.',
+            image: '/img/games/valorant.jpg', // Chemin à adapter
+            // ... autres données
+        },
+        'lol': {
+            name: 'League of Legends',
+            description: '**Type:** MOBA 5v5 | **Plateforme:** PC | **Modèles:** Faille, ARAM.',
+            image: '/img/games/lol.jpg', // Chemin à adapter
+            // ... autres données
+        }
+    };
+    
+    let isFavorite = false; 
+
     // ====================================================
-    // --- LOGIQUE SIDEBAR SOCIALE RETRACTABLE (AJUSTÉE) ---
+    // --- LOGIQUE SIDEBAR SOCIALE RETRACTABLE ---
     // ====================================================
     window.toggleSocialSidebar = function() {
         const isCollapsed = socialSidebar.classList.toggle('collapsed');
         
-        // Ajout d'une classe pour décaler le bouton et le chat
         sidebarToggle.classList.toggle('collapsed-mode-toggle', isCollapsed);
         chatContainer.classList.toggle('sidebar-collapsed', isCollapsed);
 
         localStorage.setItem('socialSidebarCollapsed', isCollapsed);
     }
+
+    // ====================================================
+    // --- LOGIQUE JEU INFO SIDEBAR ---
+    // ====================================================
+    async function loadGameInfo() {
+        const info = GAME_INFOS[gameId] || { name: gameId.toUpperCase(), description: 'Description non disponible', image: '/img/games/default.png' };
+        
+        document.getElementById('game-title').textContent = `${info.name} - Matchmaking`;
+        document.getElementById('game-short-name').textContent = info.name;
+        document.getElementById('game-description').innerHTML = info.description;
+        document.getElementById('game-image').src = info.image;
+
+        // Charger l'état des favoris
+        await checkFavoriteStatus();
+    }
+
+    async function checkFavoriteStatus() {
+        const btn = document.getElementById('favorite-toggle-btn');
+        try {
+            // Suppose une API pour vérifier les favoris
+            const res = await fetch('/api/favorites'); 
+            const data = await res.json();
+            
+            isFavorite = data.favorites.includes(gameId);
+
+        } catch(e) {
+            console.error("Erreur chargement favoris:", e);
+            // Par défaut si échec
+            isFavorite = false;
+        }
+
+        updateFavoriteButton(btn);
+    }
+
+    function updateFavoriteButton(btn) {
+        if (isFavorite) {
+            btn.textContent = '❌ Retirer des Favoris';
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-secondary');
+        } else {
+            btn.textContent = '⭐ Ajouter aux Favoris';
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-primary');
+        }
+    }
+
+    window.toggleFavorite = async function() {
+        const btn = document.getElementById('favorite-toggle-btn');
+        btn.disabled = true;
+
+        try {
+            // Suppose une API qui gère l'ajout/suppression
+            const res = await fetch(`/api/favorites/${gameId}`, { method: 'POST' });
+            const data = await res.json();
+
+            if (data.status === 'added') {
+                isFavorite = true;
+            } else if (data.status === 'removed') {
+                isFavorite = false;
+            }
+
+            updateFavoriteButton(btn);
+
+        } catch(e) {
+            alert("Erreur lors de la mise à jour des favoris.");
+        } finally {
+            btn.disabled = false;
+        }
+    }
     
-    // Auto-exécutée au chargement de la page
+    // ====================================================
+    // --- LOGIQUE GÉNÉRALE ET INITIALISATION ---
+    // ====================================================
     (async function() {
-
-        // ====================================================
-        // --- LOGIQUE GÉNÉRALE ET INITIALISATION ---
-        // ====================================================
-
         // Initialisation de la sidebar rétractable
         if (localStorage.getItem('socialSidebarCollapsed') === 'true') {
             socialSidebar.classList.add('collapsed');
@@ -395,16 +527,8 @@
             chatContainer.classList.add('sidebar-collapsed');
         }
 
-        // Récupérer le titre du jeu pour l'affichage
-        function updateGameTitle() {
-            const gameTitleEl = document.getElementById('game-title');
-            const titleMap = {
-                'valorant': 'VALORANT - Matchmaking',
-                'lol': 'League of Legends - Matchmaking',
-            };
-            gameTitleEl.textContent = titleMap[gameId] || `Jeu : ${gameId}`;
-        }
-        updateGameTitle();
+        // Chargement des informations du jeu et des favoris
+        await loadGameInfo();
 
         // Création des éléments de rang dans le DOM
         function setupRankGrids(gameRanks) {
@@ -509,6 +633,7 @@
             const data = { mode, min_rank, vocal_required };
             
             try {
+                // Cette API a été définie dans server.js (3)
                 await fetch(`/api/partner-preferences/${gameId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -521,6 +646,7 @@
 
         async function loadPartnerPreferences() {
             try {
+                // Cette API a été définie dans server.js (3)
                 const response = await fetch(`/api/partner-preferences/${gameId}`);
                 if (!response.ok) throw new Error('Failed to load partner preferences');
                 
