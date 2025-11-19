@@ -21,733 +21,713 @@
     }
     body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
     
-    /* HEADER (Identique à dashboard.html) */
-    header { 
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 15px 30px; background: rgba(15, 23, 42, 0.98); 
-        backdrop-filter: blur(10px); position: fixed; top: 0; width: 100%; 
-        z-index: 800; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
+    /* HEADER */
+    header { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(10px); position: fixed; top: 0; width: 100%; z-index: 800; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
     .logo { color: var(--primary-color); font-size: 1.5rem; font-weight: 800; text-decoration: none; }
-    .nav-links a { color: var(--text-main); text-decoration: none; margin-left: 25px; transition: color 0.2s; }
+    .nav-links a { color: var(--text-main); text-decoration: none; margin-left: 20px; font-weight: 500; transition: color 0.2s; }
     .nav-links a:hover { color: var(--primary-color); }
-    .profile-section { display: flex; align-items: center; }
-    .profile-avatar { width: 35px; height: 35px; border-radius: 50%; background: var(--primary-color); color: var(--bg-dark); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; margin-right: 15px; cursor: pointer; }
-    .toggle-friends-btn { background: var(--bg-card); color: var(--text-main); border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 1rem; transition: background 0.2s; position: relative; }
-    .toggle-friends-btn:hover { background: #334155; }
-    .toggle-friends-btn.active { background: var(--primary-color); color: var(--bg-dark); }
-
-
-    /* --- LAYOUT PRINCIPAL (Jeu) --- */
+    .user-info { color: var(--text-main); font-weight: 500; }
+    
+    /* LAYOUT PRINCIPAL (Structure à 2 zones avec Flexbox) */
     main { 
         padding-top: 80px; 
         display: flex;
-        justify-content: center;
-        gap: 20px;
-        min-height: calc(100vh - 80px);
-        box-sizing: border-box;
+        justify-content: flex-start;
+        align-items: flex-start;
+        min-height: calc(100vh - 80px); 
     }
 
-    .game-content {
-        flex-grow: 1;
-        max-width: 900px;
-        padding: 20px;
-    }
-
+    /* Bandeau d'information du jeu à gauche (Statique) */
     .game-info-sidebar {
         width: var(--game-info-width);
-        background: var(--bg-card);
+        min-height: calc(100vh - 80px);
+        background-color: #172031;
         padding: 20px;
-        position: fixed; /* Rendre fixe pour qu'elle soit toujours visible */
+        position: sticky;
         top: 80px;
-        left: 20px; /* Positionner à gauche */
-        height: calc(100vh - 100px);
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        overflow-y: auto;
+        z-index: 700;
+        border-right: 1px solid rgba(255,255,255,0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
     }
 
-    /* Décalage du contenu principal pour laisser de la place à la sidebar d'info */
-    .game-content-container {
-        flex-grow: 1;
-        max-width: 900px;
-        padding: 20px 20px 20px calc(20px + var(--game-info-width) + 20px); /* Ajouter l'espace à gauche */
-        box-sizing: border-box;
+    /* Le contenu du jeu prend l'espace restant */
+    .game-content-area {
+        flex: 1; 
+        padding: 20px 30px; 
+        max-width: 800px; 
     }
-
-    /* --- GAME INFO SIDEBAR CONTENT --- */
-    .game-image { border-radius: 8px; margin-bottom: 10px; object-fit: cover; aspect-ratio: 16/9;}
-    .game-details h2 { margin: 0 0 5px; font-size: 1.8rem; font-weight: 700; color: var(--primary-color);}
-    .game-details p { color: var(--text-muted); margin-bottom: 20px;}
-    .game-section h4 { border-bottom: 1px solid #334155; padding-bottom: 5px; margin-top: 20px; color: var(--text-main); font-size: 1.1rem;}
     
-    /* Settings */
-    .setting-group { margin-bottom: 15px; }
-    .checkbox-group { display: flex; align-items: center; margin-bottom: 5px; }
-    .checkbox-group input[type="checkbox"] { margin-right: 10px; width: 18px; height: 18px; cursor: pointer; }
+    /* Structure 1 colonne */
+    .game-settings-layout {
+        display: flex; 
+        gap: 30px;
+        align-items: flex-start;
+        flex-direction: column; /* Forcer en colonne pour la lisibilité */
+    }
+    .settings-column {
+        width: 100%; 
+    }
+
+
+    /* CARD STYLING */
+    .card { background-color: var(--bg-card); padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+    .card h3 { color: var(--text-main); margin-top: 0; margin-bottom: 20px; font-weight: 600; font-size: 1.4rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+
+    /* FORM / INPUTS */
+    .checkbox-group { display: flex; align-items: center; margin-bottom: 15px; }
+    .checkbox-group input[type="radio"], .checkbox-group input[type="checkbox"] { margin-right: 10px; width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--text-muted); background: transparent; appearance: none; cursor: pointer; position: relative; }
+    .checkbox-group input:checked::before { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--primary-color); font-size: 14px; font-weight: bold; }
     .checkbox-group label { color: var(--text-main); font-size: 1rem; cursor: pointer; }
-    .rank-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-    .rank-item { padding: 5px 10px; background: #334155; border-radius: 4px; font-size: 0.8rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s;}
-    .rank-item.selected { background: var(--primary-color); color: var(--bg-dark); border-color: var(--primary-color); font-weight: 600;}
-    .profile-controls { margin-bottom: 25px; display: flex; flex-direction: column;}
-    .profile-controls button { background: var(--primary-color); color: var(--bg-dark); border: none; padding: 10px; border-radius: 6px; cursor: pointer; margin-top: 10px; font-weight: 600; transition: background 0.2s;}
-    .profile-controls button:hover { background: #15803d; }
-    #settings-status { margin-top: 10px; color: #facc15; font-size: 0.9rem; }
-    
-    /* Matchmaking results */
-    .match-list { margin-top: 15px; }
-    .match-card { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-dark); border-radius: 6px; margin-bottom: 10px; border-left: 4px solid var(--primary-color);}
-    .match-user-info { display: flex; flex-direction: column;}
-    .match-user-info .username { font-weight: 600; font-size: 1.1rem;}
-    .match-user-info .rank { color: var(--text-muted); font-size: 0.9rem;}
-    .match-actions button { background: var(--primary-color); color: var(--bg-dark); border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;}
-    .match-actions button:hover { background: #15803d; }
+    .profile-controls { margin-bottom: 25px; display: flex; flex-direction: column; gap: 15px;}
+    #ranked-options { margin-bottom: 10px; }
 
+    /* RANK GRID */
+    .rank-selector-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; margin-top: 15px; }
+    .rank-item { background-color: rgba(255,255,255,0.05); border: 2px solid transparent; border-radius: 8px; padding: 10px 5px; text-align: center; cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.2s; }
+    .rank-item:hover { border-color: rgba(255,255,255,0.2); }
+    .rank-item.selected { border-color: var(--primary-color); background-color: rgba(34, 197, 94, 0.15); font-weight: 700; color: var(--primary-color); }
+    .rank-item img { width: 30px; height: 30px; display: block; margin: 0 auto 5px; }
 
-    /* --- SIDEBAR AMIS (Identique à dashboard.html) --- */
-    #friendsSidebar { 
-        position: fixed; top: 0; right: calc(-1 * var(--sidebar-width)); 
-        width: var(--sidebar-width); height: 100%; 
-        background: var(--bg-card); 
-        box-shadow: -4px 0 8px rgba(0, 0, 0, 0.3); 
-        z-index: 900; 
-        transition: right 0.3s ease-in-out; 
-        padding: 20px; 
-        box-sizing: border-box; 
-        overflow-y: auto;
+    /* BUTTONS */
+    .action-btn { background-color: var(--primary-color); color: var(--bg-dark); border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; font-size: 1rem; }
+    .action-btn:hover { background-color: #10b981; }
+    .btn-secondary { background-color: var(--bg-card); color: var(--primary-color); border: 1px solid var(--primary-color); }
+    .btn-secondary:hover { background-color: rgba(34, 197, 94, 0.1); }
+    .action-btn:disabled { background-color: var(--text-muted); cursor: not-allowed; }
+
+    /* --- BOUTON SIDEBAR --- */
+    .toggle-friends-btn {
+      position: fixed; top: 80px; right: 20px; z-index: 9999; 
+      background: var(--primary-color); color: #020617; border: none;
+      padding: 10px 16px; border-radius: 30px; cursor: pointer;
+      display: flex; align-items: center; gap: 8px; font-weight: 600;
+      box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    #friendsSidebar.active { right: 0; }
-    .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .sidebar-tabs { display: flex; justify-content: space-around; margin-bottom: 20px; border-bottom: 1px solid var(--bg-dark); }
-    .sidebar-tabs button { background: none; border: none; color: var(--text-muted); padding: 10px 15px; cursor: pointer; transition: color 0.2s, border-bottom 0.2s; }
-    .sidebar-tabs button.active { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
     
+    /* RÈGLES POUR LE BOUTON ACTIF */
+    .toggle-friends-btn.active {
+        /* Déplace le bouton vers la gauche: 320px (sidebar) + 20px (marge initiale) */
+        right: calc(var(--sidebar-width) + 20px); 
+        background: #ef4444; 
+        color: white;
+    }
+    .toggle-friends-btn.active span {
+        display: none; 
+    }
+    .toggle-friends-btn.active::after {
+        content: "✕"; 
+    }
+
+    /* --- SIDEBAR SOCIALE (Amis) --- */
+    .friends-sidebar {
+      position: fixed; top: 0; 
+      /* Position cachée: -320px (largeur de la sidebar) */
+      right: calc(0px - var(--sidebar-width)); 
+      width: var(--sidebar-width); height: 100vh;
+      background: rgba(15, 23, 42, 0.98); border-left: 1px solid rgba(255,255,255,0.1);
+      box-shadow: -10px 0 30px rgba(0,0,0,0.5); 
+      padding: 80px 15px 20px; 
+      z-index: 1000;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(12px);
+      box-sizing: border-box; 
+    }
+    .friends-sidebar.active { right: 0; } /* Révèle la sidebar */
+
+    .sidebar-section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-top: 15px; font-weight: 700; }
     .friend-card { 
-        display: flex; align-items: center; padding: 10px; margin-bottom: 8px; 
-        background: var(--bg-dark); border-radius: 4px; cursor: pointer; 
-        transition: background 0.2s; justify-content: space-between; 
+        display: flex; align-items: center; justify-content: space-between; padding: 10px; 
+        border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); 
+        cursor: pointer; margin-bottom: 5px;
     }
-    .friend-card:hover { background: #1f3045; }
-    .friend-avatar { width: 30px; height: 30px; border-radius: 50%; background: #475569; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-right: 10px; }
-    .request-actions button { border: none; border-radius: 4px; color: white; cursor: pointer; line-height: 1; margin-left: 5px; padding: 5px 8px; }
-    
-    #add-friend-form { display: flex; margin-bottom: 15px; gap: 5px;}
-    #friend-input { flex-grow: 1; padding: 8px; border-radius: 4px; border: 1px solid #475569; background: var(--bg-dark); color: var(--text-main); }
-    #add-friend-form button { background: var(--primary-color); color: var(--bg-dark); border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
-    #friend-notif { color: var(--primary-color); font-size: 0.8rem; margin-top: -10px; margin-bottom: 10px; }
+    .friend-card:hover { background: rgba(255,255,255,0.08); }
+    .friend-avatar { 
+        width: 32px; height: 32px; border-radius: 50%; background: #3b82f6; 
+        display: flex; justify-content: center; align-items: center; font-weight: bold; 
+        margin-right: 10px; color: white;
+    }
+    .add-friend-box { display: flex; gap: 5px; }
+    .add-friend-box input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid #334155; border-radius: 20px; padding: 6px 12px; color: white; outline: none; }
+    .add-friend-box button { background: var(--primary-color); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold; color: var(--bg-dark);}
 
-    /* --- CHAT WINDOWS (Identique à dashboard.html) --- */
-    #chat-container { position: fixed; bottom: 0; right: 340px; display: flex; gap: 15px; z-index: 950; padding: 10px;}
-    #friendsSidebar.active ~ #chat-container { right: calc(var(--sidebar-width) + 20px); }
-    .chat-window { width: 300px; height: 400px; background: var(--bg-card); border-radius: 8px 8px 0 0; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column;}
-    .chat-header { background: #334155; color: white; padding: 10px; border-radius: 8px 8px 0 0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600;}
-    .chat-body { flex-grow: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px;}
-    .chat-input-area { display: flex; padding: 10px; border-top: 1px solid #334155;}
-    .chat-input-area input { flex-grow: 1; padding: 8px; border: 1px solid #475569; border-radius: 4px 0 0 4px; background: var(--bg-dark); color: var(--text-main);}
-    .chat-input-area button { background: var(--primary-color); color: var(--bg-dark); border: none; padding: 8px 12px; border-radius: 0 4px 4px 0; cursor: pointer;}
-    .msg { max-width: 80%; padding: 8px 12px; border-radius: 15px; font-size: 0.9rem; line-height: 1.4;}
-    .msg.self { background-color: var(--primary-color); color: var(--bg-dark); align-self: flex-end; border-bottom-right-radius: 5px;}
-    .msg.other { background-color: #475569; color: white; align-self: flex-start; border-bottom-left-radius: 5px;}
+    /* CHAT CONTAINER & WINDOW */
+    .chat-container { 
+        position: fixed; bottom: 0; right: calc(20px); /* Position sans la sidebar */
+        display: flex; flex-direction: row-reverse; gap: 15px; z-index: 900; 
+        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none; /* Important pour laisser cliquer en dessous */
+    }
+    /* Déplace le chat lorsque la sidebar est ouverte */
+    .friends-sidebar.active ~ .chat-container { 
+        right: calc(var(--sidebar-width) + 20px); /* Position du chat AVEC la sidebar */
+    }
+    .chat-window {
+        width: 300px; height: 400px; background: var(--bg-card); 
+        border-radius: 12px 12px 0 0; display: flex; flex-direction: column;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
+        pointer-events: auto; /* Rétablit le clic sur la fenêtre de chat */
+    }
+    .chat-header {
+        padding: 10px 15px; background: var(--primary-color); color: var(--bg-dark); 
+        font-weight: 600; cursor: pointer; display: flex;
+        justify-content: space-between; align-items: center; border-radius: 10px 10px 0 0;
+    }
+    .chat-body {
+        flex-grow: 1; overflow-y: auto; padding: 15px; 
+        display: flex; flex-direction: column; gap: 8px; background: #141c2c;
+    }
+    .msg { max-width: 80%; padding: 8px 12px; border-radius: 16px; font-size: 0.9rem; word-wrap: break-word; }
+    .msg.self { background: var(--primary-color); color: var(--bg-dark); align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg.other { background: #334155; color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .chat-input-area { display: flex; padding: 10px; border-top: 1px solid #334155; }
+    .chat-input-area input {
+        flex-grow: 1; padding: 10px; border: 1px solid #334155; border-radius: 8px; 
+        background: var(--bg-dark); color: var(--text-main); margin-right: 10px;
+        outline: none;
+    }
+    .chat-input-area button {
+        background: var(--primary-color); color: var(--bg-dark); border: none;
+        width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1rem;
+    }
+
   </style>
-
 </head>
 <body>
 
-  <header>
-    <a href="/" class="logo">MatchMates</a>
-    <div class="nav-links">
-      <a href="/">Tableau de bord</a>
-      <a href="/logout">Déconnexion</a>
-    </div>
-    <div class="profile-section">
-      <div class="profile-avatar">U</div> 
-      <button class="toggle-friends-btn" onclick="toggleSidebar()">
-        Amis (<span id="friendsCount">0</span>)
-      </button>
-    </div>
-  </header>
+    <header>
+        <a href="/dashboard" class="logo">MatchMates</a>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/profile">Profil</a>
+            <a href="/logout">Déconnexion</a>
+        </div>
+    </header>
 
-  <main>
-    <aside class="game-info-sidebar">
-      <div class="game-details">
-        <img id="game-image" src="" alt="Image du jeu" class="game-image">
-        <h2 id="game-short-name">Chargement...</h2>
-        <p id="game-full-name"></p>
-      </div>
-
-      <div class="game-section">
-        <h4>Mon profil pour ce jeu</h4>
-        <div class="setting-group">
-          <p style="color:var(--text-muted); margin-top:0;">Mon mode de jeu</p>
-          <div class="checkbox-group">
-            <input type="radio" id="unranked" name="mode" value="unranked" checked onclick="setGameMode('unranked')">
-            <label for="unranked">Non-classé</label>
-          </div>
-          <div class="checkbox-group">
-            <input type="radio" id="ranked" name="mode" value="ranked" onclick="setGameMode('ranked')">
-            <label for="ranked">Classé</label>
-          </div>
+    <main>
+        <div class="game-info-sidebar">
+            <img id="game-image" src="/img/games/default.png" alt="Logo du Jeu" style="width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px; object-fit: cover; aspect-ratio: 16/9;">
+            <h2 id="game-short-name" style="margin: 0 0 5px; font-size: 1.8rem; font-weight: 700; color: var(--primary-color);">Chargement...</h2>
+            <p id="game-description" style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0;"> Description du jeu... </p>
+            
+            <button class="action-btn btn-secondary" id="favorite-btn" onclick="toggleFavorite()">
+                <i class="far fa-star"></i> Ajouter aux favoris
+            </button>
         </div>
 
-        <div class="setting-group" id="rank-selector" style="display:none;">
-          <p style="color:var(--text-muted); margin-top:0;">Mon rang</p>
-          <div class="rank-grid" id="player-rank-grid">
+        <div class="game-content-area">
+            <h1 id="game-title" style="font-size: 2.5rem; margin-bottom: 30px;">Matchmaking</h1>
+            
+            <div class="game-settings-layout">
+                
+                <div class="settings-column">
+                    <div class="card">
+                        <h3>Mon Profil de Jeu</h3>
+                        <div class="profile-controls">
+                            <div style="display: flex; gap: 20px;">
+                                <div class="checkbox-group">
+                                    <input type="radio" id="ranked" name="mode" value="ranked" checked onchange="toggleRanks()">
+                                    <label for="ranked">Classé</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="radio" id="unrank" name="mode" value="unrank" onchange="toggleRanks()">
+                                    <label for="unrank">Non-classé</label>
+                                </div>
+                            </div>
+                            
+                            <div id="rank-selector">
+                                <label style="display:block; margin-bottom:10px;">Mon Rang Actuel :</label>
+                                <div id="rank-grid" class="rank-selector-grid">
+                                    </div>
+                            </div>
+                            
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="discord-vocal">
+                                <label for="discord-vocal">Utiliser Discord Vocal</label>
+                            </div>
+                        </div>
+                        
+                        <button class="action-btn" id="publish-profile-btn" onclick="publishProfile()">
+                            Publier mon profil de jeu
+                        </button>
+                        <p id="publish-status" style="text-align:center; font-size:0.9rem; margin-top:10px;"></p>
+                    </div>
+                </div>
+                
+                <div class="settings-column">
+                    <div class="card">
+                        <h3>Partenaire Recherché</h3>
+                        <div class="profile-controls">
+                            <div style="display: flex; gap: 20px;">
+                                <div class="checkbox-group">
+                                    <input type="radio" id="partner-ranked" name="partner-mode" value="ranked" checked onchange="togglePartnerRanks()">
+                                    <label for="partner-ranked">Classé</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="radio" id="partner-unrank" name="partner-mode" value="unrank" onchange="togglePartnerRanks()">
+                                    <label for="partner-unrank">Non-classé</label>
+                                </div>
+                            </div>
+                            
+                            <div id="partner-rank-selector">
+                                <label style="display:block; margin-bottom:10px;">Rang Minimum Recherché :</label>
+                                <div id="partner-rank-grid" class="rank-selector-grid">
+                                    </div>
+                            </div>
+                            
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="partner-discord-vocal" onchange="savePartnerPreferences()">
+                                <label for="partner-discord-vocal">Partenaire avec Vocal requis</label>
+                            </div>
+                        </div>
+                        
+                        <button class="action-btn btn-secondary" onclick="savePartnerPreferences()">
+                            <i class="fas fa-save"></i> Sauvegarder les critères
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-column">
+                    <div class="card">
+                        <h3>Trouver des coéquipiers</h3>
+                        <p style="color:var(--text-muted); font-size:0.9rem;"> Cliquez pour trouver des joueurs correspondant à vos critères. </p>
+                        <button class="action-btn btn-primary" onclick="findPlayers()" style="width: 100%; margin-bottom: 20px;"> 🚀 Lancer la recherche </button>
+                        
+                        <div id="match-list">
+                            <p style="text-align:center; color:var(--text-muted);"> Cliquez sur "Lancer la recherche" pour trouver des coéquipiers. </p>
+                        </div>
+                        <p id="no-match-message" style="text-align:center; color:#eab308; display:none; font-weight: 500;"> 😭 Aucun joueur ne correspond à vos critères pour le moment. </p>
+                    </div>
+                </div>
             </div>
         </div>
+    </main>
+    
+    <button class="toggle-friends-btn" onclick="toggleSidebar()">
+        <i class="fas fa-users"></i> <span>Amis</span>
+    </button>
+    
+    <aside class="friends-sidebar" id="friendsSidebar">
+        <h2 style="margin: 0; font-size: 1.1rem; color: var(--primary-color);">Social</h2>
         
-        <div class="setting-group">
-          <div class="checkbox-group">
-            <input type="checkbox" id="vocal" onclick="toggleVocal(true)">
-            <label for="vocal">Je peux communiquer en vocal</label>
-          </div>
-        </div>
-        <button onclick="saveGameSettings()">Sauvegarder mes paramètres</button>
-        <p id="settings-status" style="display:none;"></p>
-      </div>
+        <div class="sidebar-section-title">Ajouter</div>
+        <form class="add-friend-box" id="add-friend-form">
+            <input type="text" id="friend-input" placeholder="Pseudo..." autocomplete="off">
+            <button type="submit"><i class="fas fa-user-plus"></i></button>
+        </form>
+        <div id="friend-notif" style="color:var(--primary-color); font-size: 0.8rem; margin-top: 5px;"></div>
 
-      <div class="game-section">
-        <h4>Préférences partenaire</h4>
-        <div class="setting-group">
-            <div class="checkbox-group">
-                <input type="checkbox" id="partner-ranked" onclick="togglePartnerRanks()">
-                <label for="partner-ranked">Rechercher uniquement en mode Classé</label>
-            </div>
-        </div>
-        <div class="setting-group" id="partner-rank-selector" style="display:none;">
-          <p style="color:var(--text-muted); margin-top:0;">Rang minimum requis</p>
-          <div class="rank-grid" id="partner-rank-grid">
-            </div>
-        </div>
-        <div class="setting-group">
-          <div class="checkbox-group">
-            <input type="checkbox" id="partner-vocal" onclick="togglePartnerVocal(true)">
-            <label for="partner-vocal">Vocal requis</label>
-          </div>
-        </div>
-        <button onclick="savePartnerPreferences()">Sauvegarder préférences</button>
-      </div>
-    </aside>
-
-    <div class="game-content-container">
-      <h1>Recherche de partenaire</h1>
-
-      <div class="game-section">
-        <button onclick="startMatchmaking()" style="background: var(--primary-color); color: var(--bg-dark); border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; font-weight: 700; display: block; width: 100%;">
-            <i class="fas fa-search"></i> Lancer la recherche de MatchMates
-        </button>
-      </div>
-
-      <div class="game-section">
-        <h4>Partenaires potentiels</h4>
-        <div class="match-list" id="match-list">
-          <p style="color: var(--text-muted);">Lancez la recherche ci-dessus pour trouver des joueurs.</p>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <aside id="friendsSidebar">
-    <div class="sidebar-header">
-      <h3>Social</h3>
-      <button class="toggle-friends-btn active" onclick="toggleSidebar()"><i class="fas fa-times"></i></button> 
-    </div>
-    <form id="add-friend-form">
-        <input type="text" id="friend-input" placeholder="Ajouter un ami (pseudo)..." autocomplete="off">
-        <button type="submit"><i class="fas fa-user-plus"></i></button>
-    </form>
-    <p id="friend-notif"></p>
-    <div class="sidebar-tabs">
-      <button class="active" onclick="switchTab('friends')">Amis (<span id="friendsCount">0</span>)</button>
-      <button onclick="switchTab('requests')">Demandes (<span id="receivedCount">0</span>)</button>
-    </div>
-    <div id="friendsTab" class="tab-content active">
+        <div class="sidebar-section-title">Amis (<span id="friendsCount">0</span>)</div>
         <div id="friendsList">
-            </div>
-    </div>
-    <div id="requestsTab" class="tab-content">
-        <h4 id="receivedRequestsTitle" style="color:var(--text-muted); margin-top:0;">Demandes reçues</h4>
+            <p style="text-align:center; color:var(--text-muted); font-size:0.9rem;">Ajoutez des amis !</p>
+        </div>
+
+        <div class="sidebar-section-title" id="receivedRequestsTitle" style="display:none;">Demandes reçues (<span id="receivedCount">0</span>)</div>
         <div id="requestsList">
             </div>
-        <h4 id="sentRequestsTitle" style="color:var(--text-muted); margin-top:20px;">Demandes envoyées (<span id="sentCount">0</span>)</h4>
+        
+        <div class="sidebar-section-title" id="sentRequestsTitle" style="display:none;">Demandes envoyées (<span id="sentCount">0</span>)</div>
         <div id="sentList">
             </div>
-    </div>
-  </aside>
 
-  <div id="chat-container">
-    </div>
-
-  <script>
-    // ====================================================
-    // --- VARIABLES GLOBALES (Identique aux deux pages pour le social) ---
-    // ====================================================
-    const friendsSidebar = document.getElementById('friendsSidebar');
-    const chatContainer = document.getElementById('chat-container'); 
-    const friendNotif = document.getElementById('friend-notif');
-    const friendsCount = document.getElementById('friendsCount');
-    const receivedCount = document.getElementById('receivedCount');
-    const sentCount = document.getElementById('sentCount');
-    const activeChats = {}; 
-
-    // Récupération de l'ID du jeu dans l'URL (Ex: /game.html?id=valorant)
-    const urlParams = new URLSearchParams(window.location.search);
-    const gameId = urlParams.get('id');
-
-    // Variables pour les settings/matchmaking (Spécifiques Game)
-    let currentRankSelection = null; // Mon rang actuel
-    let currentPartnerMinRank = null; // Rang min partenaire
-    const RANKS = {
-        'valorant': ['Fer', 'Bronze', 'Argent', 'Or', 'Platine', 'Diamant', 'Ascendant', 'Immortel', 'Radiant'],
-        'lol': ['Fer', 'Bronze', 'Argent', 'Or', 'Platine', 'Émeraude', 'Diamant', 'Maître', 'Grand Maître', 'Challenger'],
-        'apex': ['Bronze', 'Argent', 'Or', 'Platine', 'Diamant', 'Maître', 'Prédateur'],
-        // ... ajoutez d'autres jeux si nécessaire
-    };
-
-
-    /* =========================================
-    1. FONCTIONS SOCIALES (Identiques aux deux pages)
-    ========================================= */
-
-    window.toggleSidebar = () => {
-        const toggleBtn = document.querySelector('.toggle-friends-btn');
-        friendsSidebar.classList.toggle('active');
-        toggleBtn.classList.toggle('active');
-        const isActive = friendsSidebar.classList.contains('active');
-        localStorage.setItem('socialSidebarActive', isActive);
-    };
-
-    window.switchTab = (tabName) => {
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.querySelectorAll('.sidebar-tabs button').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        const targetTab = document.getElementById(tabName + 'Tab');
-        if (targetTab) targetTab.classList.add('active');
-        
-        const targetBtn = document.querySelector(`.sidebar-tabs button[onclick="switchTab('${tabName}')"]`);
-        if (targetBtn) targetBtn.classList.add('active');
-    };
-
-    function renderFriends(list) {
-        friendsCount.innerText = list.length;
-        const friendsList = document.getElementById('friendsList');
-        if (!friendsList) return;
-        
-        if (list.length === 0) {
-            friendsList.innerHTML = `<p style="color:var(--text-muted);">Aucun ami pour le moment.</p>`;
-            return;
-        }
-
-        friendsList.innerHTML = list.map(u => `
-            <div class="friend-card" onclick="openChat('${u.username}')">
-                <div style="display: flex; align-items: center;">
-                    <div class="friend-avatar">${u.username.charAt(0).toUpperCase()}</div>
-                    <span>${u.username}</span>
-                </div>
-                <div class="user-status online"></div>
-            </div>
-        `).join('');
-    }
-
-    function renderRequests(list) {
-        receivedCount.innerText = list.length;
-        const requestsList = document.getElementById('requestsList');
-        if (!requestsList) return;
-        
-        if (list.length === 0) {
-            requestsList.innerHTML = `<p style="color:var(--text-muted);">Aucune demande reçue.</p>`;
-            document.getElementById('receivedRequestsTitle').style.display = 'none';
-            return;
-        }
-        document.getElementById('receivedRequestsTitle').style.display = 'block';
-
-        requestsList.innerHTML = list.map(r => `
-            <div class="friend-card" style="cursor: default;">
-                <div style="display: flex; align-items: center;">
-                    <div class="friend-avatar">${r.sender_username.charAt(0).toUpperCase()}</div>
-                    <span>${r.sender_username}</span>
-                </div>
-                <div class="request-actions">
-                    <button style="background-color: var(--primary-color);" onclick="hReq(${r.id}, 'accept')"><i class="fas fa-check"></i></button>
-                    <button style="background-color: #ef4444;" onclick="hReq(${r.id}, 'reject')"><i class="fas fa-times"></i></button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function renderSent(list) {
-        sentCount.innerText = list.length;
-        const sentList = document.getElementById('sentList');
-        if (!sentList) return;
-
-        if (list.length === 0) {
-            sentList.innerHTML = `<p style="color:var(--text-muted);">Aucune demande envoyée.</p>`;
-            document.getElementById('sentRequestsTitle').style.display = 'none';
-            return;
-        }
-        document.getElementById('sentRequestsTitle').style.display = 'block';
-
-        sentList.innerHTML = list.map(r => `
-            <div class="friend-card" style="cursor: default;">
-                <div style="display: flex; align-items: center;">
-                    <div class="friend-avatar">${r.receiver_username.charAt(0).toUpperCase()}</div>
-                    <span>${r.receiver_username} (en attente)</span>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    window.loadSocial = async () => {
-        try {
-            const fRes = await fetch('/api/friends');
-            const rRes = await fetch('/api/friends/requests');
-            const fData = await fRes.json();
-            const rData = await rRes.json();
-
-            renderFriends(fData.friends || []);
-            renderRequests(rData.incoming || []);
-            renderSent(rData.outgoing || []);
-
-        } catch (e) {
-            console.error("Erreur chargement social:", e);
-        }
-    };
-
-    document.getElementById('add-friend-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const friendInput = document.getElementById('friend-input');
-        const username = friendInput.value.trim();
-        friendNotif.innerText = '';
-        if (!username) return;
-
-        const res = await fetch('/api/friends/requests', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ toUsername: username })
-        });
-
-        const data = await res.json();
-        if (data.ok) {
-            friendNotif.innerText = `Demande envoyée à ${username}.`;
-            friendInput.value = '';
-            loadSocial(); 
-        } else {
-            friendNotif.innerText = data.error || "Erreur lors de l'envoi de la demande.";
-        }
-        setTimeout(() => friendNotif.innerText = "", 3000);
-    });
-
-    window.hReq = async (id, action) => {
-        await fetch(`/api/friends/requests/${id}/${action}`, { method: 'POST' });
-        loadSocial(); 
-    };
-
-    /* =========================================
-    2. FONCTIONS CHAT (Identiques aux deux pages)
-    ========================================= */
-
-    async function fetchMessages(u) { 
-        const c = document.getElementById(`msg-${u}`); 
-        if (!c) return;
-
-        const res = await fetch(`/api/messages/${u}`); 
-        const d = await res.json();
-        
-        const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 1;
-            
-        c.innerHTML = d.messages.map(m => `<div class="msg ${m.fromSelf ? 'self' : 'other'}">${m.content}</div>`).join(''); 
-        
-        if (isScrolledToBottom || d.messages.length === 1) {
-            c.scrollTop = c.scrollHeight;
-        }
-    }
+    </aside>
     
-    window.openChat = (u) => { 
-        if (document.getElementById(`cw-${u}`)) return; 
+    <div id="chat-container" class="chat-container"></div>
 
-        const d = document.createElement('div'); 
-        d.className = 'chat-window'; 
-        d.id = `cw-${u}`;
+
+    <script>
+        // ====================================================
+        // --- DÉCLARATION DES VARIABLES GLOBALES ---
+        // ====================================================
+        const activeChats = {}; 
+        const gameId = '{{ gameId }}'; 
+        const friendsSidebar = document.getElementById('friendsSidebar');
+        const chatContainer = document.getElementById('chat-container'); 
         
-        d.innerHTML = `
-            <div class="chat-header" onclick="closeChat('${u}')">
-                <span>${u}</span>
-                <span>✖</span>
-            </div>
-            <div class="chat-body" id="msg-${u}"></div>
-            <form class="chat-input-area" onsubmit="sM(event,'${u}')">
-                <input type="text" placeholder="Écrire un message..." autocomplete="off">
-                <button type="submit"><i class="fas fa-paper-plane"></i></button>
-            </form>
-        `;
-        
-        chatContainer.appendChild(d);
-        
-        fetchMessages(u);
-        activeChats[u] = setInterval(() => fetchMessages(u), 3000); 
-    };
+        let currentRankSelection = null;
+        let currentPartnerRankSelection = null;
+        let isFavorite = false;
 
-    window.closeChat = (u) => { 
-        const el = document.getElementById(`cw-${u}`); 
-        if (el) el.remove(); 
-        
-        if (activeChats[u]) {
-            clearInterval(activeChats[u]);
-            delete activeChats[u];
-        } 
-    };
-
-    window.sM = async (e, u) => {
-        e.preventDefault();
-        const input = e.target.querySelector('input');
-        if (!input.value.trim()) return; 
-
-        await fetch('/api/messages', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ toUsername: u, content: input.value.trim() })
-        });
-        
-        input.value = "";
-        fetchMessages(u); 
-    };
-
-    
-    /* =========================================
-    3. FONCTIONS JEU / PARAMÈTRES (Spécifiques Game)
-    ========================================= */
-
-    function showStatus(message, isError = false) {
-        const statusEl = document.getElementById('settings-status');
-        if (!statusEl) return;
-        statusEl.innerText = message;
-        statusEl.style.color = isError ? '#ef4444' : '#22c55e';
-        statusEl.style.display = 'block';
-        setTimeout(() => {
-            statusEl.style.display = 'none';
-        }, 3000);
-    }
-    
-    // Rangs (Fonctions génériques)
-    function setupRankGrids(gameRanks) {
-        const playerGrid = document.getElementById('player-rank-grid');
-        const partnerGrid = document.getElementById('partner-rank-grid');
-
-        const createRankItem = (rank, type) => {
-            const d = document.createElement('div');
-            d.className = 'rank-item';
-            d.innerText = rank;
-            d.onclick = () => selectRank(rank, type);
-            return d;
+        // Fausse BDD pour info jeu (sera remplacé par un fetch API plus tard)
+        const GAME_INFOS = { 
+            valorant: { name: "Valorant", description: "Jeu de tir tactique en 5v5 basé sur les personnages développé par Riot Games.", image: "/img/games/valorant.png" }, 
+            leagueoflegends: { name: "League of Legends", description: "Jeu de stratégie en équipe où deux équipes de cinq puissants champions s'affrontent pour détruire la base adverse.", image: "/img/games/lol.png" }, 
+            cs2: { name: "Counter-Strike 2", description: "La nouvelle ère du jeu de tir à la première personne emblématique.", image: "/img/games/cs2.png" } 
         };
-
-        playerGrid.innerHTML = '';
-        partnerGrid.innerHTML = '';
         
-        gameRanks.forEach(rank => {
-            playerGrid.appendChild(createRankItem(rank, 'player'));
-            partnerGrid.appendChild(createRankItem(rank, 'partner'));
-        });
-    }
+        // Simule les rangs (Doit correspondre aux images sur le serveur)
+        const RANKS = { 
+            valorant: [
+                { name: 'Fer', img: 'fer.png' }, { name: 'Bronze', img: 'bronze.png' }, 
+                { name: 'Argent', img: 'argent.png' }, { name: 'Or', img: 'or.png' }, 
+                { name: 'Platine', img: 'platine.png' }, { name: 'Diamant', img: 'diamant.png' }, 
+                { name: 'Ascendant', img: 'ascendant.png' }, { name: 'Immortel', img: 'immortel.png' }, 
+                { name: 'Radiant', img: 'radiant.png' }, 
+            ],
+            cs2: [ /* ... */ ], 
+            leagueoflegends: [ /* ... */ ]
+        }; 
 
-    function selectRank(rank, type) {
-        const gridId = type === 'player' ? 'player-rank-grid' : 'partner-rank-grid';
-        const grid = document.getElementById(gridId);
-        if (!grid) return;
-
-        grid.querySelectorAll('.rank-item').forEach(item => {
-            item.classList.remove('selected');
-        });
+        // ====================================================
+        // --- 1. FONCTIONS DE BASES POUR LES CARTES DE JEU ---
+        // ====================================================
         
-        const selectedItem = Array.from(grid.querySelectorAll('.rank-item')).find(item => item.innerText === rank);
-        if (selectedItem) selectedItem.classList.add('selected');
+        function setupRankGrids(gameRanks) {
+            const playerGrid = document.getElementById('rank-grid');
+            const partnerGrid = document.getElementById('partner-rank-grid');
+            playerGrid.innerHTML = '';
+            partnerGrid.innerHTML = '';
 
-        if (type === 'player') {
-            currentRankSelection = rank;
-            saveGameSettings(false); // Sauvegarder sans montrer de notification
-        } else {
-            currentPartnerMinRank = rank;
-            savePartnerPreferences(false);
-        }
-    }
-
-    // Mon Mode/Rang
-    window.setGameMode = (mode, save = true) => {
-        const rankedChecked = mode === 'ranked';
-        const rankSelector = document.getElementById('rank-selector');
-        rankSelector.style.display = rankedChecked ? 'block' : 'none';
-        
-        document.getElementById(mode).checked = true;
-
-        if (save) saveGameSettings();
-    }
-
-    window.toggleVocal = (save = true) => {
-        if (save) saveGameSettings();
-    }
-
-    // Préférences Partenaire
-    window.togglePartnerRanks = (save = true) => {
-        const partnerRankedChecked = document.getElementById('partner-ranked').checked;
-        const partnerRankSelector = document.getElementById('partner-rank-selector');
-        partnerRankSelector.style.display = partnerRankedChecked ? 'block' : 'none';
-        
-        if (!partnerRankedChecked) {
-            currentPartnerMinRank = null;
+            gameRanks.forEach(rank => {
+                playerGrid.appendChild(buildRankItem(rank, 'player'));
+                partnerGrid.appendChild(buildRankItem(rank, 'partner'));
+            });
         }
 
-        if (save) savePartnerPreferences();
-    }
-
-    window.togglePartnerVocal = (save = true) => {
-        if (save) savePartnerPreferences();
-    }
-
-
-    /* =========================================
-    4. GESTION DES APPELS API JEU
-    ========================================= */
-
-    async function loadGameInfo() {
-        // Simule le chargement des infos du jeu (nom, image)
-        const gameName = gameId.charAt(0).toUpperCase() + gameId.slice(1);
-        document.getElementById('game-short-name').innerText = gameName;
-        document.getElementById('game-full-name').innerText = `Matchmaking pour ${gameName}`;
-        document.getElementById('game-image').src = `https://placehold.co/300x170/22c55e/fff?text=${gameId.toUpperCase()}`;
-    }
-
-    async function loadGameSettings() {
-        const res = await fetch(`/api/game-settings/${gameId}`);
-        if (res.ok) {
-            const settings = await res.json();
+        function buildRankItem(rank, type) {
+            const item = document.createElement('div');
+            item.className = 'rank-item';
+            item.setAttribute('data-rank', rank.name);
+            item.onclick = (e) => selectRank(e, type);
             
-            document.getElementById(settings.mode).checked = true;
-            window.setGameMode(settings.mode, false);
+            const gameName = gameId.toLowerCase();
+            const imgName = rank.img;
+            const rankName = rank.name;
 
-            document.getElementById('vocal').checked = settings.vocal;
+            item.innerHTML = `
+                <img src="/img/ranks/${gameName}/${imgName}" alt="${rankName}" onerror="this.onerror=null;this.src='/img/ranks/default.png';">
+                <span>${rankName}</span>
+            `;
+            return item;
+        }
 
-            if (settings.rank) {
-                currentRankSelection = settings.rank;
-                selectRank(settings.rank, 'player');
+        function selectRank(event, type) {
+            const target = event.currentTarget;
+            const rank = target.getAttribute('data-rank');
+            const gridId = type === 'player' ? 'rank-grid' : 'partner-rank-grid';
+            
+            document.querySelectorAll(`#${gridId} .rank-item`).forEach(item => {
+                item.classList.remove('selected');
+            });
+            target.classList.add('selected');
+            
+            if (type === 'player') {
+                currentRankSelection = target;
+                saveGameSettings();
+            } else {
+                currentPartnerRankSelection = target;
+                savePartnerPreferences();
             }
         }
-    }
-
-    window.saveGameSettings = async (showNotif = true) => {
-        const mode = document.querySelector('input[name="mode"]:checked').value;
-        const vocal = document.getElementById('vocal').checked;
-
-        const res = await fetch(`/api/game-settings/${gameId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                mode, 
-                rank: currentRankSelection, 
-                vocal 
-            })
-        });
-
-        if (res.ok && showNotif) {
-            showStatus("Vos paramètres de jeu ont été sauvegardés.");
+        
+        window.toggleRanks = function(save = true) {
+            const rankedChecked = document.getElementById('ranked').checked;
+            const rankSelector = document.getElementById('rank-selector');
+            rankSelector.style.display = rankedChecked ? 'block' : 'none';
+            if (save) saveGameSettings();
         }
-    }
+        
+        window.togglePartnerRanks = function(save = true) {
+            const partnerRankedChecked = document.getElementById('partner-ranked').checked;
+            const partnerRankSelector = document.getElementById('partner-rank-selector');
+            partnerRankSelector.style.display = partnerRankedChecked ? 'block' : 'none';
+            if (save) savePartnerPreferences();
+        }
 
-    async function loadPartnerPreferences() {
-        const res = await fetch(`/api/partner-preferences/${gameId}`);
-        if (res.ok) {
-            const prefs = await res.json();
-            
-            document.getElementById('partner-ranked').checked = prefs.mode === 'ranked';
-            window.togglePartnerRanks(false); // Appliquer l'affichage du rang
+        // --- Fonctions de chargement/sauvegarde de la page de jeu ---
+        
+        async function loadGameSettings() {
+            // Logique pour charger les réglages du profil de jeu de l'utilisateur
+            // depuis /api/game-settings/{{ gameId }}
+            // ...
+        }
 
-            document.getElementById('partner-vocal').checked = prefs.vocal_required;
-            
-            if (prefs.min_rank) {
-                currentPartnerMinRank = prefs.min_rank;
-                selectRank(prefs.min_rank, 'partner');
+        async function saveGameSettings() {
+            // Logique pour sauvegarder les réglages du profil de jeu de l'utilisateur
+            // vers /api/game-settings
+            // ...
+        }
+        
+        async function loadPartnerPreferences() {
+            try {
+                const res = await fetch(`/api/partner-preferences/${gameId}`);
+                const prefs = await res.json();
+                
+                // Assurez-vous que les éléments existent avant d'essayer d'accéder à .checked/.value
+                const partnerRankedRadio = document.getElementById('partner-ranked');
+                const partnerUnrankRadio = document.getElementById('partner-unrank');
+                
+                if(prefs.mode === 'ranked') {
+                    partnerRankedRadio.checked = true;
+                    partnerUnrankRadio.checked = false;
+                } else {
+                    partnerRankedRadio.checked = false;
+                    partnerUnrankRadio.checked = true;
+                }
+                
+                document.getElementById('partner-discord-vocal').checked = prefs.vocal_required;
+                togglePartnerRanks(false); 
+                
+                if (prefs.min_rank && prefs.mode === 'ranked') {
+                    const rankItem = document.querySelector(`#partner-rank-grid [data-rank="${prefs.min_rank}"]`);
+                    if (rankItem) {
+                        rankItem.classList.add('selected');
+                        currentPartnerRankSelection = rankItem;
+                    }
+                }
+
+            } catch (e) {
+                console.error("Erreur chargement des préférences partenaire:", e);
+                document.getElementById('partner-ranked').checked = true;
+                document.getElementById('partner-discord-vocal').checked = false;
+                togglePartnerRanks(false);
             }
         }
-    }
-
-    window.savePartnerPreferences = async (showNotif = true) => {
-        const mode = document.getElementById('partner-ranked').checked ? 'ranked' : 'any';
-        const min_rank = document.getElementById('partner-ranked').checked ? currentPartnerMinRank : null;
-        const vocal_required = document.getElementById('partner-vocal').checked;
-
-        const res = await fetch(`/api/partner-preferences/${gameId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                mode, 
-                min_rank, 
-                vocal_required 
-            })
-        });
-
-        if (res.ok && showNotif) {
-            showStatus("Vos préférences partenaire ont été sauvegardées.", false);
-        }
-    }
-
-    async function startMatchmaking() {
-        const matchList = document.getElementById('match-list');
-        matchList.innerHTML = `<p style="color: #facc15;">Recherche en cours...</p>`;
-
-        const res = await fetch(`/api/match-players/${gameId}`);
-        if (res.ok) {
-            const data = await res.json();
+        
+        async function savePartnerPreferences() {
+            const mode = document.getElementById('partner-ranked').checked ? 'ranked' : 'unrank';
+            const rank = currentPartnerRankSelection ? currentPartnerRankSelection.getAttribute('data-rank') : null;
+            const vocal = document.getElementById('partner-discord-vocal').checked;
             
-            if (data.matches.length === 0) {
-                matchList.innerHTML = `<p style="color:var(--text-muted);">Aucun joueur trouvé correspondant à vos critères.</p>`;
+            await fetch('/api/partner-preferences', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    gameId: gameId,
+                    mode: mode,
+                    min_rank: rank,
+                    vocal_required: vocal
+                })
+            });
+        }
+        
+        // ... (Autres fonctions comme publishProfile, findPlayers, renderMatches, etc.)
+
+        // ====================================================
+        // --- 2. FONCTION DE BASCULE DE LA SIDEBAR (Amis) ---
+        // (Assure le fonctionnement du bouton)
+        // ====================================================
+        window.toggleSidebar = function() {
+            const isActive = friendsSidebar.classList.toggle('active');
+            const toggleBtn = document.querySelector('.toggle-friends-btn');
+            
+            // Bascule la classe 'active' sur le bouton pour le style/icône
+            toggleBtn.classList.toggle('active', isActive);
+            
+            // Si la sidebar est fermée, on ferme aussi tous les chats actifs.
+            if (!isActive) {
+                Object.keys(activeChats).forEach(closeChat);
+            }
+
+            // Sauvegarde l'état dans le stockage local
+            localStorage.setItem('socialSidebarActive', isActive);
+        };
+        
+        // ====================================================
+        // --- 3. LOGIQUE SOCIALE (Amis/Requests) ---
+        // ====================================================
+
+        async function loadSocial() {
+            try {
+                const friendNotif = document.getElementById('friend-notif');
+                const [fRes, rRes] = await Promise.all([fetch('/api/friends'), fetch('/api/friends/requests')]);
+                const fData = await fRes.json();
+                const rData = await rRes.json();
+
+                renderFriends(fData.friends || []);
+                renderRequests(rData.incoming || []); 
+                renderSent(rData.outgoing || []); 
+
+            } catch (e) {
+                console.error("Erreur chargement social:", e);
+            }
+        }
+
+        function renderFriends(list) {
+            const c = document.getElementById('friendsList');
+            c.innerHTML = "";
+            document.getElementById('friendsCount').textContent = list.length;
+            
+            if (!list.length) {
+                c.innerHTML = `<p style="color:var(--text-muted); text-align:center; font-size:0.9rem;">Ajoutez des amis !</p>`;
                 return;
             }
 
-            matchList.innerHTML = data.matches.map(m => `
-                <div class="match-card">
-                    <div class="match-user-info">
-                        <span class="username">${m.username}</span>
-                        <span class="rank">${m.rank} | Vocal: ${m.vocal ? 'Oui' : 'Non'}</span>
+            list.forEach(f => {
+                const d = document.createElement('div');
+                d.className = 'friend-card';
+                d.onclick = () => openChat(f.username); 
+                d.innerHTML = `
+                    <div style="display: flex; align-items: center;">
+                        <div class="friend-avatar">${f.username.charAt(0).toUpperCase()}</div>
+                        <span>${f.username}</span>
                     </div>
-                    <div class="match-actions">
-                        <button onclick="openChat('${m.username}')">Chater</button>
+                `;
+                c.appendChild(d);
+            });
+        }
+
+        function renderRequests(list) {
+            const c = document.getElementById('requestsList');
+            c.innerHTML = "";
+            document.getElementById('receivedCount').textContent = list.length;
+            document.getElementById('receivedRequestsTitle').style.display = list.length ? 'block' : 'none';
+
+            list.forEach(r => {
+                const d = document.createElement('div');
+                d.className = 'friend-card';
+                d.innerHTML = `
+                    <div style="display: flex; align-items: center; flex-grow: 1;">
+                        <div class="friend-avatar">${r.from_username.charAt(0).toUpperCase()}</div>
+                        <span>${r.from_username}</span>
                     </div>
-                </div>
-            `).join('');
+                    <div class="request-actions" style="display:flex; gap:5px;">
+                        <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #10b981;" onclick="hReq(${r.id}, 'accept')"><i class="fas fa-check"></i></button>
+                        <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #ef4444;" onclick="hReq(${r.id}, 'reject')"><i class="fas fa-times"></i></button>
+                    </div>
+                `;
+                c.appendChild(d);
+            });
+        }
+
+        function renderSent(list) {
+            const c = document.getElementById('sentList');
+            c.innerHTML = "";
+            document.getElementById('sentCount').textContent = list.length;
+            document.getElementById('sentRequestsTitle').style.display = list.length ? 'block' : 'none';
+
+            list.forEach(r => {
+                const d = document.createElement('div');
+                d.className = 'friend-card';
+                d.style.opacity = 0.7; 
+                d.innerHTML = `
+                    <div style="display: flex; align-items: center; flex-grow: 1;">
+                        <div class="friend-avatar">${r.to_username.charAt(0).toUpperCase()}</div>
+                        <span style="font-style:italic;">${r.to_username} (En attente)</span>
+                    </div>
+                    <div class="request-actions">
+                        <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #334155;" onclick="hReq(${r.id}, 'reject')"><i class="fas fa-minus-circle"></i></button>
+                    </div>
+                `;
+                c.appendChild(d);
+            });
+        }
+
+        // Gère l'envoi de la demande d'ami
+        document.getElementById('add-friend-form').addEventListener('submit', async function(e) { 
+            e.preventDefault(); 
+            const input = document.getElementById('friend-input'); 
+            const friendNotif = document.getElementById('friend-notif');
             
-        } else {
-            matchList.innerHTML = `<p style="color: #ef4444;">Erreur lors de la recherche de joueurs.</p>`;
-        }
-    }
-
-
-    /* =========================================
-    5. INITIALISATION FINALE
-    ========================================= */
-    (async function() {
-        // Initialisation des grilles de rangs
-        const gameRanks = RANKS[gameId.toLowerCase()] || RANKS.valorant;
-        setupRankGrids(gameRanks); 
-
-        // Chargement des données 
-        await loadGameInfo();
-        loadGameSettings();
-        await loadPartnerPreferences();
+            const res = await fetch('/api/friends/request', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({toUsername:input.value})
+            });
+            const d = await res.json();
+            friendNotif.innerText = d.ok ? `Demande envoyée à ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
+            input.value = "";
+            loadSocial();
+            setTimeout(()=>friendNotif.innerText="",3000); 
+        });
         
-        // Rétablit l'état de la sidebar (Amis) au chargement
-        if (localStorage.getItem('socialSidebarActive') === 'true') {
-            friendsSidebar.classList.add('active');
-            document.querySelector('.toggle-friends-btn').classList.add('active');
+        // Gère l'acceptation/rejet d'une demande d'ami
+        window.hReq = async(id, a) => { 
+            await fetch(`/api/friends/requests/${id}/${a}`, {method:'POST'}); 
+            loadSocial(); 
+        };
+
+        // ====================================================
+        // --- 4. LOGIQUE DE CHAT ---
+        // ====================================================
+        
+        async function fetchMessages(u) {
+            const c = document.getElementById(`msg-${u}`);
+            if (!c) return;
+
+            const res = await fetch(`/api/messages/${u}`);
+            const d = await res.json();
+            
+            const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 1;
+            
+            c.innerHTML = d.messages.map(m =>
+                `<div class="msg ${m.fromSelf ? 'self' : 'other'}">${m.content}</div>`
+            ).join('');
+            
+            if (isScrolledToBottom || d.messages.length === 1) {
+                c.scrollTop = c.scrollHeight;
+            }
         }
         
-        // Chargement des données sociales et rafraîchissement
-        loadSocial();
-        setInterval(loadSocial, 5000); 
-    })();
+        window.openChat = (u) => { 
+            if(document.getElementById(`cw-${u}`)) return;
+            const d=document.createElement('div'); d.className='chat-window'; d.id=`cw-${u}`;
+            d.innerHTML=`
+                <div class="chat-header" onclick="closeChat('${u}')">
+                    <span>${u}</span>
+                    <span><i class="fas fa-times"></i></span>
+                </div>
+                <div class="chat-body" id="msg-${u}"></div>
+                <form class="chat-input-area" onsubmit="sM(event,'${u}')">
+                    <input type="text" placeholder="Écrire un message..." autocomplete="off">
+                    <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            `;
+            chatContainer.appendChild(d); 
+            fetchMessages(u); 
+            activeChats[u]=setInterval(()=>fetchMessages(u),3000);
+        };
+        
+        window.closeChat = (u) => { 
+            const el=document.getElementById(`cw-${u}`); 
+            if(el) el.remove(); 
+            if(activeChats[u]){
+                clearInterval(activeChats[u]);
+                delete activeChats[u];
+            } 
+        };
+        
+        window.sM = async (e, u) => {
+            e.preventDefault();
+            const input = e.target.querySelector('input');
+            if (!input.value.trim()) return; 
 
-  </script>
+            await fetch('/api/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ toUsername: u, content: input.value.trim() })
+            });
+            
+            input.value = "";
+            fetchMessages(u); 
+        };
+        
+        // ====================================================
+        // --- 5. INITIALISATION FINALE ---
+        // ====================================================
+        (async function() {
+            // Initialisation des grilles de rangs
+            const gameRanks = RANKS[gameId.toLowerCase()] || RANKS.valorant;
+            setupRankGrids(gameRanks); 
+
+            // Chargement des données 
+            await loadGameInfo();
+            loadGameSettings();
+            await loadPartnerPreferences();
+            
+            // Rétablit l'état de la sidebar (Amis) au chargement
+            if (localStorage.getItem('socialSidebarActive') === 'true') {
+                friendsSidebar.classList.add('active');
+                document.querySelector('.toggle-friends-btn').classList.add('active');
+            }
+            
+            // Chargement des données sociales et rafraîchissement
+            loadSocial();
+            setInterval(loadSocial, 5000); 
+        })();
+
+    </script>
 </body>
 </html>
