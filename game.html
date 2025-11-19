@@ -271,8 +271,9 @@
         const gameData = GAMES_DB[gameId];
         let currentRankSelection = null;
         let settingsKey = `mm_game_settings_${gameId}`;
+        let favorites = []; // MAINTENANT GÉRÉ PAR LE SERVEUR
 
-        // --- Fonctions de gestion de l'état ---
+        // --- Fonctions de gestion de l'état (Profil Joueur) ---
 
         // Sauvegarde les paramètres actuels du jeu dans localStorage
         window.saveGameSettings = function() {
@@ -299,25 +300,24 @@
             if (gameData.ranks && gameData.ranks.length > 0) {
                 document.getElementById('ranked').checked = settings.mode === 'ranked';
                 document.getElementById('unrank').checked = settings.mode === 'unrank';
-                window.toggleRanks(false); // Mise à jour de l'affichage du sélecteur de rangs
+                window.toggleRanks(false); 
             }
 
             // 2. Vocal Discord
             document.getElementById('discord-vocal').checked = settings.vocal;
 
-            // 3. Rang sélectionné (si en mode classé et rang sauvegardé)
+            // 3. Rang sélectionné
             if (settings.mode === 'ranked' && settings.rank) {
                 const rankEl = document.querySelector(`.rank-option[data-rank="${settings.rank}"]`);
                 if (rankEl) {
-                    selectRank(rankEl, false); // Sélectionne le rang sans sauvegarder (on charge juste)
+                    selectRank(rankEl, false); 
                 }
             }
         }
 
 
-        // --- Fonctions d'interaction utilisateur ---
+        // --- Fonctions d'interaction utilisateur (Profil Joueur) ---
 
-        // Fonction pour générer les boutons de rangs
         function renderRanks(ranks) {
             const rankGrid = document.getElementById('rank-grid');
             rankGrid.innerHTML = '';
@@ -326,28 +326,23 @@
                 rankEl.className = 'rank-option';
                 rankEl.textContent = rank;
                 rankEl.setAttribute('data-rank', rank);
-                rankEl.onclick = () => selectRank(rankEl, true); // Appel à selectRank avec sauvegarde
+                rankEl.onclick = () => selectRank(rankEl, true);
                 rankGrid.appendChild(rankEl);
             });
         }
 
-        // Fonction pour sélectionner un rang
         window.selectRank = function(el, shouldSave = true) {
-            // Désélectionner l'ancien rang
             if (currentRankSelection) {
                 currentRankSelection.classList.remove('selected');
             }
-            // Sélectionner le nouveau rang
             el.classList.add('selected');
             currentRankSelection = el;
             
             if (shouldSave) {
                 saveGameSettings();
-                console.log('Nouveau rang sélectionné et sauvegardé:', el.getAttribute('data-rank'));
             }
         }
 
-        // Fonction pour afficher/cacher le sélecteur de rangs
         window.toggleRanks = function(shouldSave = true) {
             const isRanked = document.getElementById('ranked').checked;
             const rankSelector = document.getElementById('rank-selector');
@@ -356,7 +351,6 @@
                 rankSelector.style.display = 'block';
             } else {
                 rankSelector.style.display = 'none';
-                // Désélectionner le rang quand on passe en Non classé
                 if (currentRankSelection) {
                     currentRankSelection.classList.remove('selected');
                     currentRankSelection = null;
@@ -368,6 +362,58 @@
             }
         };
 
+
+        // --- NOUVELLE LOGIQUE FAVORIS (Basée sur l'API) ---
+
+        const favBtn = document.getElementById('fav-action-btn');
+
+        // Met à jour l'affichage du bouton en fonction de la liste globale 'favorites'
+        function updateFavBtn() {
+            if(favorites.includes(gameId)) {
+                favBtn.textContent = "♥ Retirer des favoris";
+                favBtn.classList.add('btn-fav-active');
+            } else {
+                favBtn.textContent = "♡ Ajouter aux favoris";
+                favBtn.classList.remove('btn-fav-active');
+            }
+        }
+
+        // Récupère les favoris du serveur
+        async function loadUserFavorites() {
+            try {
+                const response = await fetch('/api/favorites');
+                if (response.ok) {
+                    const data = await response.json();
+                    favorites = data.favorites || [];
+                    updateFavBtn(); // Met à jour le bouton de favoris après le chargement
+                }
+            } catch (e) {
+                console.error("Erreur de chargement des favoris:", e);
+            }
+        }
+
+        // Bascule l'état du favori via l'API
+        window.toggleCurrentFav = async () => {
+            const isFavorite = favorites.includes(gameId);
+            favBtn.disabled = true; // Désactive le bouton pendant l'appel
+
+            try {
+                const response = await fetch(`/api/favorites/${gameId}`, { method: 'POST' });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status === 'added') {
+                        favorites.push(gameId);
+                    } else if (data.status === 'removed') {
+                        favorites = favorites.filter(id => id !== gameId);
+                    }
+                    updateFavBtn(); // Met à jour l'affichage
+                }
+            } catch (e) {
+                console.error("Erreur de bascule des favoris:", e);
+            } finally {
+                favBtn.disabled = false;
+            }
+        };
 
         // --- Initialisation de la page ---
 
@@ -384,36 +430,17 @@
                 renderRanks(gameData.ranks);
             }
             
-            // 2. Charger les paramètres spécifiques au jeu
+            // 2. Charger les paramètres spécifiques au jeu (utilise toujours localStorage)
             loadGameSettings();
+            
+            // 3. Charger les favoris du compte utilisateur (NOUVEAU)
+            loadUserFavorites();
 
         } else {
             document.getElementById('game-title').textContent = "Jeu introuvable";
             document.getElementById('game-genre').textContent = "Vérifiez l'URL.";
             document.getElementById('game-desc').textContent = "Les données pour ce jeu n'ont pas été trouvées.";
         }
-
-        // 3. Gestion Favoris sur cette page (inchangé)
-        let favorites = JSON.parse(localStorage.getItem('mm_favorites')) || [];
-        const favBtn = document.getElementById('fav-action-btn');
-
-        function updateFavBtn() {
-            if(favorites.includes(gameId)) {
-                favBtn.textContent = "♥ Retirer des favoris";
-                favBtn.classList.add('btn-fav-active');
-            } else {
-                favBtn.textContent = "♡ Ajouter aux favoris";
-                favBtn.classList.remove('btn-fav-active');
-            }
-        }
-        updateFavBtn();
-
-        window.toggleCurrentFav = () => {
-            if(favorites.includes(gameId)) favorites = favorites.filter(id => id !== gameId);
-            else favorites.push(gameId);
-            localStorage.setItem('mm_favorites', JSON.stringify(favorites));
-            updateFavBtn();
-        };
 
         /* --- LOGIQUE SOCIALE (inchangé) --- */
         const friendNotif = document.getElementById('friend-notif');
