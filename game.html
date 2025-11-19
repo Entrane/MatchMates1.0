@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Jeu – MatchMates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 
   <style>
@@ -13,45 +13,89 @@
     body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
     
     /* HEADER */
-    header { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(10px); position: fixed; top: 0; width: 100%; z-index: 800; box-sizing: border-box; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(10px); position: fixed; top: 0; width: 100%; z-index: 800; box-sizing: border-box; border-bottom: 1px solid rgba(255,255,255,0.05); }
     nav a { color: var(--text-muted); text-decoration: none; margin-left: 20px; font-size: 0.9rem; }
     nav a:hover { color: white; }
 
-    /* LAYOUT */
-    .game-layout { max-width: 1100px; margin: 80px auto 40px; padding: 0 20px; }
+    /* LAYOUT GLOBAL PAGE JEU */
+    .game-layout { max-width: 1300px; margin: 80px auto 40px; padding: 0 20px; }
     
-    /* HERO BANNER JEU */
-    .game-hero {
-        position: relative; height: 300px; border-radius: 20px; overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 30px;
-        border: 1px solid rgba(255,255,255,0.1);
+    /* GRILLE PRINCIPALE (Menu à gauche + Contenu à droite) */
+    .game-main-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr; /* 320px pour la sidebar gauche, 1fr pour le contenu */
+        gap: 30px;
+        align-items: flex-start;
     }
-    .game-hero-img { width: 100%; height: 100%; object-fit: cover; }
-    .game-hero-overlay {
-        position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(to top, #0f172a 10%, transparent 80%);
-        display: flex; align-items: flex-end; padding: 30px; box-sizing: border-box;
+
+    /* BARRE DE PRÉSENTATION GAUCHE (STICKY) */
+    .game-sidebar-left {
+        position: sticky;
+        top: 100px; /* Commence 100px sous le header */
+        padding: 20px;
+        background: var(--bg-card);
+        border-radius: 15px;
+        border: 1px solid rgba(255,255,255,0.05);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
-    .game-hero-content { position: relative; z-index: 2; width: 100%; display: flex; justify-content: space-between; align-items: flex-end; }
-    .game-title-large { font-size: 3rem; font-weight: 800; color: white; margin: 0; text-shadow: 0 4px 10px rgba(0,0,0,0.8); line-height: 1; }
-    .back-btn { display: inline-flex; align-items: center; gap: 5px; color: var(--text-muted); text-decoration: none; margin-bottom: 20px; font-weight: 600; transition: 0.2s; }
-    .back-btn:hover { color: white; transform: translateX(-5px); }
+    .game-sidebar-img {
+        width: 100%;
+        aspect-ratio: 3/4; /* Format affiche de jeu */
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    .game-title-sidebar {
+        font-size: 2rem;
+        font-weight: 800;
+        color: white;
+        margin: 0 0 5px 0;
+    }
+    .game-genre-sidebar {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+    }
+    .back-btn { display: inline-flex; align-items: center; gap: 5px; color: var(--text-muted); text-decoration: none; font-weight: 600; transition: 0.2s; margin-bottom: 15px; }
+    .back-btn:hover { color: white; transform: translateX(-3px); }
 
-    /* ACTIONS BAR */
-    .actions-bar { display: flex; gap: 15px; margin-bottom: 30px; }
-    .action-btn { padding: 12px 24px; border-radius: 30px; border: none; font-weight: 600; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
-    .btn-primary { background: var(--primary-color); color: #020617; }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
-    .btn-secondary { background: var(--bg-card); color: white; border: 1px solid #334155; }
-    .btn-secondary:hover { background: #334155; }
 
-    /* CONTENU DÉTAILS */
-    .game-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
-    .card { background: var(--bg-card); border-radius: 15px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }
+    /* ZONE DE CONTENU DROITE */
+    .game-content-area {
+        min-height: 800px; /* Assure un défilement */
+    }
+
+    /* CARTES DE CONTENU */
+    .card { background: var(--bg-card); border-radius: 15px; padding: 25px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px; }
     h3 { margin-top: 0; color: white; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px; }
     p { line-height: 1.6; color: #cbd5e1; }
 
-    /* SIDEBAR & CHAT (Copiés du dashboard pour garder la persistance) */
+    /* BOUTONS ACTIONS */
+    .actions-bar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;}
+    .action-btn { padding: 10px 20px; border-radius: 20px; border: none; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+    .btn-primary { background: var(--primary-color); color: #020617; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(34, 197, 94, 0.4); }
+    .btn-secondary { background: transparent; color: white; border: 1px solid #334155; }
+    .btn-secondary:hover { background: #334155; }
+    .btn-fav-active { background: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
+
+    /* Media query pour les petits écrans (la sidebar devient statique) */
+    @media (max-width: 900px) {
+        .game-main-layout {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .game-sidebar-left {
+            position: static;
+            top: auto;
+        }
+        .game-layout {
+            margin-top: 10px;
+        }
+    }
+
+    /* Le reste du CSS (Sidebar Amis, Chat) doit être conservé pour le bon fonctionnement */
+
     .toggle-friends-btn { position: fixed; top: 80px; right: 20px; z-index: 1100; background: var(--primary-color); color: #020617; border: none; padding: 10px 16px; border-radius: 30px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .friends-sidebar { position: fixed; top: 0; right: -340px; width: var(--sidebar-width); height: 100vh; background: rgba(15, 23, 42, 0.98); border-left: 1px solid rgba(255,255,255,0.1); box-shadow: -10px 0 30px rgba(0,0,0,0.5); padding: 80px 15px 20px; z-index: 1000; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(12px); }
     .friends-sidebar.active { right: 0; }
@@ -84,51 +128,53 @@
   </header>
 
   <main class="game-layout">
-      <a href="/dashboard" class="back-btn">← Retour au tableau de bord</a>
+    <a href="/dashboard" class="back-btn">← Retour au tableau de bord</a>
 
-      <div class="game-hero">
-          <img src="" id="hero-img" class="game-hero-img" alt="Game Cover">
-          <div class="game-hero-overlay">
-              <div class="game-hero-content">
-                  <div>
-                      <h1 class="game-title-large" id="game-title">Chargement...</h1>
-                      <div style="color: #cbd5e1; margin-top: 10px;" id="game-genre">Genre • Multijoueur</div>
-                  </div>
-                  <button id="fav-action-btn" class="btn-secondary" onclick="toggleCurrentFav()">
-                     ♡ Ajouter aux favoris
-                  </button>
-              </div>
-          </div>
-      </div>
+    <div class="game-main-layout">
+        
+        <aside class="game-sidebar-left">
+            <img src="" id="game-img-sidebar" class="game-sidebar-img" alt="Game Cover">
+            <h1 class="game-title-sidebar" id="game-title">Chargement...</h1>
+            <div class="game-genre-sidebar" id="game-genre">Genre • Multijoueur</div>
+            
+            <div class="actions-bar" style="border-top: 1px solid #1e293b; padding-top: 15px;">
+                <button id="fav-action-btn" class="action-btn btn-secondary" onclick="toggleCurrentFav()">
+                    ♡ Ajouter aux favoris
+                </button>
+                <button class="action-btn btn-primary" style="flex-grow:1;">📢 Trouver des joueurs</button>
+            </div>
+        </aside>
 
-      <div class="actions-bar">
-          <button class="action-btn btn-primary">📢 Trouver des joueurs</button>
-          <button class="action-btn btn-secondary">💬 Discussion publique</button>
-      </div>
+        <div class="game-content-area">
 
-      <div class="game-grid">
-          <div>
-              <div class="card">
-                  <h3>À propos</h3>
-                  <p id="game-desc">Description du jeu en chargement...</p>
-              </div>
-              <div class="card">
-                  <h3>Dernières annonces de groupe</h3>
-                  <div style="text-align:center; padding: 20px; color: var(--text-muted); font-style: italic;">
-                      Aucune annonce pour le moment. Sois le premier !
-                  </div>
-              </div>
-          </div>
+            <section id="game-about" class="card">
+                <h3>À Propos</h3>
+                <p id="game-desc">Description du jeu en chargement...</p>
+                <div style="margin-top: 20px;">
+                    <button class="action-btn btn-secondary">💬 Discussion publique</button>
+                </div>
+            </section>
 
-          <div>
-              <div class="card">
-                  <h3>Mes Stats</h3>
-                  <p style="font-size: 0.9rem; color: var(--text-muted);">Connecte ton compte pour voir tes statistiques sur ce jeu.</p>
-                  <button class="action-btn btn-secondary" style="width:100%; justify-content:center; margin-top:10px;">Lier un compte</button>
-              </div>
-          </div>
-      </div>
+            <section id="game-stats" class="card">
+                <h3>Mes Stats et Compte</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">
+                    Connectez votre compte de jeu pour voir vos statistiques, vos rangs et vos succès.
+                </p>
+                <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
+                    <button class="action-btn btn-secondary" style="flex-grow:1;">Lier un compte</button>
+                    <button class="action-btn btn-secondary" style="flex-grow:1;">Voir l'historique</button>
+                </div>
+            </section>
 
+            <section id="game-lfg" class="card">
+                <h3>Dernières annonces de groupe</h3>
+                <div style="text-align:center; padding: 20px; color: var(--text-muted); font-style: italic;">
+                    Aucune annonce pour le moment.
+                </div>
+            </section>
+        </div>
+
+    </div>
   </main>
 
   <button class="toggle-friends-btn" onclick="toggleSidebar()"><span>💬 Amis</span></button>
@@ -149,32 +195,34 @@
     (function() {
         /* --- DONNÉES JEUX (Mêmes que Dashboard pour cohérence) --- */
         const GAMES_DB = {
-            'lol': { name: 'League of Legends', genre: 'MOBA', img: 'https://placehold.co/1200x400/16213e/fff?text=League+of+Legends', desc: 'League of Legends est un jeu de stratégie en équipe dans lequel deux équipes de cinq champions s\'affrontent pour détruire la base adverse.' },
-            'valorant': { name: 'Valorant', genre: 'FPS Tactique', img: 'https://placehold.co/1200x400/ff4655/fff?text=Valorant', desc: 'Un jeu de tir tactique 5c5 basé sur les personnages, où la précision des armes à feu rencontre des compétences d\'agent uniques.' },
-            'wow': { name: 'World of Warcraft', genre: 'MMORPG', img: 'https://placehold.co/1200x400/f1c40f/000?text=World+of+Warcraft', desc: 'Le MMORPG légendaire. Explorez Azeroth, combattez des monstres épiques et rejoignez des guildes.' },
-            'minecraft': { name: 'Minecraft', genre: 'Sandbox', img: 'https://placehold.co/1200x400/27ae60/fff?text=Minecraft', desc: 'Préparez-vous à une aventure aux possibilités illimitées. Construisez, minez, combattez des mobs et explorez des paysages infinis.' },
-            'gta': { name: 'GTA V', genre: 'Action-Aventure', img: 'https://placehold.co/1200x400/2c3e50/fff?text=GTA+V', desc: 'Explorez le monde ouvert de Los Santos et Blaine County dans l\'expérience ultime de Grand Theft Auto V.' },
-            'rocket': { name: 'Rocket League', genre: 'Sport', img: 'https://placehold.co/1200x400/2980b9/fff?text=Rocket+League', desc: 'Un mélange détonant de football d\'arcade et de chaos motorisé.' },
-            'fortnite': { name: 'Fortnite', genre: 'Battle Royale', img: 'https://placehold.co/1200x400/8e44ad/fff?text=Fortnite', desc: 'Le jeu de Battle Royale où 100 joueurs s\'affrontent pour être le dernier survivant.' },
-            'cod': { name: 'Call of Duty', genre: 'FPS', img: 'https://placehold.co/1200x400/34495e/fff?text=Call+of+Duty', desc: 'L\'expérience FPS ultime, avec des modes multijoueurs intenses et réalistes.' },
-            'apex': { name: 'Apex Legends', genre: 'Battle Royale', img: 'https://placehold.co/1200x400/e74c3c/fff?text=Apex+Legends', desc: 'Maîtrisez des personnages légendaires avec de puissantes capacités et faites équipe pour remporter la gloire.' },
-            'overwatch': { name: 'Overwatch 2', genre: 'FPS Héroïque', img: 'https://placehold.co/1200x400/e67e22/fff?text=Overwatch+2', desc: 'Overwatch 2 est un jeu d\'action en équipe gratuit et toujours actif, qui se déroule dans un futur optimiste.' },
-            'csgo': { name: 'CS:GO 2', genre: 'FPS', img: 'https://placehold.co/1200x400/333/fff?text=CS:GO+2', desc: 'La nouvelle ère de Counter-Strike avec des graphismes et un gameplay améliorés.' },
-            'fifa': { name: 'EA FC 24', genre: 'Sport', img: 'https://placehold.co/1200x400/222/fff?text=EA+FC+24', desc: 'Le jeu de football le plus réaliste au monde.' }
+            'lol': { name: 'League of Legends', genre: 'MOBA', img: 'https://placehold.co/400x533/16213e/fff?text=LoL', desc: 'League of Legends est un jeu de stratégie en équipe dans lequel deux équipes de cinq champions s\'affrontent pour détruire la base adverse.' },
+            'valorant': { name: 'Valorant', genre: 'FPS Tactique', img: 'https://placehold.co/400x533/ff4655/fff?text=Valorant', desc: 'Un jeu de tir tactique 5c5 basé sur les personnages, où la précision des armes à feu rencontre des compétences d\'agent uniques.' },
+            'wow': { name: 'World of Warcraft', genre: 'MMORPG', img: 'https://placehold.co/400x533/f1c40f/000?text=WoW', desc: 'Le MMORPG légendaire. Explorez Azeroth, combattez des monstres épiques et rejoignez des guildes.' },
+            'minecraft': { name: 'Minecraft', genre: 'Sandbox', img: 'https://placehold.co/400x533/27ae60/fff?text=Minecraft', desc: 'Préparez-vous à une aventure aux possibilités illimitées. Construisez, minez, combattez des mobs et explorez des paysages infinis.' },
+            'gta': { name: 'GTA V', genre: 'Action-Aventure', img: 'https://placehold.co/400x533/2c3e50/fff?text=GTA+V', desc: 'Explorez le monde ouvert de Los Santos et Blaine County dans l\'expérience ultime de Grand Theft Auto V.' },
+            'rocket': { name: 'Rocket League', genre: 'Sport', img: 'https://placehold.co/400x533/2980b9/fff?text=Rocket+League', desc: 'Un mélange détonant de football d\'arcade et de chaos motorisé.' },
+            'fortnite': { name: 'Fortnite', genre: 'Battle Royale', img: 'https://placehold.co/400x533/8e44ad/fff?text=Fortnite', desc: 'Le jeu de Battle Royale où 100 joueurs s\'affrontent pour être le dernier survivant.' },
+            'cod': { name: 'Call of Duty', genre: 'FPS', img: 'https://placehold.co/400x533/34495e/fff?text=Call+of+Duty', desc: 'L\'expérience FPS ultime, avec des modes multijoueurs intenses et réalistes.' },
+            'apex': { name: 'Apex Legends', genre: 'Battle Royale', img: 'https://placehold.co/400x533/e74c3c/fff?text=Apex+Legends', desc: 'Maîtrisez des personnages légendaires avec de puissantes capacités et faites équipe pour remporter la gloire.' },
+            'overwatch': { name: 'Overwatch 2', genre: 'FPS Héroïque', img: 'https://placehold.co/400x533/e67e22/fff?text=Overwatch+2', desc: 'Overwatch 2 est un jeu d\'action en équipe gratuit et toujours actif, qui se déroule dans un futur optimiste.' },
+            'csgo': { name: 'CS:GO 2', genre: 'FPS', img: 'https://placehold.co/400x533/333/fff?text=CS:GO+2', desc: 'La nouvelle ère de Counter-Strike avec des graphismes et un gameplay améliorés.' },
+            'fifa': { name: 'EA FC 24', genre: 'Sport', img: 'https://placehold.co/400x533/222/fff?text=EA+FC+24', desc: 'Le jeu de football le plus réaliste au monde.' }
         };
 
-        // 1. Récupération ID depuis l'URL ou data-attribute
+        // 1. Récupération ID et affichage
         const gameId = document.body.getAttribute('data-game-id');
         const gameData = GAMES_DB[gameId];
 
         if (gameData) {
             document.getElementById('game-title').textContent = gameData.name;
-            document.getElementById('hero-img').src = gameData.img;
+            document.getElementById('game-img-sidebar').src = gameData.img;
             document.getElementById('game-genre').textContent = gameData.genre;
             document.getElementById('game-desc').textContent = gameData.desc;
             document.title = `${gameData.name} – MatchMates`;
         } else {
             document.getElementById('game-title').textContent = "Jeu introuvable";
+            document.getElementById('game-genre').textContent = "Vérifiez l'URL.";
+            document.getElementById('game-desc').textContent = "Les données pour ce jeu n'ont pas été trouvées.";
         }
 
         // 2. Gestion Favoris sur cette page
@@ -184,14 +232,10 @@
         function updateFavBtn() {
             if(favorites.includes(gameId)) {
                 favBtn.textContent = "♥ Retirer des favoris";
-                favBtn.style.background = "#ef4444";
-                favBtn.style.color = "white";
-                favBtn.style.border = "none";
+                favBtn.classList.add('btn-fav-active');
             } else {
                 favBtn.textContent = "♡ Ajouter aux favoris";
-                favBtn.style.background = ""; // reset class
-                favBtn.style.color = "";
-                favBtn.style.border = "";
+                favBtn.classList.remove('btn-fav-active');
             }
         }
         updateFavBtn();
