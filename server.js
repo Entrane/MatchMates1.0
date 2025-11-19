@@ -1,19 +1,28 @@
-// server.js
+// ====================================================
+// FICHIER : server.js
+// ====================================================
+
 const express = require('express');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const session = require('express-session');
 const fs = require('fs');
 
+// Initialisation de l'application
 const app = express();
+
+// CONFIGURATION PORT (CRUCIAL POUR RAILWAY)
+// Railway fournit le port via process.env.PORT
 const PORT = process.env.PORT || 3000;
 
-// === Connexion SQLite ===
+// ====================================================
+// 1. BASE DE DONNÉES (SQLite)
+// ====================================================
 const db = new sqlite3.Database('./database.sqlite');
 
-// === Création des tables (users + amis + messages) ===
+// Création des tables au démarrage
 db.serialize(() => {
-  // Comptes utilisateurs
+  // Table Utilisateurs
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,20 +32,20 @@ db.serialize(() => {
     )
   `);
 
-  // Demandes d'amis
+  // Table Demandes d'amis
   db.run(`
     CREATE TABLE IF NOT EXISTS friend_requests (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       sender_id INTEGER NOT NULL,
       receiver_id INTEGER NOT NULL,
-      status TEXT NOT NULL DEFAULT 'pending',
+      status TEXT NOT NULL DEFAULT 'pending', -- pending, accepted, rejected
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
 
-  // Liste d'amis
+  // Table Amis (Liste confirmée)
   db.run(`
     CREATE TABLE IF NOT EXISTS friends (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,7 +58,7 @@ db.serialize(() => {
     )
   `);
 
-  // Messages privés entre amis
+  // Table Messages Privés
   db.run(`
     CREATE TABLE IF NOT EXISTS messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,7 +71,7 @@ db.serialize(() => {
     )
   `);
 
-  // Table des groupes
+  // Table Groupes
   db.run(`
     CREATE TABLE IF NOT EXISTS groups (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,7 +82,7 @@ db.serialize(() => {
     )
   `);
 
-  // Table des membres de groupe
+  // Table Membres de Groupes
   db.run(`
     CREATE TABLE IF NOT EXISTS group_members (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -86,7 +95,7 @@ db.serialize(() => {
     )
   `);
 
-  // Table des messages de groupe
+  // Table Messages de Groupes
   db.run(`
     CREATE TABLE IF NOT EXISTS group_messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,19 +109,25 @@ db.serialize(() => {
   `);
 });
 
-// === Middlewares ===
+// ====================================================
+// 2. MIDDLEWARES
+// ====================================================
+
+// Pour lire les données des formulaires et JSON
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+// Gestion de session (connexion persistante)
 app.use(
   session({
-    secret: 'change-this-secret', // à changer en prod
+    secret: 'matchmates_secret_key_railway', // À changer en prod idéalement
     resave: false,
     saveUninitialized: false,
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 heures
   })
 );
 
-// expose req.user depuis la session
+// Middleware pour rendre l'utilisateur accessible dans req.user
 app.use((req, res, next) => {
   if (req.session && req.session.user) {
     req.user = req.session.user;
@@ -120,10 +135,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// servir les fichiers statiques (CSS, images, etc.)
+// Servir les fichiers statiques (HTML, CSS, JS, Images)
 app.use(express.static(path.join(__dirname)));
 
-// helper auth
+// Fonction de sécurité : redirige si non connecté
 function requireAuth(req, res, next) {
   if (!req.user) {
     return res.redirect('/login.html');
@@ -131,590 +146,327 @@ function requireAuth(req, res, next) {
   next();
 }
 
-// === ROUTES PAGES ===
+// ====================================================
+// 3. ROUTES PAGES (HTML)
+// ====================================================
 
-// page d'accueil
 app.get('/', (req, res) => {
+  // Si déjà connecté, on va au dashboard, sinon login
+  if (req.user) return res.redirect('/dashboard');
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// page de login
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'login.html'));
-});
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
+app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, 'signup.html')));
+app.get('/profile', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'profile.html')));
 
-// page de signup
-app.get('/signup', (req, res) => {
-  res.sendFile(path.join(__dirname, 'signup.html'));
-});
-
-// page profile (si tu l'utilises)
-app.get('/profile', requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'profile.html'));
-});
-
-// tableau de bord – on injecte le username dans {{ username }}
+// Route Dashboard avec injection du pseudo
 app.get('/dashboard', requireAuth, (req, res) => {
-  if (!req.user || !req.user.username) {
-    return res.redirect('/login.html');
-  }
   const filePath = path.join(__dirname, 'dashboard.html');
   fs.readFile(filePath, 'utf8', (err, html) => {
     if (err) {
-      console.error('Error reading dashboard.html:', err);
-      return res.status(500).send('Erreur serveur.');
+      console.error(err);
+      return res.status(500).send('Erreur serveur loading dashboard.');
     }
+    // On remplace {{ username }} par le vrai nom
     const personalizedHtml = html.replace(/{{ username }}/g, req.user.username);
     res.send(personalizedHtml);
   });
 });
 
-// déconnexion
+// Déconnexion
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/login.html');
   });
 });
 
-// === AUTH: inscription & connexion ===
+// ====================================================
+// 4. AUTHENTIFICATION (API)
+// ====================================================
 
-// inscription
+// Inscription
 app.post('/signup', (req, res) => {
   const { username, email, password } = req.body;
+  
+  if (!username || !email || !password) return res.status(400).send("Champs manquants");
 
-  if (!username || !email || !password) {
-    return res.status(400).send('Champs manquants');
-  }
-  const trimmedUsername = username.trim();
-  const trimmedEmail = email.trim();
-
-  // NOTE : mdp non hashé = pas sécurisé, mais simple pour l'instant
   db.run(
     'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-    [trimmedUsername, trimmedEmail, password],
+    [username.trim(), email.trim(), password],
     function (err) {
       if (err) {
         console.error(err);
-        if (err.message.includes('UNIQUE constraint failed: users.username')) {
-          return res.status(400).send('Ce nom d’utilisateur est déjà utilisé.');
-        }
-        if (err.message.includes('UNIQUE constraint failed: users.email')) {
-          return res.status(400).send('Cet email est déjà utilisé.');
-        }
-        return res.status(500).send('Erreur serveur');
+        return res.status(400).send("Erreur : Pseudo ou Email déjà pris.");
       }
-      const userId = this.lastID;
-      req.session.user = { id: userId, username: trimmedUsername, email: trimmedEmail };
+      // Connexion auto après inscription
+      req.session.user = { id: this.lastID, username: username.trim(), email: email.trim() };
       res.redirect('/dashboard');
     }
   );
 });
 
-// connexion
+// Connexion
 app.post('/login', (req, res) => {
-  // peut être email OU username
-  const identifier = (req.body.identifier || '').trim();
-  const password = req.body.password || '';
-
-  if (!identifier || !password) {
-    console.log('Champs manquants:', req.body);
-    return res.status(400).send('Champs manquants');
-  }
-
-  // on cherche soit par email, soit par username
+  const { identifier, password } = req.body; // identifier = email OU username
+  
   db.get(
-    'SELECT * FROM users WHERE email = ? OR username = ?',
-    [identifier, identifier],
+    'SELECT * FROM users WHERE (email = ? OR username = ?) AND password = ?',
+    [identifier, identifier, password],
     (err, user) => {
-      if (err) {
-        console.error('Erreur DB login:', err);
-        return res.status(500).send('Erreur serveur');
+      if (err || !user) {
+        return res.status(401).send("Identifiants incorrects.");
       }
-
-      if (!user || user.password !== password) {
-        return res.status(401).send('Email / pseudo ou mot de passe incorrect');
-      }
-
-      // on stocke l'utilisateur en session
-      req.session.user = {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-      };
-
+      req.session.user = user;
       res.redirect('/dashboard');
     }
   );
 });
 
-// === API AMIS ===
+// ====================================================
+// 5. API AMIS
+// ====================================================
 
-// envoyer une demande d'ami
+// Envoyer une demande d'ami
 app.post('/api/friends/request', requireAuth, (req, res) => {
-  const currentUserId = req.user.id;
   const { toUsername } = req.body;
+  const currentUserId = req.user.id;
 
-  if (!toUsername || !toUsername.trim()) {
-    return res.status(400).json({ error: 'missing_username' });
-  }
+  // 1. Trouver l'ID de l'ami
+  db.get('SELECT id FROM users WHERE username = ?', [toUsername], (err, targetUser) => {
+    if (!targetUser) return res.status(404).json({ error: "Utilisateur introuvable." });
+    if (targetUser.id === currentUserId) return res.status(400).json({ error: "Tu ne peux pas t'ajouter toi-même." });
 
-  const targetUsername = toUsername.trim();
+    // 2. Vérifier si déjà amis ou demande en cours
+    db.get(
+        `SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?
+         UNION
+         SELECT 1 FROM friend_requests WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) AND status = 'pending'`,
+        [currentUserId, targetUser.id, currentUserId, targetUser.id, targetUser.id, currentUserId],
+        (err, existing) => {
+            if (existing) return res.status(400).json({ error: "Déjà amis ou demande en cours." });
 
-  // 1. trouver l'utilisateur cible
-  db.get(
-    'SELECT id FROM users WHERE username = ?',
-    [targetUsername],
-    (err, user) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'server_error' });
-      }
-      if (!user) {
-        return res.status(404).json({ error: 'user_not_found' });
-      }
-
-      const receiverId = user.id;
-
-      if (receiverId === currentUserId) {
-        return res.status(400).json({ error: 'cannot_add_self' });
-      }
-
-      // 2. déjà amis ?
-      db.get(
-        'SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?',
-        [currentUserId, receiverId],
-        (err, row) => {
-          if (err) {
-            console.error(err);
-            return res.status(500).json({ error: 'server_error' });
-          }
-          if (row) {
-            return res.status(400).json({ error: 'already_friends' });
-          }
-
-          // 3. demande déjà en attente ?
-          db.get(
-            `SELECT 1 FROM friend_requests
-             WHERE ((sender_id = ? AND receiver_id = ?)
-                 OR (sender_id = ? AND receiver_id = ?))
-               AND status = 'pending'`,
-            [currentUserId, receiverId, receiverId, currentUserId],
-            (err, pendingRow) => {
-              if (err) {
-                console.error(err);
-                return res.status(500).json({ error: 'server_error' });
-              }
-              if (pendingRow) {
-                return res.status(400).json({ error: 'request_already_pending' });
-              }
-
-              // 4. créer la demande
-              db.run(
-                `INSERT INTO friend_requests (sender_id, receiver_id, status)
-                 VALUES (?, ?, 'pending')`,
-                [currentUserId, receiverId],
-                function (err) {
-                  if (err) {
-                    console.error(err);
-                    return res.status(500).json({ error: 'server_error' });
-                  }
-                  return res.json({ ok: true, requestId: this.lastID });
+            // 3. Créer la demande
+            db.run(
+                'INSERT INTO friend_requests (sender_id, receiver_id) VALUES (?, ?)',
+                [currentUserId, targetUser.id],
+                function(err) {
+                    if (err) return res.status(500).json({ error: "Erreur serveur" });
+                    res.json({ ok: true });
                 }
-              );
-            }
-          );
+            );
         }
-      );
-    }
-  );
-});
-
-// liste des amis
-app.get('/api/friends', requireAuth, (req, res) => {
-  const currentUserId = req.user.id;
-
-  db.all(
-    `SELECT u.username
-     FROM friends f
-     JOIN users u ON u.id = f.friend_id
-     WHERE f.user_id = ?
-     ORDER BY u.username`,
-    [currentUserId],
-    (err, rows) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'server_error' });
-      }
-      res.json({ friends: rows });
-    }
-  );
-});
-
-// demandes d'amis (reçues + envoyées)
-app.get('/api/friends/requests', requireAuth, (req, res) => {
-  const currentUserId = req.user.id;
-
-  // incoming
-  db.all(
-    `SELECT fr.id, u.username AS from_username
-     FROM friend_requests fr
-     JOIN users u ON u.id = fr.sender_id
-     WHERE fr.receiver_id = ? AND fr.status = 'pending'
-     ORDER BY fr.created_at DESC`,
-    [currentUserId],
-    (err, incomingRows) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'server_error' });
-      }
-
-      // outgoing
-      db.all(
-        `SELECT fr.id, u.username AS to_username
-         FROM friend_requests fr
-         JOIN users u ON u.id = fr.receiver_id
-         WHERE fr.sender_id = ? AND fr.status = 'pending'
-         ORDER BY fr.created_at DESC`,
-        [currentUserId],
-        (err2, outgoingRows) => {
-          if (err2) {
-            console.error(err2);
-            return res.status(500).json({ error: 'server_error' });
-          }
-
-          res.json({
-            incoming: incomingRows,
-            outgoing: outgoingRows
-          });
-        }
-      );
-    }
-  );
-});
-
-// accepter une demande
-app.post('/api/friends/requests/:id/accept', requireAuth, (req, res) => {
-  const currentUserId = req.user.id;
-  const requestId = req.params.id;
-
-  db.get(
-    'SELECT * FROM friend_requests WHERE id = ?',
-    [requestId],
-    (err, fr) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'server_error' });
-      }
-      if (!fr) {
-        return res.status(404).json({ error: 'request_not_found' });
-      }
-      if (fr.receiver_id !== currentUserId) {
-        return res.status(403).json({ error: 'not_authorized' });
-      }
-      if (fr.status !== 'pending') {
-        return res.status(400).json({ error: 'not_pending' });
-      }
-
-      db.run(
-        "UPDATE friend_requests SET status = 'accepted' WHERE id = ?",
-        [requestId],
-        (err) => {
-          if (err) {
-            console.error(err);
-            return res.status(500).json({ error: 'server_error' });
-          }
-
-          // ajout mutuel dans friends
-          db.run(
-            'INSERT OR IGNORE INTO friends (user_id, friend_id) VALUES (?, ?)',
-            [fr.sender_id, fr.receiver_id]
-          );
-          db.run(
-            'INSERT OR IGNORE INTO friends (user_id, friend_id) VALUES (?, ?)',
-            [fr.receiver_id, fr.sender_id]
-          );
-
-          res.json({ ok: true });
-        }
-      );
-    }
-  );
-});
-
-// refuser une demande
-app.post('/api/friends/requests/:id/reject', requireAuth, (req, res) => {
-  const currentUserId = req.user.id;
-  const requestId = req.params.id;
-
-  db.get(
-    'SELECT * FROM friend_requests WHERE id = ?',
-    [requestId],
-    (err, fr) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'server_error' });
-      }
-      if (!fr) {
-        return res.status(404).json({ error: 'request_not_found' });
-      }
-      if (fr.receiver_id !== currentUserId) {
-        return res.status(403).json({ error: 'not_authorized' });
-      }
-
-      db.run(
-        "UPDATE friend_requests SET status = 'rejected' WHERE id = ?",
-        [requestId],
-        (err) => {
-          if (err) {
-            console.error(err);
-            return res.status(500).json({ error: 'server_error' });
-          }
-          res.json({ ok: true });
-        }
-      );
-    }
-  );
-});
-
-// === API MESSAGES ===
-
-// Récupérer les messages avec un ami
-app.get('/api/messages/:friendUsername', requireAuth, (req, res) => {
-  const currentUserId = req.user.id;
-  const friendUsername = req.params.friendUsername;
-
-  // 1. trouver l'utilisateur ami
-  db.get(
-    'SELECT id FROM users WHERE username = ?',
-    [friendUsername],
-    (err, friend) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'server_error' });
-      }
-      if (!friend) {
-        return res.status(404).json({ error: 'user_not_found' });
-      }
-
-      const friendId = friend.id;
-
-      // 2. vérifier qu'ils sont amis
-      db.get(
-        'SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?',
-        [currentUserId, friendId],
-        (err2, row) => {
-          if (err2) {
-            console.error(err2);
-            return res.status(500).json({ error: 'server_error' });
-          }
-          if (!row) {
-            return res.status(403).json({ error: 'not_friends' });
-          }
-
-          // 3. récupérer la conversation
-          db.all(
-            `SELECT sender_id, receiver_id, content, created_at
-             FROM messages
-             WHERE (sender_id = ? AND receiver_id = ?)
-                OR (sender_id = ? AND receiver_id = ?)
-             ORDER BY created_at ASC`,
-            [currentUserId, friendId, friendId, currentUserId],
-            (err3, rows) => {
-              if (err3) {
-                console.error(err3);
-                return res.status(500).json({ error: 'server_error' });
-              }
-
-              // on marque si le message vient de l'utilisateur connecté
-              const messages = rows.map((m) => ({
-                fromSelf: m.sender_id === currentUserId,
-                content: m.content,
-                created_at: m.created_at,
-              }));
-
-              res.json({ messages });
-            }
-          );
-        }
-      );
-    }
-  );
-});
-
-// Envoyer un message à un ami
-app.post('/api/messages', requireAuth, (req, res) => {
-  const currentUserId = req.user.id;
-  const { toUsername, content } = req.body;
-
-  if (!toUsername || !content || !content.trim()) {
-    return res.status(400).json({ error: 'missing_fields' });
-  }
-
-  const cleanContent = content.trim();
-
-  // 1. trouver le receveur
-  db.get(
-    'SELECT id FROM users WHERE username = ?',
-    [toUsername],
-    (err, friend) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'server_error' });
-      }
-      if (!friend) {
-        return res.status(404).json({ error: 'user_not_found' });
-      }
-
-      const receiverId = friend.id;
-
-      // 2. vérifier qu'ils sont amis
-      db.get(
-        'SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?',
-        [currentUserId, receiverId],
-        (err2, row) => {
-          if (err2) {
-            console.error(err2);
-            return res.status(500).json({ error: 'server_error' });
-          }
-          if (!row) {
-            return res.status(403).json({ error: 'not_friends' });
-          }
-
-          // 3. insérer le message
-          db.run(
-            'INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)',
-            [currentUserId, receiverId, cleanContent],
-            function (err3) {
-              if (err3) {
-                console.error(err3);
-                return res.status(500).json({ error: 'server_error' });
-              }
-
-              res.json({
-                ok: true,
-                messageId: this.lastID,
-              });
-            }
-          );
-        }
-      );
-    }
-  );
-});
-
-// === API GROUPES ===
-
-// créer un groupe
-app.post('/api/groups', requireAuth, (req, res) => {
-  const { name, members } = req.body;
-  const creatorId = req.user.id;
-
-  if (!name || !name.trim() || !Array.isArray(members) || members.length === 0) {
-    return res.status(400).json({ error: 'missing_fields' });
-  }
-
-  db.run('INSERT INTO groups (name, creator_id) VALUES (?, ?)', [name.trim(), creatorId], function (err) {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'server_error' });
-    }
-
-    const groupId = this.lastID;
-    const allMembers = [...new Set([creatorId, ...members])]; // créateur + membres
-
-    const placeholders = allMembers.map(() => '(?, ?)').join(',');
-    const sql = `INSERT INTO group_members (group_id, user_id) VALUES ${placeholders}`;
-    const params = allMembers.flatMap(userId => [groupId, userId]);
-
-    db.run(sql, params, (err) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'server_error' });
-      }
-      res.json({ ok: true, groupId });
-    });
-  });
-});
-
-// récupérer les groupes d'un utilisateur
-app.get('/api/groups', requireAuth, (req, res) => {
-  const userId = req.user.id;
-  db.all(`
-    SELECT g.id, g.name
-    FROM groups g
-    JOIN group_members gm ON g.id = gm.group_id
-    WHERE gm.user_id = ?
-    ORDER BY g.created_at DESC
-  `, [userId], (err, rows) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'server_error' });
-    }
-    res.json({ groups: rows });
-  });
-});
-
-// récupérer les messages d'un groupe
-app.get('/api/groups/:groupId/messages', requireAuth, (req, res) => {
-  const { groupId } = req.params;
-  const userId = req.user.id;
-
-  // 1. vérifier que l'utilisateur est membre du groupe
-  db.get('SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?', [groupId, userId], (err, row) => {
-    if (err || !row) {
-      return res.status(403).json({ error: 'not_member' });
-    }
-
-    // 2. récupérer les messages
-    db.all(`
-      SELECT gm.id, gm.content, gm.created_at, u.username as sender_username
-      FROM group_messages gm
-      JOIN users u ON u.id = gm.sender_id
-      WHERE gm.group_id = ?
-      ORDER BY gm.created_at ASC
-    `, [groupId], (err, rows) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'server_error' });
-      }
-      res.json({ messages: rows });
-    });
-  });
-});
-
-// envoyer un message dans un groupe
-app.post('/api/groups/:groupId/messages', requireAuth, (req, res) => {
-  const { groupId } = req.params;
-  const { content } = req.body;
-  const senderId = req.user.id;
-
-  if (!content || !content.trim()) {
-    return res.status(400).json({ error: 'missing_content' });
-  }
-
-  // 1. vérifier que l'utilisateur est membre du groupe
-  db.get('SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?', [groupId, senderId], (err, row) => {
-    if (err || !row) {
-      return res.status(403).json({ error: 'not_member' });
-    }
-
-    // 2. insérer le message
-    db.run(
-      'INSERT INTO group_messages (group_id, sender_id, content) VALUES (?, ?, ?)',
-      [groupId, senderId, content.trim()],
-      function (err) {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ error: 'server_error' });
-        }
-        res.json({ ok: true, messageId: this.lastID });
-      }
     );
   });
 });
 
+// Récupérer la liste des amis confirmés
+app.get('/api/friends', requireAuth, (req, res) => {
+  db.all(
+    `SELECT u.username, u.id 
+     FROM friends f 
+     JOIN users u ON u.id = f.friend_id 
+     WHERE f.user_id = ?`,
+    [req.user.id],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: "Erreur DB" });
+      res.json({ friends: rows || [] });
+    }
+  );
+});
 
-// === LANCEMENT SERVEUR ===
+// Récupérer les demandes d'amis (reçues et envoyées)
+app.get('/api/friends/requests', requireAuth, (req, res) => {
+  const userId = req.user.id;
+  
+  // Demandes reçues (Incoming)
+  db.all(
+    `SELECT fr.id, u.username as from_username 
+     FROM friend_requests fr 
+     JOIN users u ON u.id = fr.sender_id 
+     WHERE fr.receiver_id = ? AND fr.status = 'pending'`,
+    [userId],
+    (err, incoming) => {
+        if (err) return res.status(500).json({ error: "Erreur DB" });
+        
+        // Demandes envoyées (Outgoing)
+        db.all(
+            `SELECT fr.id, u.username as to_username
+             FROM friend_requests fr
+             JOIN users u ON u.id = fr.receiver_id
+             WHERE fr.sender_id = ? AND fr.status = 'pending'`,
+            [userId],
+            (err2, outgoing) => {
+                res.json({ incoming: incoming || [], outgoing: outgoing || [] });
+            }
+        );
+    }
+  );
+});
+
+// Accepter ou Refuser une demande
+app.post('/api/friends/requests/:id/:action', requireAuth, (req, res) => {
+  const { id, action } = req.params; // id = id de la requete, action = 'accept' ou 'reject'
+  const userId = req.user.id;
+  const newStatus = action === 'accept' ? 'accepted' : 'rejected';
+
+  // Vérifier que la demande est bien destinée à l'utilisateur connecté
+  db.get('SELECT * FROM friend_requests WHERE id = ? AND receiver_id = ?', [id, userId], (err, request) => {
+      if (!request) return res.status(404).json({ error: "Demande introuvable ou non autorisé" });
+
+      // Mettre à jour le statut
+      db.run('UPDATE friend_requests SET status = ? WHERE id = ?', [newStatus, id], (err) => {
+          if (err) return res.status(500).json({ error: "Erreur update" });
+
+          // SI ACCEPTÉ : Créer l'amitié dans les DEUX SENS
+          if (action === 'accept') {
+              const stmt = db.prepare('INSERT OR IGNORE INTO friends (user_id, friend_id) VALUES (?, ?)');
+              stmt.run(request.sender_id, request.receiver_id);
+              stmt.run(request.receiver_id, request.sender_id);
+              stmt.finalize();
+          }
+          res.json({ ok: true });
+      });
+  });
+});
+
+// ====================================================
+// 6. API MESSAGES (Privés)
+// ====================================================
+
+// Récupérer les messages avec un ami spécifique
+app.get('/api/messages/:friendUsername', requireAuth, (req, res) => {
+    const friendName = req.params.friendUsername;
+    const myId = req.user.id;
+
+    db.get('SELECT id FROM users WHERE username = ?', [friendName], (err, friend) => {
+        if (!friend) return res.status(404).json({ messages: [] });
+
+        db.all(
+            `SELECT sender_id, content, created_at 
+             FROM messages 
+             WHERE (sender_id = ? AND receiver_id = ?) 
+                OR (sender_id = ? AND receiver_id = ?) 
+             ORDER BY created_at ASC`,
+            [myId, friend.id, friend.id, myId],
+            (err, rows) => {
+                if (err) return res.status(500).json({ error: "Erreur messages" });
+                
+                // Formater pour le front
+                const formatted = rows.map(m => ({
+                    fromSelf: m.sender_id === myId,
+                    content: m.content,
+                    created_at: m.created_at
+                }));
+                res.json({ messages: formatted });
+            }
+        );
+    });
+});
+
+// Envoyer un message
+app.post('/api/messages', requireAuth, (req, res) => {
+    const { toUsername, content } = req.body;
+    const myId = req.user.id;
+
+    if (!content || !content.trim()) return res.status(400).json({ error: "Message vide" });
+
+    db.get('SELECT id FROM users WHERE username = ?', [toUsername], (err, friend) => {
+        if (!friend) return res.status(404).json({ error: "Ami introuvable" });
+
+        db.run(
+            'INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)',
+            [myId, friend.id, content],
+            function(err) {
+                if (err) return res.status(500).json({ error: "Erreur envoi" });
+                res.json({ ok: true, id: this.lastID });
+            }
+        );
+    });
+});
+
+// ====================================================
+// 7. API GROUPES (Bonus)
+// ====================================================
+
+// Créer un groupe
+app.post('/api/groups', requireAuth, (req, res) => {
+  const { name, members } = req.body; // members = tableau d'IDs
+  const creatorId = req.user.id;
+
+  db.run('INSERT INTO groups (name, creator_id) VALUES (?, ?)', [name, creatorId], function(err) {
+      if (err) return res.status(500).json({ error: "Erreur création groupe" });
+      const groupId = this.lastID;
+
+      // Ajouter le créateur + les membres
+      const allMembers = [creatorId, ...(members || [])];
+      const stmt = db.prepare('INSERT OR IGNORE INTO group_members (group_id, user_id) VALUES (?, ?)');
+      allMembers.forEach(uid => stmt.run(groupId, uid));
+      stmt.finalize();
+
+      res.json({ ok: true, groupId });
+  });
+});
+
+// Liste des groupes de l'utilisateur
+app.get('/api/groups', requireAuth, (req, res) => {
+  db.all(
+      `SELECT g.id, g.name 
+       FROM groups g 
+       JOIN group_members gm ON g.id = gm.group_id 
+       WHERE gm.user_id = ?`,
+      [req.user.id],
+      (err, rows) => {
+          res.json({ groups: rows || [] });
+      }
+  );
+});
+
+// Messages de groupe
+app.get('/api/groups/:groupId/messages', requireAuth, (req, res) => {
+    const groupId = req.params.groupId;
+    // Vérif membre
+    db.get('SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?', [groupId, req.user.id], (err, isMember) => {
+        if (!isMember) return res.status(403).json({ error: "Non autorisé" });
+
+        db.all(
+            `SELECT gm.content, gm.created_at, u.username as sender_username, gm.sender_id
+             FROM group_messages gm
+             JOIN users u ON u.id = gm.sender_id
+             WHERE gm.group_id = ?
+             ORDER BY gm.created_at ASC`,
+            [groupId],
+            (err, rows) => {
+                const formatted = rows.map(m => ({
+                    fromSelf: m.sender_id === req.user.id,
+                    content: m.content,
+                    senderName: m.sender_username, // Pour afficher qui parle
+                    created_at: m.created_at
+                }));
+                res.json({ messages: formatted });
+            }
+        );
+    });
+});
+
+app.post('/api/groups/:groupId/messages', requireAuth, (req, res) => {
+    const groupId = req.params.groupId;
+    const content = req.body.content;
+    
+    db.run(
+        'INSERT INTO group_messages (group_id, sender_id, content) VALUES (?, ?, ?)',
+        [groupId, req.user.id, content],
+        function(err) {
+            if (err) return res.status(500).json({ error: "Erreur" });
+            res.json({ ok: true });
+        }
+    );
+});
+
+// ====================================================
+// LANCEMENT DU SERVEUR
+// ====================================================
 app.listen(PORT, () => {
-  console.log(`Serveur lancé sur http://localhost:${PORT}`);
+  console.log(`Serveur démarré sur http://localhost:${PORT}`);
+  console.log(`Prêt pour Railway !`);
 });
