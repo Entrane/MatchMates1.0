@@ -26,28 +26,26 @@
     .nav-links a:hover { color: var(--primary-color); }
     .user-info { color: var(--text-main); font-weight: 500; }
     
-    /* LAYOUT PRINCIPAL (Contenu + Bouton + Sidebar Amis) */
+    /* LAYOUT PRINCIPAL */
     main { padding-top: 80px; }
 
-    /* Conteneur pour les 2 colonnes principales (Profil + Matchmaking) */
-    .game-layout {
+    /* Conteneur pour le contenu de la page jeu */
+    .game-content-area {
+        margin: 20px 30px;
+        /* La largeur est ajustée pour laisser l'espace à la sidebar sociale */
+        max-width: calc(100% - var(--sidebar-width) - 60px); 
+    }
+    
+    /* Structure 2 colonnes du contenu spécifique au jeu (Rétabli) */
+    .game-settings-layout {
         display: flex;
-        max-width: calc(100% - var(--sidebar-width)); /* Espace réservé pour la sidebar amis */
-        padding: 20px 30px;
-        gap: 30px; /* Espace entre la colonne de profil et le contenu central */
+        gap: 30px;
+        align-items: flex-start;
+    }
+    .settings-column {
+        flex: 1;
     }
 
-    /* COLONNE GAUCHE: Profil Statique */
-    .profile-sidebar {
-        width: 280px; 
-        flex-shrink: 0;
-    }
-
-    /* COLONNE CENTRALE: Matchmaking */
-    .center-content {
-        flex-grow: 1;
-        max-width: 600px; /* Max width pour un bon confort de lecture */
-    }
 
     /* CARD STYLING */
     .card { background-color: var(--bg-card); padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
@@ -84,11 +82,11 @@
         background-color: #172031; 
         padding: 20px; 
         position: fixed; 
-        right: 0; 
+        right: 0; /* CORRIGÉ : Assure que la barre est bien ancrée à droite */
         top: 80px; 
         z-index: 700; 
         border-left: 1px solid rgba(255,255,255,0.05); 
-        transition: transform 0.3s ease; /* AJOUT POUR LA RÉTRACTATION */
+        transition: transform 0.3s ease;
     }
     .social-sidebar.collapsed {
         transform: translateX(var(--sidebar-width)); /* SORT LA SIDEBAR DE L'ÉCRAN */
@@ -118,6 +116,7 @@
         height: 20px;
     }
 
+    /* Le reste des styles sociaux et chat... (inchangés) */
     .friend-card { background-color: var(--bg-card); padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: background-color 0.2s; display: flex; justify-content: space-between; align-items: center; }
     .friend-card:hover { background-color: #2b3a50; }
     .friend-request-title { color: var(--text-muted); font-size: 0.8rem; margin-top: 10px; margin-bottom: 5px; }
@@ -127,7 +126,8 @@
     #friend-notif { text-align: center; color: var(--primary-color); font-size: 0.9rem; margin-top: 10px; }
 
     /* CHAT WINDOWS */
-    .chat-container { position: fixed; bottom: 0; right: 350px; display: flex; gap: 10px; z-index: 900; }
+    /* Position de la fenêtre de chat ajustée pour laisser la place à la social-sidebar */
+    .chat-container { position: fixed; bottom: 0; right: calc(var(--sidebar-width) + 20px); display: flex; gap: 10px; z-index: 900; }
     .chat-window { width: 300px; height: 400px; background-color: var(--bg-card); border-radius: 8px 8px 0 0; overflow: hidden; box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; }
     .chat-header { background-color: var(--primary-color); color: var(--bg-dark); padding: 10px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
     .chat-header span:last-child { font-size: 1.2rem; }
@@ -141,18 +141,18 @@
     /* RESPONSIVE */
     @media (max-width: 1200px) {
         .social-sidebar { width: 280px; --sidebar-width: 280px; }
-        .game-layout { max-width: calc(100% - 280px); }
+        .game-content-area { max-width: calc(100% - 280px - 60px); }
         #sidebar-toggle { right: 280px; }
-        .chat-container { right: 290px; }
+        .chat-container { right: 300px; } /* Ajusté pour la nouvelle largeur */
     }
     @media (max-width: 900px) {
         /* En mode mobile, empilement vertical */
-        .game-layout { flex-direction: column; max-width: 100%; padding: 20px; }
-        .profile-sidebar { width: 100%; }
-        .center-content { max-width: 100%; }
+        .game-content-area { max-width: 100%; margin: 20px; }
+        .game-settings-layout { flex-direction: column; gap: 0; }
         /* La sidebar sociale redevient relative et non-collapsable en bas */
-        .social-sidebar { position: relative; width: 100%; top: auto; right: auto; border-left: none; border-bottom: 1px solid rgba(255,255,255,0.05); transform: none !important; }
+        .social-sidebar { position: relative; width: 100%; top: auto; right: auto; border-left: none; border-bottom: 1px solid rgba(255,255,255,0.05); transform: none !important; padding: 20px; }
         #sidebar-toggle { display: none; } /* On cache le bouton de bascule */
+        .chat-container { right: 10px; } /* Le chat se décale en bas à droite */
     }
   </style>
 </head>
@@ -171,46 +171,12 @@
         <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
     </button>
     
-    <div class="game-layout">
+    <div class="game-content-area">
+        <h1 id="game-title">Chargement du Jeu...</h1>
 
-        <div class="profile-sidebar">
-            <div class="card">
-                <h3 style="margin-top: 0; font-size: 1.2rem;">Ton Profil MatchMates</h3>
-                
-                <div style="background-color: rgba(255,255,255,0.05); height: 100px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: var(--text-muted); overflow: hidden;">
-                    <img id="game-icon" src="game-{{ gameId }}.png" alt="Icone du Jeu" style="width: 60px; height: 60px; border-radius: 4px; object-fit: cover;">
-                </div>
-
-                <div style="text-align: center;">
-                    <p style="font-weight: 600; font-size: 1.1rem; margin: 0 0 5px;">{{ username }}</p>
-                    <p style="color: var(--primary-color); font-size: 0.8rem; margin: 0 0 15px;">Joueur de <span id="game-name-display">...</span></p>
-                </div>
-                
-                <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                    <h4 style="font-size: 0.95rem; margin-bottom: 5px;">Description de Profil</h4>
-                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 6px;">
-                        "Je suis un joueur orienté support, cherchant une équipe chill pour monter en Platine. Je suis dispo le soir après 20h !"
-                    </p>
-                    <button class="action-btn btn-secondary" style="width: 100%; font-size: 0.85rem; padding: 8px 15px;">
-                        🔗 Lier compte {{ gameId }}
-                    </button>
-                </div>
-            </div>
-             <div class="card">
-                <h3 style="margin-top: 0; font-size: 1.2rem;">Tes Stats Rapides</h3>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">(Requiert le compte lié)</p>
-                <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 0.9rem;">
-                    <li style="margin-bottom: 8px;"><span style="color: var(--primary-color);">Victoires :</span> 42</li>
-                    <li style="margin-bottom: 8px;"><span style="color: var(--primary-color);">Ratio K/D :</span> 1.25</li>
-                    <li style="margin-bottom: 8px;"><span style="color: var(--primary-color);">Meilleur Rang :</span> Diamant</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="center-content">
-            <h1 id="game-title">Chargement du Jeu...</h1>
-
-            <div class="game-settings-layout">
+        <div class="game-settings-layout">
+            
+            <div class="settings-column"> 
                 
                 <div class="card">
                     <h3>Ton profil de joueur</h3>
@@ -296,16 +262,28 @@
                     </div>
                 </div>
 
+            </div>
+
+            <div class="settings-column" style="flex: 0.6;"> 
                 <div class="card">
-                    <h3>Actualités & Infos</h3>
+                    <h3 style="font-size: 1.2rem;">Actualités & Infos</h3>
                     <p style="color: var(--text-muted);">
                         Ici, vous pourriez intégrer des actualités, des statistiques ou d'autres informations spécifiques au jeu (via une API de jeu ou des données fictives).
                     </p>
+                    
+                    <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                        <h4 style="font-size: 0.95rem; margin-bottom: 5px;">Description de Profil</h4>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 6px;">
+                            "Je suis un joueur orienté support, cherchant une équipe chill pour monter en Platine. Je suis dispo le soir après 20h !"
+                        </p>
+                        <button class="action-btn btn-secondary" style="width: 100%; font-size: 0.85rem; padding: 8px 15px;">
+                            🔗 Lier compte {{ gameId }}
+                        </button>
+                    </div>
                 </div>
-
             </div>
-        </div>
 
+        </div>
     </div> <div class="social-sidebar" id="social-sidebar">
       <h3>Social</h3>
 
@@ -335,50 +313,34 @@
     const friendNotif = document.getElementById('friend-notif');
     const friendsListEl = document.getElementById('friends-list');
     const friendRequestsListEl = document.getElementById('friend-requests-list');
-    const gameNameDisplayEl = document.getElementById('game-name-display'); // Pour le bandeau gauche
-    let activeChats = {};
     const pathSegments = window.location.pathname.split('/');
     const gameId = pathSegments[pathSegments.length - 1]; // ex: 'valorant'
 
     let currentRankSelection = null;
     let currentPartnerRankSelection = null;
+    let activeChats = {}; // Ajouté pour le suivi du chat
 
     // Définitions des rangs (à adapter par jeu)
     const RANKS = {
       valorant: [
-        { name: 'Fer', img: 'fer.png' },
-        { name: 'Bronze', img: 'bronze.png' },
-        { name: 'Argent', img: 'argent.png' },
-        { name: 'Or', img: 'or.png' },
-        { name: 'Platine', img: 'platine.png' },
-        { name: 'Diamant', img: 'diamant.png' },
-        { name: 'Ascendant', img: 'ascendant.png' },
-        { name: 'Immortel', img: 'immortel.png' },
-        { name: 'Radiant', img: 'radiant.png' },
+        { name: 'Fer', img: 'fer.png' }, { name: 'Bronze', img: 'bronze.png' }, { name: 'Argent', img: 'argent.png' }, 
+        { name: 'Or', img: 'or.png' }, { name: 'Platine', img: 'platine.png' }, { name: 'Diamant', img: 'diamant.png' }, 
+        { name: 'Ascendant', img: 'ascendant.png' }, { name: 'Immortel', img: 'immortel.png' }, { name: 'Radiant', img: 'radiant.png' },
       ],
-      // Ajoutez d'autres jeux au besoin
       lol: [
-        { name: 'Fer', img: 'fer_lol.png' },
-        { name: 'Bronze', img: 'bronze_lol.png' },
-        { name: 'Argent', img: 'argent_lol.png' },
-        { name: 'Or', img: 'or_lol.png' },
-        { name: 'Platine', img: 'platine_lol.png' },
-        { name: 'Émeraude', img: 'emeraude_lol.png' },
-        { name: 'Diamant', img: 'diamant_lol.png' },
-        { name: 'Maître', img: 'maitre_lol.png' },
-        { name: 'Grand Maître', img: 'gmaitre_lol.png' },
+        { name: 'Fer', img: 'fer_lol.png' }, { name: 'Bronze', img: 'bronze_lol.png' }, { name: 'Argent', img: 'argent_lol.png' }, 
+        { name: 'Or', img: 'or_lol.png' }, { name: 'Platine', img: 'platine_lol.png' }, { name: 'Émeraude', img: 'emeraude_lol.png' }, 
+        { name: 'Diamant', img: 'diamant_lol.png' }, { name: 'Maître', img: 'maitre_lol.png' }, { name: 'Grand Maître', img: 'gmaitre_lol.png' }, 
         { name: 'Challenger', img: 'challenger_lol.png' },
       ]
     };
 
     // ====================================================
-    // --- LOGIQUE SIDEBAR SOCIALE RETRACTABLE (AJOUT) ---
+    // --- LOGIQUE SIDEBAR SOCIALE RETRACTABLE (MAINTENUE) ---
     // ====================================================
     window.toggleSocialSidebar = function() {
         const sidebar = document.getElementById('social-sidebar');
-        // La classe 'collapsed' est basculée
         const isCollapsed = sidebar.classList.toggle('collapsed');
-        // Sauvegarde l'état dans le localStorage
         localStorage.setItem('socialSidebarCollapsed', isCollapsed);
     }
     
@@ -400,12 +362,8 @@
             const titleMap = {
                 'valorant': 'VALORANT - Matchmaking',
                 'lol': 'League of Legends - Matchmaking',
-                // ...
             };
-            const gameName = titleMap[gameId] ? titleMap[gameId].split(' - ')[0] : gameId.toUpperCase();
-            
             gameTitleEl.textContent = titleMap[gameId] || `Jeu : ${gameId}`;
-            gameNameDisplayEl.textContent = gameName; // Met à jour le bandeau gauche
         }
         updateGameTitle();
 
@@ -417,11 +375,9 @@
             partnerRankGrid.innerHTML = '';
 
             gameRanks.forEach(rank => {
-                // Pour le profil JOUEUR
                 const playerItem = createRankItem(rank.name, (e) => selectRank(e, 'player'));
                 rankGrid.appendChild(playerItem);
 
-                // Pour les préférences PARTENAIRE
                 const partnerItem = createRankItem(rank.name, (e) => selectRank(e, 'partner'));
                 partnerRankGrid.appendChild(partnerItem);
             });
@@ -431,7 +387,7 @@
             const item = document.createElement('div');
             item.className = 'rank-item';
             item.setAttribute('data-rank', rankName);
-            item.innerHTML = `<span>${rankName}</span>`; // Remplacer par <img> si vous avez les images
+            item.innerHTML = `<span>${rankName}</span>`;
             item.onclick = onClickHandler;
             return item;
         }
@@ -441,18 +397,13 @@
         // --- LOGIQUE PROFIL JOUEUR (Sauvegarde) ---
         // ====================================================
 
-        // A. Sélection de rang (Joueur ou Partenaire)
         window.selectRank = function(event, type) {
             const rankItem = event.currentTarget;
             const rankName = rankItem.getAttribute('data-rank');
-            
             const gridId = type === 'player' ? 'rank-grid' : 'partner-rank-grid';
             const grid = document.getElementById(gridId);
 
-            // Désélectionner tous les autres
             grid.querySelectorAll('.rank-item').forEach(item => item.classList.remove('selected'));
-            
-            // Sélectionner l'élément cliqué
             rankItem.classList.add('selected');
 
             if (type === 'player') {
@@ -464,19 +415,16 @@
             }
         }
 
-        // B. Bascule l'affichage du sélecteur de rang (Joueur)
         window.toggleRanks = function(shouldSave = true) {
             const isRanked = document.getElementById('ranked').checked;
             document.getElementById('rank-selector').style.display = isRanked ? 'block' : 'none';
             if (!isRanked) {
-                // Si on passe en Unranked, on désélectionne le rang
                 document.getElementById('rank-grid').querySelectorAll('.rank-item').forEach(item => item.classList.remove('selected'));
                 currentRankSelection = null;
             }
             if (shouldSave) saveGameSettings();
         }
 
-        // C. Sauvegarde les préférences du joueur (localStorage)
         window.saveGameSettings = function() {
             const mode = document.getElementById('ranked').checked ? 'ranked' : 'unrank';
             const rank = currentRankSelection ? currentRankSelection.getAttribute('data-rank') : null;
@@ -486,11 +434,9 @@
             localStorage.setItem(`gameSettings-${gameId}`, JSON.stringify(settings));
         }
 
-        // D. Charge les préférences du joueur (localStorage)
         function loadGameSettings() {
             const savedSettings = localStorage.getItem(`gameSettings-${gameId}`);
             if (!savedSettings) {
-                // Défauts: Classé, pas de vocal
                 document.getElementById('ranked').checked = true;
                 document.getElementById('discord-vocal').checked = false;
                 toggleRanks(false);
@@ -501,7 +447,7 @@
             document.getElementById(settings.mode).checked = true;
             document.getElementById('discord-vocal').checked = settings.vocal;
             
-            toggleRanks(false); // Bascule la grille de rangs sans sauvegarder à nouveau
+            toggleRanks(false);
 
             if (settings.rank && settings.mode === 'ranked') {
                 const rankItem = document.querySelector(`#rank-grid [data-rank="${settings.rank}"]`);
@@ -516,7 +462,6 @@
         // --- LOGIQUE PRÉFÉRENCES PARTENAIRE (API) ---
         // ====================================================
 
-        // A. Sauvegarde les préférences partenaire (API)
         window.savePartnerPreferences = async function() {
             const mode = document.getElementById('partner-ranked').checked ? 'ranked' : 'unrank';
             const min_rank = currentPartnerRankSelection ? currentPartnerRankSelection.getAttribute('data-rank') : null;
@@ -530,13 +475,11 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                console.log("Préférences partenaire sauvegardées sur le serveur.");
             } catch (e) {
                 console.error("Erreur de sauvegarde des préférences partenaire:", e);
             }
         }
 
-        // B. Charge les préférences partenaire (API)
         async function loadPartnerPreferences() {
             try {
                 const response = await fetch(`/api/partner-preferences/${gameId}`);
@@ -547,7 +490,7 @@
                 document.getElementById(`partner-${prefs.mode}`).checked = true;
                 document.getElementById('partner-discord-vocal').checked = prefs.vocal_required;
                 
-                togglePartnerRanks(false); // Bascule la grille de rangs sans sauvegarder à nouveau
+                togglePartnerRanks(false);
 
                 if (prefs.min_rank && prefs.mode === 'ranked') {
                     const rankItem = document.querySelector(`#partner-rank-grid [data-rank="${prefs.min_rank}"]`);
@@ -558,20 +501,16 @@
                 }
 
             } catch (e) {
-                console.warn("Impossible de charger les préférences partenaire, chargement des valeurs par défaut.", e);
-                // Valeurs par défaut
                 document.getElementById('partner-ranked').checked = true;
                 document.getElementById('partner-discord-vocal').checked = false;
                 togglePartnerRanks(false);
             }
         }
 
-        // C. Bascule l'affichage du sélecteur de rang partenaire
         window.togglePartnerRanks = function(shouldSave = true) {
             const isRanked = document.getElementById('partner-ranked').checked;
             document.getElementById('partner-rank-selector').style.display = isRanked ? 'block' : 'none';
             if (!isRanked) {
-                // Si on passe en Unranked, on désélectionne le rang min
                 document.getElementById('partner-rank-grid').querySelectorAll('.rank-item').forEach(item => item.classList.remove('selected'));
                 currentPartnerRankSelection = null;
             }
@@ -582,12 +521,10 @@
         // --- LOGIQUE PROFIL JOUEUR PUBLICATION/RECHERCHE ---
         // ====================================================
 
-        // A. Publie le profil actuel du joueur via API
         window.publishProfile = async function() {
             const statusEl = document.getElementById('publish-status');
             const btn = document.getElementById('publish-profile-btn');
             
-            // Récupérer les données du profil (du localStorage)
             const mode = document.getElementById('ranked').checked ? 'ranked' : 'unrank';
             const rank = currentRankSelection ? currentRankSelection.getAttribute('data-rank') : null;
             const vocal_discord = document.getElementById('discord-vocal').checked;
@@ -599,9 +536,7 @@
 
             try {
                 const response = await fetch(`/api/publish-profile/${gameId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
                 });
                 
                 const result = await response.json();
@@ -614,7 +549,6 @@
                 }
 
             } catch (e) {
-                console.error("Erreur de publication du profil:", e);
                 statusEl.textContent = "❌ Erreur de publication. Veuillez vérifier votre rang/mode.";
                 statusEl.style.color = '#ef4444';
             } finally {
@@ -623,7 +557,6 @@
             }
         }
 
-        // B. Recherche des joueurs correspondants
         window.findPlayers = async function() {
             const matchCard = document.getElementById('match-results-card');
             const matchList = document.getElementById('match-list');
@@ -646,25 +579,19 @@
                 }
 
             } catch (e) {
-                console.error("Erreur de recherche de joueurs:", e);
                 matchList.innerHTML = '<p style="text-align:center; color:#ef4444;">Une erreur est survenue lors de la recherche.</p>';
             }
         }
 
-        // C. Affiche les profils trouvés (avec boutons Amis/Message)
         function renderMatches(matches) {
             const matchList = document.getElementById('match-list');
-            matchList.innerHTML = ''; // Nettoyer les résultats précédents
+            matchList.innerHTML = '';
 
             matches.forEach(match => {
                 const card = document.createElement('div');
                 card.className = 'card match-profile-card';
-                // J'ai mis les styles directement pour un aperçu rapide
-                card.style.marginBottom = '10px';
-                card.style.padding = '15px';
-                card.style.display = 'flex';
-                card.style.alignItems = 'center';
-                card.style.justifyContent = 'space-between';
+                card.style.marginBottom = '10px'; card.style.padding = '15px'; card.style.display = 'flex';
+                card.style.alignItems = 'center'; card.style.justifyContent = 'space-between';
                 
                 let rankText = match.rank ? `Rang: ${match.rank}` : 'Non Classé';
                 let vocalIcon = match.vocal ? ' 🎤' : '';
@@ -687,18 +614,15 @@
             });
         }
         
-        // D. Fonction utilitaire pour envoyer une demande d'ami
         window.sendFriendRequestByUsername = async function(username) {
             try {
                 const res = await fetch('/api/friends/request', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ toUsername: username })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ toUsername: username })
                 });
                 const data = await res.json();
                 if(data.ok) {
                     alert(`Demande d'ami envoyée à ${username} !`);
-                    loadSocial(); // Rafraîchir la liste d'amis/requêtes
+                    loadSocial();
                 } else {
                     alert(`Erreur : ${data.error}`);
                 }
@@ -711,8 +635,7 @@
         // ====================================================
         // --- LOGIQUE GÉNÉRALE SOCIALE ---
         // ====================================================
-
-        // Envoi d'une demande d'ami
+        
         window.sendFriendRequest = async function(e) {
             e.preventDefault();
             const usernameInput = document.getElementById('friend-username');
@@ -720,9 +643,7 @@
             usernameInput.value = '';
             
             const res = await fetch('/api/friends/request', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ toUsername })
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ toUsername })
             });
             const data = await res.json();
 
@@ -732,16 +653,14 @@
                 friendNotif.innerText = `Erreur : ${data.error}`;
             }
             setTimeout(() => friendNotif.innerText = "", 3000);
-            loadSocial(); // Rafraîchit les demandes en attente
+            loadSocial();
         }
 
-        // Gère la réponse aux requêtes (Accepter/Refuser)
         window.handleRequest = async function(id, action) {
             await fetch(`/api/friends/requests/${id}/${action}`, { method: 'POST' });
             loadSocial();
         }
 
-        // Ouvre une fenêtre de chat
         window.openChat = (username) => {
             if (document.getElementById(`cw-${username}`)) return;
 
@@ -761,11 +680,9 @@
             chatContainer.appendChild(chatWindow);
             fetchMessages(username);
             
-            // Mise à jour régulière
             activeChats[username] = setInterval(() => fetchMessages(username), 3000);
         }
 
-        // Ferme une fenêtre de chat
         window.closeChat = (username) => {
             const el = document.getElementById(`cw-${username}`);
             if (el) el.remove();
@@ -775,22 +692,18 @@
             }
         }
 
-        // Envoie un message
         window.sendMessage = async function(e, username) {
             e.preventDefault();
             const input = e.target.querySelector('input');
             if (!input.value.trim()) return;
 
             await fetch('/api/messages', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ toUsername: username, content: input.value.trim() })
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ toUsername: username, content: input.value.trim() })
             });
             input.value = "";
             fetchMessages(username);
         }
 
-        // Récupère et affiche les messages
         async function fetchMessages(username) {
             const chatBody = document.getElementById(`msg-${username}`);
             if (!chatBody) return;
@@ -798,32 +711,25 @@
             const res = await fetch(`/api/messages/${username}`);
             const data = await res.json();
             
-            // Si l'utilisateur n'est pas ami, le chat ne s'ouvre pas ou reste vide
-            if (!data.messages) return; 
+            if (!data.messages) return;
 
-            // Sauvegarde la position de scroll actuelle
             const isScrolledToBottom = chatBody.scrollHeight - chatBody.clientHeight <= chatBody.scrollTop + 1;
             
-            // Création des messages
             chatBody.innerHTML = data.messages.map(msg => `
                 <div class="msg ${msg.fromSelf ? 'self' : 'other'}">${msg.content}</div>
             `).join('');
 
-            // Scroll vers le bas si c'était déjà le cas (ou si nouveau message)
             if (isScrolledToBottom || data.messages.length === 1) {
                 chatBody.scrollTop = chatBody.scrollHeight;
             }
         }
 
-        // Charge les amis et les requêtes
         async function loadSocial() {
             try {
-                // 1. Amis
                 const friendsRes = await fetch('/api/friends');
                 const friendsData = await friendsRes.json();
                 renderFriends(friendsData.friends || []);
 
-                // 2. Demandes
                 const requestsRes = await fetch('/api/friends/requests');
                 const requestsData = await requestsRes.json();
                 renderRequests(requestsData.incoming || [], requestsData.outgoing || []);
@@ -833,7 +739,6 @@
             }
         }
 
-        // Affiche la liste d'amis
         function renderFriends(friends) {
             friendsListEl.innerHTML = '<p class="sidebar-section-title">Mes Amis</p>';
             if (!friends.length) {
@@ -850,11 +755,9 @@
             });
         }
 
-        // Affiche les requêtes
         function renderRequests(incoming, outgoing) {
             friendRequestsListEl.innerHTML = '';
 
-            // Requêtes REÇUES
             if (incoming.length > 0) {
                 const title = document.createElement('p');
                 title.textContent = `Demandes reçues (${incoming.length})`;
@@ -875,7 +778,6 @@
                 });
             }
 
-            // Requêtes ENVOYÉES
             if (outgoing.length > 0) {
                 const title = document.createElement('p');
                 title.textContent = `Demandes envoyées en attente (${outgoing.length})`;
@@ -885,7 +787,7 @@
                 outgoing.forEach(req => {
                     const card = document.createElement('div');
                     card.className = 'friend-card';
-                    card.style.opacity = 0.7; // Visuellement différent
+                    card.style.opacity = 0.7;
                     card.innerHTML = `
                         <span>${req.to_username} (En attente)</span>
                     `;
@@ -898,20 +800,16 @@
         // --- INITIALISATION FINALE ---
         // ====================================================
         
-        // Initialiser la grille de rangs pour ce jeu
         const gameRanks = RANKS[gameId] || RANKS.valorant;
         setupRankGrids(gameRanks);
 
-        // Charger les préférences
         loadGameSettings();
         await loadPartnerPreferences();
 
-        // Charger et mettre à jour le social
         loadSocial();
-        setInterval(loadSocial, 5000); // Mise à jour de la liste d'amis/requêtes toutes les 5 secondes
+        setInterval(loadSocial, 5000);
         
-    })(); // Fin de l'IIFE
-
+    })();
   </script>
 </body>
 </html>
