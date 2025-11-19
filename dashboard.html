@@ -5,615 +5,401 @@
   <title>Tableau de bord – MatchMates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet"
-  />
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 
   <style>
     :root {
-      --card-radius: 22px;
       --primary-color: #22c55e;
       --sidebar-width: 320px;
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
     }
 
-    /* --- MODIFICATION LAYOUT : Suppression de la colonne latérale fixe --- */
+    body {
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+    }
+
+    /* --- LAYOUT PRINCIPAL --- */
     .dashboard-layout {
-      display: block; /* Plus de flex row-reverse */
       max-width: 1200px;
-      margin: 40px auto;
+      margin: 80px auto 0;
       padding: 0 20px;
     }
+    
+    header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 15px 30px; background: rgba(30, 41, 59, 0.8);
+        backdrop-filter: blur(10px); position: fixed; top: 0; width: 100%; z-index: 800;
+        box-sizing: border-box; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    nav a { color: var(--text-muted); text-decoration: none; margin-left: 20px; font-size: 0.9rem; }
+    nav a:hover { color: white; }
 
-    /* --- NOUVEAU : Bouton pour ouvrir la sidebar --- */
+    /* --- BOUTON TOGGLE FLOTTANT --- */
     .toggle-friends-btn {
       position: fixed;
-      top: 85px; /* Juste sous le header */
+      top: 80px;
       right: 20px;
-      z-index: 900;
-      background: rgba(15, 23, 42, 0.9);
-      color: white;
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      z-index: 1100; /* Au-dessus du bandeau */
+      background: var(--primary-color);
+      color: #020617;
+      border: none;
       padding: 10px 16px;
       border-radius: 30px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      transition: right 0.3s ease, background 0.2s;
-      backdrop-filter: blur(5px);
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    .toggle-friends-btn:hover { transform: translateY(-2px); }
 
-    .toggle-friends-btn:hover {
-      background: var(--primary-color);
-      border-color: var(--primary-color);
-      color: #020617;
-    }
-
-    /* --- NOUVEAU : Sidebar Rétractable (Overlay) --- */
+    /* --- SIDEBAR (BANDEAU DROIT) --- */
     .friends-sidebar {
       position: fixed;
       top: 0;
-      right: -350px; /* Caché par défaut */
+      right: -340px; /* Caché complètement */
       width: var(--sidebar-width);
       height: 100vh;
-      background: rgba(10, 16, 28, 0.98);
-      border-left: 1px solid rgba(30, 41, 59, 1);
-      box-shadow: -5px 0 25px rgba(0,0,0,0.5);
-      padding: 80px 14px 14px; /* Padding top pour éviter le header */
-      z-index: 1000; /* Au dessus de tout */
+      background: rgba(15, 23, 42, 0.98);
+      border-left: 1px solid rgba(255,255,255,0.1);
+      box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+      padding: 80px 15px 20px; /* Espace pour le header */
+      z-index: 1000;
       transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      overflow-y: auto;
-      backdrop-filter: blur(10px);
+      display: flex; flex-direction: column; gap: 15px;
+      backdrop-filter: blur(12px);
     }
 
-    /* Classe active ajoutée par JS pour montrer le menu */
-    .friends-sidebar.active {
-      right: 0;
-    }
-
-    /* Déplacer le bouton quand le menu est ouvert */
-    .friends-sidebar.active ~ .toggle-friends-btn {
-      right: 280px; 
-      background: var(--primary-color);
-      color: #020617;
-    }
-    .friends-sidebar.active ~ .toggle-friends-btn span {
-        display: none; /* Cache le texte "Amis" quand ouvert */
-    }
-    .friends-sidebar.active ~ .toggle-friends-btn::after {
-        content: "✕";
-        font-weight: bold;
-    }
-
-    /* --- RESTE DU CSS (Jeux, etc.) inchangé mais nettoyé --- */
-
-    .games-section {
-      margin-top: 32px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .games-section h2 {
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
-    /* Bloc favoris */
-    .favorites-box {
-      background: rgba(10, 16, 28, 0.9);
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 14px 16px;
-    }
-
-    .favorites-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-
-    .favorites-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      min-height: 24px;
-    }
-
-    .favorite-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      font-size: 0.75rem;
-      color: #e5e7eb;
-      cursor: pointer;
-      transition: background 0.15s ease;
-    }
-
-    .favorite-pill:hover {
-      background: rgba(30, 64, 175, 0.95);
-    }
-
-    .favorite-pill-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: #22c55e;
-    }
-
-    /* Barre de recherche */
-    .games-search {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .games-search-input-wrapper {
-      position: relative;
-      flex: 1;
-    }
-
-    .games-search-input-wrapper input {
-      width: 100%;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      background: rgba(15, 23, 42, 0.9);
-      padding: 9px 12px 9px 32px;
-      font-size: 0.85rem;
-      color: #e5e7eb;
-      outline: none;
-    }
+    /* Quand actif, on le glisse à 0 */
+    .friends-sidebar.active { right: 0; }
     
-    .games-search-icon {
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 0.85rem;
-      color: var(--text-muted);
+    /* Le bouton bouge avec le bandeau */
+    .friends-sidebar.active ~ .toggle-friends-btn { right: 280px; background: #ef4444; color: white; }
+    .friends-sidebar.active ~ .toggle-friends-btn span { display: none; }
+    .friends-sidebar.active ~ .toggle-friends-btn::after { content: "✕"; }
+
+    /* --- CONTENU SIDEBAR --- */
+    .sidebar-section-title {
+        font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);
+        margin-top: 15px; margin-bottom: 5px; font-weight: 700; letter-spacing: 0.5px;
     }
 
-    /* Carrousel */
-    .games-carousel {
-      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent),
-                  radial-gradient(circle at bottom right, rgba(94, 234, 212, 0.11), transparent),
-                  rgba(15, 23, 42, 0.95);
-      border-radius: 26px;
-      border: 1px solid rgba(15, 23, 42, 1);
-      padding: 16px 18px 18px;
-      overflow: hidden;
-    }
-
-    .games-carousel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-    }
-
-    .carousel-controls { display: flex; gap: 6px; }
-    .carousel-btn {
-      width: 28px; height: 28px; border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.4); background: rgba(15, 23, 42, 0.9);
-      color: #e5e7eb; cursor: pointer;
-    }
-
-    .carousel-viewport { overflow: hidden; }
-    .carousel-track { display: flex; gap: 16px; transition: transform 0.45s ease; }
-    
-    .game-card {
-      position: relative; flex: 0 0 230px; height: 140px;
-      border-radius: var(--card-radius); overflow: hidden;
-      background: #020617; border: 1px solid rgba(15, 23, 42, 1);
-      cursor: pointer;
-    }
-    
-    .game-gradient { position: absolute; inset: 0; }
-    .game-fav-btn {
-      position: absolute; top: 8px; right: 8px; width: 28px; height: 28px;
-      border-radius: 999px; background: rgba(15, 23, 42, 0.9);
-      color: #e5e7eb; cursor: pointer; z-index: 2; border:none;
-    }
-    .game-fav-btn.active { color: #facc15; }
-
-    .game-info {
-      position: absolute; left: 0; right: 0; bottom: 0;
-      padding: 10px 12px 11px;
-      background: linear-gradient(to top, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.65));
-      backdrop-filter: blur(12px); z-index: 1;
-    }
-    .game-title { font-size: 0.9rem; font-weight: 600; color: #f9fafb; }
-    .game-tags { font-size: 0.75rem; color: rgba(209, 213, 219, 0.9); }
-
-    /* STYLES CONTENU SIDEBAR (Amis) */
-    .friends-header { display: flex; justify-content: space-between; align-items: center; color: white;}
-    .friends-username { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; }
-    .friends-username strong { color: #e5e7eb; }
-
-    .friends-add-form { display: flex; gap: 6px; margin-top: 4px; }
-    .friends-add-form input { flex: 1; border-radius: 999px; padding: 6px 10px; background: #1e293b; border: 1px solid #334155; color: white; }
-    .friends-add-form button { border-radius: 999px; border: none; background: var(--primary-color); color: black; padding: 6px 12px; cursor: pointer; font-weight: bold;}
-    .friends-error { font-size: 0.75rem; color: #f97316; min-height: 14px; margin-top: 5px;}
-
+    /* Carte Ami */
     .friend-card {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 8px; border-radius: 10px; background: rgba(30, 41, 59, 0.6);
-      border: 1px solid rgba(255,255,255,0.05); margin-bottom: 6px; cursor: pointer;
+      padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s;
     }
-    .friend-card:hover { background: rgba(30, 41, 59, 1); }
-    .friend-main { display: flex; align-items: center; gap: 8px; }
-    .friend-avatar { width: 32px; height: 32px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
-    .friend-name { color: #e2e8f0; font-size: 0.9rem; }
-    .friend-status { font-size: 0.7rem; color: var(--primary-color); }
+    .friend-card:hover { background: rgba(255,255,255,0.08); }
+    
+    .friend-avatar { width: 36px; height: 36px; border-radius: 50%; background: #3b82f6; display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; margin-right: 10px; }
+    .friend-info { display: flex; flex-direction: column; }
+    .friend-name { font-size: 0.9rem; color: white; font-weight: 500; }
+    .friend-status { font-size: 0.75rem; color: var(--primary-color); }
+    .friend-status.pending { color: #fbbf24; } /* Jaune pour l'attente */
 
-    /* CHAT WINDOWS */
-    .chat-windows-container {
-      position: fixed; bottom: 0; right: 340px; /* Décalé pour ne pas être sous la sidebar */
-      display: flex; flex-direction: row-reverse; gap: 10px; z-index: 1100; pointer-events: none;
-    }
-    @media(max-width: 768px) {
-        .chat-windows-container { right: 0; bottom: 0; width: 100%; flex-direction: column; }
-        .chat-window { width: 100%; }
-    }
+    /* Formulaire Ajout */
+    .add-friend-box { display: flex; gap: 5px; }
+    .add-friend-box input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid #334155; border-radius: 20px; padding: 8px 12px; color: white; outline: none; }
+    .add-friend-box button { background: var(--primary-color); border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;}
     
+    /* Messages erreurs/succès */
+    #friend-notif { font-size: 0.8rem; margin-top: 5px; min-height: 1.2em; }
+
+    /* --- CHAT WINDOWS --- */
+    .chat-container {
+        position: fixed; bottom: 0; right: 360px; /* À gauche du bandeau */
+        display: flex; flex-direction: row-reverse; gap: 15px; z-index: 900; pointer-events: none;
+    }
+    /* Responsive: si écran petit, chat en bas à droite classique */
+    @media(max-width: 900px) { .chat-container { right: 10px; } }
+
     .chat-window {
-      width: 300px; background: #1e293b; border-radius: 8px 8px 0 0;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.3); pointer-events: auto;
-      display: flex; flex-direction: column; border: 1px solid #334155;
+        width: 300px; height: 400px; background: var(--bg-card);
+        border-radius: 12px 12px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+        display: flex; flex-direction: column; pointer-events: auto;
+        border: 1px solid #334155; overflow: hidden;
     }
-    .chat-window-header { background: #0f172a; color: white; padding: 10px; display: flex; justify-content: space-between; cursor: pointer; border-radius: 8px 8px 0 0;}
-    .chat-window-body { height: 300px; display: flex; flex-direction: column; background: #020617; }
-    .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-    .chat-message { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; color: white; }
-    .chat-message.me { align-self: flex-end; background: var(--primary-color); color: black; }
-    .chat-message.them { align-self: flex-start; background: #334155; }
-    .chat-form { padding: 10px; border-top: 1px solid #334155; display: flex; gap: 5px; }
-    .chat-form input { flex: 1; padding: 8px; border-radius: 20px; border: none; background: #1e293b; color: white; }
-    
-    /* Demandes d'amis styles */
-    .friend-request-actions button { margin-left: 5px; padding: 2px 8px; cursor: pointer; border-radius: 4px; border: none;}
-    .friend-request-accept { background: var(--primary-color); }
-    .friend-request-reject { background: #ef4444; color: white; }
+    .chat-header {
+        background: #0f172a; padding: 10px 15px; cursor: pointer;
+        display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155;
+    }
+    .chat-body { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #020617; }
+    .chat-input-area { padding: 10px; background: #1e293b; border-top: 1px solid #334155; display: flex; }
+    .chat-input-area input { flex: 1; padding: 8px; border-radius: 20px; border: none; background: #334155; color: white; outline: none; }
+
+    .msg { padding: 6px 12px; border-radius: 12px; max-width: 80%; font-size: 0.85rem; line-height: 1.4; }
+    .msg.me { align-self: flex-end; background: var(--primary-color); color: #020617; }
+    .msg.them { align-self: flex-start; background: #334155; color: white; }
 
   </style>
 </head>
 
 <body data-current-username="{{ username }}">
-  <div class="page-wrapper">
-    <header>
-      <div class="logo">
-        <div class="logo-mark">MM</div>
-        <div class="logo-text">MatchMates</div>
+
+  <header>
+    <div style="font-weight: 800; font-size: 1.2rem;">MatchMates</div>
+    <nav>
+        <a href="/logout">Déconnexion</a>
+    </nav>
+  </header>
+
+  <main class="dashboard-layout">
+      <h1>Bienvenue, {{ username }} !</h1>
+      <p style="color: var(--text-muted);">Ton tableau de bord est prêt.</p>
+      
+      <div style="padding: 40px; border: 1px dashed #334155; border-radius: 20px; margin-top: 20px; text-align: center;">
+          Zone de contenu principale (Jeux, Stats, etc.)
       </div>
+  </main>
 
-      <nav>
-        <a href="dashboard.html">Tableau de bord</a>
-        <a href="profile.html">Profil</a>
-        <span style="margin-left:auto; margin-right: 12px; color: var(--text-muted);">
-          {{ username }}
-        </span>
-        <a href="/logout" class="btn btn-outline">Déconnexion</a>
-      </nav>
-    </header>
+  <button class="toggle-friends-btn" onclick="toggleSidebar()">
+    <span>💬 Amis</span>
+  </button>
 
-    <main>
-      <div class="dashboard-layout">
-        
-        <section>
-          <h1 class="section-title">Tableau de bord</h1>
-          <p class="section-subtitle">
-            Ton espace de jeu central.
-          </p>
+  <aside class="friends-sidebar" id="friendsSidebar">
+    <h2 style="margin: 0; font-size: 1.1rem;">Social</h2>
 
-          <div class="steps">
-            <div class="step-card">
-              <div class="step-icon">🎮</div>
-              <div class="step-title">Activité récente</div>
-              <div class="step-text">Historique de tes parties.</div>
-            </div>
-            <div class="step-card">
-              <div class="step-icon">⭐</div>
-              <div class="step-title">Stats</div>
-              <div class="step-text">Ton taux de victoire.</div>
-            </div>
-          </div>
-
-          <section class="games-section">
-            <div class="favorites-box">
-              <div class="favorites-header">
-                <div><h2>Jeux suivis</h2></div>
-                <small id="favorites-count">0 jeu</small>
-              </div>
-              <div id="favorites-list" class="favorites-list"></div>
-            </div>
-
-            <div class="games-search">
-              <div class="games-search-input-wrapper">
-                <span class="games-search-icon">🔍</span>
-                <input type="text" id="game-search" placeholder="Rechercher un jeu..." autocomplete="off" />
-              </div>
-            </div>
-
-            <div class="games-carousel">
-              <div class="games-carousel-header">
-                <div><h2>Jeux populaires</h2></div>
-                <div class="carousel-controls">
-                  <button class="carousel-btn" id="carousel-prev">◀</button>
-                  <button class="carousel-btn" id="carousel-next">▶</button>
-                </div>
-              </div>
-              <div class="carousel-viewport">
-                <div class="carousel-track" id="games-track"></div>
-              </div>
-            </div>
-          </section>
-        </section>
-
-      </div>
-    </main>
-
-    <button class="toggle-friends-btn" onclick="toggleSidebar()">
-        <span>💬 Amis</span>
-    </button>
-
-    <aside class="friends-sidebar" id="friendsSidebar">
-        <div class="friends-header">
-        <h2>Liste d’amis</h2>
-        <small id="friends-count">0 ami</small>
-        </div>
-
-        <p class="friends-username">
-        Connecté en tant que <strong id="current-username">...</strong>
-        </p>
-
-        <div id="friends-requests"></div>
-
-        <form id="add-friend-form" class="friends-add-form" autocomplete="off">
-        <input type="text" id="friend-username" placeholder="Pseudo..." />
+    <div class="sidebar-section-title">Ajouter un ami</div>
+    <form class="add-friend-box" id="add-friend-form">
+        <input type="text" id="friend-input" placeholder="Pseudo..." autocomplete="off">
         <button type="submit">+</button>
-        </form>
-        <div id="friend-error" class="friends-error"></div>
+    </form>
+    <div id="friend-notif"></div>
 
-        <button id="create-group-btn" class="btn btn-outline" style="width: 100%; margin-top: 12px; font-size: 0.8rem;">Créer un groupe</button>
+    <div id="section-requests-in" style="display:none;">
+        <div class="sidebar-section-title">Demandes Reçues</div>
+        <div id="list-requests-in"></div>
+    </div>
 
-        <div class="friends-list" id="groups-list" style="margin-top: 12px;"></div>
+    <div id="section-requests-out" style="display:none;">
+        <div class="sidebar-section-title">En attente (Envoyées)</div>
+        <div id="list-requests-out"></div>
+    </div>
 
-        <div class="friends-list" id="friends-list" style="margin-top: 10px;">
-            <p class="friends-empty">Chargement...</p>
-        </div>
-    </aside>
+    <div class="sidebar-section-title">Mes Amis (<span id="friend-count">0</span>)</div>
+    <div id="friends-list" style="overflow-y: auto; flex: 1;">
+        <div style="text-align:center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">Aucun ami connecté.</div>
+    </div>
+  </aside>
 
-    <div id="chat-windows-container" class="chat-windows-container"></div>
-
-  </div>
+  <div id="chat-container" class="chat-container"></div>
 
   <script>
-    // FONCTION TOGGLE SIDEBAR
+    // --- 1. GESTION SIDEBAR ---
     function toggleSidebar() {
         document.getElementById('friendsSidebar').classList.toggle('active');
     }
 
-    (function () {
-      /* ========= LOGIQUE JEUX (Inchangé pour l'essentiel) ========= */
-      const GAMES = [
-        { id: "lol", name: "League of Legends", tags: ["MOBA"], from: "#1d4ed8", to: "#22c55e" },
-        { id: "valorant", name: "Valorant", tags: ["FPS"], from: "#b91c1c", to: "#7f1d1d" },
-        { id: "wow", name: "World of Warcraft", tags: ["MMORPG"], from: "#eab308", to: "#1d4ed8" },
-        { id: "rocketleague", name: "Rocket League", tags: ["Sport"], from: "#06b6d4", to: "#2563eb" },
-        { id: "minecraft", name: "Minecraft", tags: ["Sandbox"], from: "#65a30d", to: "#3f6212" }
-      ];
-
-      // (Code du carrousel simplifié pour la démo mais garde le tien complet si tu veux)
-      const track = document.getElementById("games-track");
-      GAMES.forEach(game => {
-          const card = document.createElement("div");
-          card.className = "game-card";
-          card.innerHTML = `
-            <div class="game-gradient" style="background: linear-gradient(135deg, ${game.from}, ${game.to})"></div>
-            <div class="game-info">
-                <div class="game-title">${game.name}</div>
-                <div class="game-tags">${game.tags[0]}</div>
-            </div>
-          `;
-          track.appendChild(card);
-      });
-
-      /* ========= LOGIQUE AMIS & CHAT (Adaptée au nouveau layout) ========= */
-      const friendsListEl = document.getElementById("friends-list");
-      const friendsCount = document.getElementById("friends-count");
-      const addFriendForm = document.getElementById("add-friend-form");
-      const addFriendInput = document.getElementById("friend-username");
-      const friendError = document.getElementById("friend-error");
-      const currentUsernameEl = document.getElementById("current-username");
-      const requestsContainer = document.getElementById("friends-requests");
-      const chatWindowsContainer = document.getElementById("chat-windows-container");
-
-      const bodyUsername = document.body.getAttribute("data-current-username");
-      const currentUsername = bodyUsername ? bodyUsername.trim() : "Moi";
-      currentUsernameEl.textContent = currentUsername;
-
-      let friends = [];
-      const openChats = {}; 
-
-      // --- RENDU DES AMIS ---
-      function renderFriends() {
-        friendsListEl.innerHTML = "";
-        if (!friends.length) {
-          friendsListEl.innerHTML = '<p class="friends-empty">Aucun ami.</p>';
-          friendsCount.textContent = "0";
-          return;
-        }
-        friendsCount.textContent = friends.length;
-
-        friends.forEach((friend) => {
-          const card = document.createElement("div");
-          card.className = "friend-card";
-          card.onclick = () => openChat(friend);
-
-          card.innerHTML = `
-            <div class="friend-main">
-                <div class="friend-avatar">${friend.username.charAt(0).toUpperCase()}</div>
-                <div>
-                    <div class="friend-name">${friend.username}</div>
-                    <div class="friend-status">● En ligne</div>
-                </div>
-            </div>
-          `;
-          friendsListEl.appendChild(card);
-        });
-      }
-
-      // --- RENDU DEMANDES ---
-      function renderRequests(incoming) {
-        requestsContainer.innerHTML = "";
-        if(incoming.length > 0) {
-            const title = document.createElement("div");
-            title.innerHTML = "<small>Demandes reçues</small>";
-            title.style.color = "#aaa";
-            requestsContainer.appendChild(title);
-        }
-        incoming.forEach(req => {
-            const div = document.createElement("div");
-            div.className = "friend-card";
-            div.style.border = "1px solid #eab308";
-            div.innerHTML = `
-                <div class="friend-name">${req.from_username}</div>
-                <div class="friend-request-actions">
-                    <button onclick="respondToRequest(${req.id}, true)" class="friend-request-accept">✔</button>
-                    <button onclick="respondToRequest(${req.id}, false)" class="friend-request-reject">✖</button>
-                </div>
-            `;
-            requestsContainer.appendChild(div);
-        });
-      }
-      
-      // Exposer la fonction pour le HTML
-      window.respondToRequest = async (id, accept) => {
-          await fetch(`/api/friends/requests/${id}/${accept ? 'accept' : 'reject'}`, { method: 'POST' });
-          loadFriendData();
-      };
-
-      // --- DATA LOADING (POLLING) ---
-      async function loadFriendData() {
-        try {
-          const [fRes, rRes] = await Promise.all([
-            fetch("/api/friends"),
-            fetch("/api/friends/requests")
-          ]);
-          const fData = await fRes.json();
-          const rData = await rRes.json();
-
-          friends = fData.friends || [];
-          renderFriends();
-          renderRequests(rData.incoming || []);
-        } catch (e) { console.error(e); }
-      }
-
-      // --- AJOUTER AMI ---
-      addFriendForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const username = addFriendInput.value.trim();
-        if (!username) return;
+    // --- 2. LOGIQUE JS ---
+    (function() {
+        const friendNotif = document.getElementById('friend-notif');
+        const chatContainer = document.getElementById('chat-container');
         
-        try {
-            const res = await fetch("/api/friends/request", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ toUsername: username }),
+        // Variable globale pour suivre les chats ouverts
+        // Stocke les ID d'intervalles pour pouvoir les stopper proprement
+        const activeChats = {}; 
+
+        // --- DATA LOADING ---
+        async function loadData() {
+            try {
+                const [fRes, rRes] = await Promise.all([
+                    fetch('/api/friends'),
+                    fetch('/api/friends/requests')
+                ]);
+                const friendsData = await fRes.json();
+                const requestsData = await rRes.json();
+
+                renderFriends(friendsData.friends);
+                renderRequests(requestsData.incoming, requestsData.outgoing);
+            } catch(e) { console.error("Erreur loadData", e); }
+        }
+
+        // --- RENDU AMIS ---
+        function renderFriends(list) {
+            const container = document.getElementById('friends-list');
+            document.getElementById('friend-count').innerText = list.length;
+            container.innerHTML = "";
+
+            if(list.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color: #64748b; font-size: 0.8rem; margin-top: 10px;">Pas encore d\'amis.</div>';
+                return;
+            }
+
+            list.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'friend-card';
+                div.onclick = () => openChat(f.username); // Clic pour ouvrir chat
+                div.innerHTML = `
+                    <div style="display:flex; align-items:center;">
+                        <div class="friend-avatar">${f.username[0].toUpperCase()}</div>
+                        <div class="friend-info">
+                            <span class="friend-name">${f.username}</span>
+                            <span class="friend-status">● En ligne</span>
+                        </div>
+                    </div>
+                    <span style="font-size:1.2rem; color: #475569;">💬</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // --- RENDU DEMANDES (IN & OUT) ---
+        function renderRequests(incoming, outgoing) {
+            // Incoming (Reçues)
+            const inContainer = document.getElementById('list-requests-in');
+            document.getElementById('section-requests-in').style.display = incoming.length ? 'block' : 'none';
+            inContainer.innerHTML = "";
+            incoming.forEach(req => {
+                const div = document.createElement('div');
+                div.className = 'friend-card';
+                div.style.border = '1px solid #eab308'; // Bordure jaune
+                div.innerHTML = `
+                    <span class="friend-name">${req.from_username}</span>
+                    <div>
+                        <button onclick="handleRequest(${req.id}, 'accept')" style="background:#22c55e; border:none; border-radius:4px; cursor:pointer;">✔</button>
+                        <button onclick="handleRequest(${req.id}, 'reject')" style="background:#ef4444; border:none; border-radius:4px; cursor:pointer; margin-left:5px;">✖</button>
+                    </div>
+                `;
+                inContainer.appendChild(div);
+            });
+
+            // Outgoing (Envoyées - SUIVI)
+            const outContainer = document.getElementById('list-requests-out');
+            document.getElementById('section-requests-out').style.display = outgoing.length ? 'block' : 'none';
+            outContainer.innerHTML = "";
+            outgoing.forEach(req => {
+                const div = document.createElement('div');
+                div.className = 'friend-card';
+                div.style.cursor = 'default'; // Pas cliquable
+                div.innerHTML = `
+                    <div style="display:flex; align-items:center; opacity: 0.7;">
+                        <div class="friend-avatar" style="background:#64748b; width:30px; height:30px; font-size:0.8rem;">?</div>
+                        <div class="friend-info">
+                            <span class="friend-name">${req.to_username}</span>
+                            <span class="friend-status pending">En attente...</span>
+                        </div>
+                    </div>
+                `;
+                outContainer.appendChild(div);
+            });
+        }
+
+        // --- ACTIONS (Ajout / Réponse) ---
+        document.getElementById('add-friend-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('friend-input');
+            const username = input.value.trim();
+            if(!username) return;
+
+            const res = await fetch('/api/friends/request', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({toUsername: username})
             });
             const data = await res.json();
+            
             if(data.ok) {
-                addFriendInput.value = "";
-                friendError.textContent = "Envoyé !";
-                friendError.style.color = "#22c55e";
-                loadFriendData();
+                friendNotif.innerText = "Demande envoyée !";
+                friendNotif.style.color = "#22c55e";
+                input.value = "";
+                loadData(); // Rafraichir pour voir la demande dans "Envoyées"
             } else {
-                friendError.textContent = data.error;
-                friendError.style.color = "#f97316";
+                friendNotif.innerText = data.error;
+                friendNotif.style.color = "#ef4444";
             }
-        } catch(e) { console.error(e); }
-      });
-
-      // --- CHAT ---
-      function openChat(friend) {
-        if (openChats[friend.username]) return; // Déjà ouvert
-
-        const chatDiv = document.createElement("div");
-        chatDiv.className = "chat-window";
-        chatDiv.innerHTML = `
-            <div class="chat-window-header" onclick="this.parentElement.remove(); delete openChats['${friend.username}']">
-                <span>${friend.username}</span> <span>✖</span>
-            </div>
-            <div class="chat-window-body">
-                <div class="chat-messages" id="msg-${friend.username}">Chargement...</div>
-                <form class="chat-form" onsubmit="sendMsg(event, '${friend.username}')">
-                    <input type="text" placeholder="Message..." autocomplete="off">
-                    <button type="submit">></button>
-                </form>
-            </div>
-        `;
-        chatWindowsContainer.appendChild(chatDiv);
-        openChats[friend.username] = true;
-        
-        // Lancer le polling pour ce chat
-        pollMessages(friend.username);
-      }
-
-      window.sendMsg = async (e, username) => {
-        e.preventDefault();
-        const input = e.target.querySelector("input");
-        const content = input.value;
-        if(!content) return;
-        
-        await fetch("/api/messages", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ toUsername: username, content }) 
+            setTimeout(() => friendNotif.innerText = "", 3000);
         });
-        input.value = "";
-        loadMsgs(username); // Refresh immédiat
-      };
 
-      async function loadMsgs(username) {
-         const container = document.getElementById(`msg-${username}`);
-         if(!container) return;
-         const res = await fetch(`/api/messages/${username}`);
-         const data = await res.json();
-         container.innerHTML = data.messages.map(m => 
-            `<div class="chat-message ${m.fromSelf ? 'me' : 'them'}">${m.content}</div>`
-         ).join("");
-         container.scrollTop = container.scrollHeight;
-      }
+        window.handleRequest = async (id, action) => {
+            await fetch(`/api/friends/requests/${id}/${action}`, { method: 'POST' });
+            loadData();
+        };
 
-      function pollMessages(username) {
-          loadMsgs(username);
-          const interval = setInterval(() => {
-              if(!document.getElementById(`msg-${username}`)) clearInterval(interval);
-              else loadMsgs(username);
-          }, 3000);
-      }
+        // --- 3. CHAT SYSTEM (CORRIGÉ) ---
+        
+        window.openChat = function(username) {
+            // Vérification : si déjà ouvert, on ne fait rien
+            if(document.getElementById(`chat-window-${username}`)) return;
 
-      // Init
-      loadFriendData();
-      setInterval(loadFriendData, 5000);
+            const chatDiv = document.createElement('div');
+            chatDiv.className = 'chat-window';
+            chatDiv.id = `chat-window-${username}`; // ID Unique CRUCIAL pour la fermeture
+            
+            chatDiv.innerHTML = `
+                <div class="chat-header" onclick="closeChat('${username}')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="friend-avatar" style="width:24px; height:24px; font-size:0.7rem;">${username[0]}</div>
+                        <span>${username}</span>
+                    </div>
+                    <span>✖</span>
+                </div>
+                <div class="chat-body" id="msgs-${username}">Chargement...</div>
+                <form class="chat-input-area" onsubmit="sendMessage(event, '${username}')">
+                    <input type="text" placeholder="Message..." autocomplete="off">
+                </form>
+            `;
+            
+            chatContainer.appendChild(chatDiv);
 
+            // Lancer le chargement des messages
+            fetchMessages(username);
+            // Polling : rafraichir toutes les 3s
+            activeChats[username] = setInterval(() => fetchMessages(username), 3000);
+        };
+
+        window.closeChat = function(username) {
+            // 1. Trouver l'élément
+            const el = document.getElementById(`chat-window-${username}`);
+            if(el) el.remove(); // 2. Le supprimer du DOM
+
+            // 3. Arrêter le polling (intervalle) pour économiser des ressources
+            if(activeChats[username]) {
+                clearInterval(activeChats[username]);
+                delete activeChats[username];
+            }
+        };
+
+        window.sendMessage = async (e, username) => {
+            e.preventDefault();
+            const input = e.target.querySelector('input');
+            const content = input.value.trim();
+            if(!content) return;
+
+            await fetch('/api/messages', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({toUsername: username, content})
+            });
+            input.value = "";
+            fetchMessages(username); // Refresh immédiat
+        };
+
+        async function fetchMessages(username) {
+            const container = document.getElementById(`msgs-${username}`);
+            if(!container) return; // Si fenêtre fermée entre temps
+
+            const res = await fetch(`/api/messages/${username}`);
+            const data = await res.json();
+            
+            container.innerHTML = data.messages.map(m => `
+                <div class="msg ${m.fromSelf ? 'me' : 'them'}">
+                    ${m.content}
+                </div>
+            `).join('');
+            
+            // Scroll en bas seulement si on n'est pas en train de lire plus haut (optionnel, ici on force le bas)
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Init globale
+        loadData();
+        setInterval(loadData, 5000); // Rafraichir liste amis/demandes toutes les 5s
     })();
   </script>
 </body>
