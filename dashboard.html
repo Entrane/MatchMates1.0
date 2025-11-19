@@ -358,24 +358,19 @@ let isSearching = false;
 1. CONFIG JEUX / FAVORIS
 ========================================= */
 const ALL_GAMES = [ 
-// Ancienne version (avec lol.jpg) :
-<script>
-    // Variable globale pour stocker tous les jeux disponibles
-    const ALL_GAMES = [
-        // ATTENTION : Le chemin 'image match mates/' a été ajouté à tous les fichiers
-        { id: 'valorant', title: 'Valorant', image: 'image match mates/valorant.jpg', description: 'FPS tactique 5v5 basé sur les personnages.' },
-        { id: 'lol', title: 'League of Legends', image: 'image match mates/lol.jpg', description: 'Arène de bataille multijoueur en ligne (MOBA).' },
-        { id: 'apex', title: 'Apex Legends', image: 'image match mates/apex.webp', description: 'Battle royale gratuit en équipe de trois.' },
-        { id: 'overwatch', title: 'Overwatch 2', image: 'image match mates/overwatch 2.jpg', description: 'FPS par équipe 5v5 basé sur les objectifs.' },
-        { id: 'fortnite', title: 'Fortnite', image: 'image match mates/fortnite.jpg', description: 'Battle Royale, construction et créativité.' },
-        { id: 'csgo', title: 'CS:GO 2', image: 'image match mates/csgo.jpg', description: 'Jeu de tir tactique par équipe, objectif bombe.' },
-        { id: 'rocketleague', title: 'Rocket League', image: 'image match mates/rocket league.jpg', description: 'Football avec des voitures propulsées par des fusées.' },
-        { id: 'gta', title: 'GTA V Online', image: 'image match mates/gta.jpg', description: 'Monde ouvert, missions, courses et activités.' },
-        { id: 'cod', title: 'Call of Duty', image: 'image match mates/cod.jpg', description: 'Jeu de tir à la première personne (FPS) militaire.' },
-        { id: 'minecraft', title: 'Minecraft', image: 'image match mates/minecraft.avif', description: 'Jeu d\'aventure et de construction en monde ouvert.' },
-    ];
-    // Conteneur pour le chat
-// ... (le reste du code JS) ...
+    { id: 'lol', name: 'League of Legends', img:'image match mates/lol.jpg' 'https://placehold.co/300x400/16213e/fff?text=LoL' }, 
+    { id: 'valorant', name: 'Valorant', img: 'https://placehold.co/300x400/ff4655/fff?text=Valorant' }, 
+    { id: 'wow', name: 'World of Warcraft', img: 'https://placehold.co/300x400/f1c40f/000?text=WoW' }, 
+    { id: 'minecraft', name: 'Minecraft', img: 'https://placehold.co/300x400/27ae60/fff?text=Minecraft' }, 
+    { id: 'gta', name: 'GTA V', img: 'https://placehold.co/300x400/2c3e50/fff?text=GTA+V' }, 
+    { id: 'rocket', name: 'Rocket League', img: 'https://placehold.co/300x400/2980b9/fff?text=Rocket+League' }, 
+    { id: 'fortnite', name: 'Fortnite', img: 'https://placehold.co/300x400/8e44ad/fff?text=Fortnite' }, 
+    { id: 'cod', name: 'Call of Duty', img: 'https://placehold.co/300x400/34495e/fff?text=CoD' }, 
+    { id: 'apex', name: 'Apex Legends', img: 'https://placehold.co/300x400/e74c3c/fff?text=Apex' }, 
+    { id: 'overwatch', name: 'Overwatch 2', img: 'https://placehold.co/300x400/e67e22/fff?text=Overwatch' }, 
+    { id: 'csgo', name: 'CS:GO 2', img: 'https://placehold.co/300x400/333/fff?text=CS:GO+2' }, 
+    { id: 'fifa', name: 'EA FC 24', img: 'https://placehold.co/300x400/222/fff?text=FC+24' }, 
+]; 
 // Liste des favoris stockée localement
 let favorites = JSON.parse(localStorage.getItem('mm_favorites')) || []; 
 
