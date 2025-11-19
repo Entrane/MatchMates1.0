@@ -4,8 +4,12 @@ const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const session = require('express-session');
 const fs = require('fs');
+const http = require('http');
+const WebSocket = require('ws');
 
 const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 const PORT = process.env.PORT || 3000;
 
 // === Connexion SQLite ===
@@ -61,19 +65,56 @@ db.serialize(() => {
       FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
+
+  // Table des groupes
+  db.run(`
+    CREATE TABLE IF NOT EXISTS groups (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      creator_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Table des membres de groupe
+  db.run(`
+    CREATE TABLE IF NOT EXISTS group_members (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      group_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE (group_id, user_id),
+      FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Table des messages de groupe
+  db.run(`
+    CREATE TABLE IF NOT EXISTS group_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      group_id INTEGER NOT NULL,
+      sender_id INTEGER NOT NULL,
+      content TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+      FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
 });
 
 // === Middlewares ===
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-app.use(
-  session({
-    secret: 'change-this-secret', // à changer en prod
-    resave: false,
-    saveUninitialized: false,
-  })
-);
+const sessionMiddleware = session({
+  secret: 'change-this-secret', // à changer en prod
+  resave: false,
+  saveUninitialized: false,
+});
+
+app.use(sessionMiddleware);
 
 // expose req.user depuis la session
 app.use((req, res, next) => {
@@ -118,13 +159,18 @@ app.get('/profile', requireAuth, (req, res) => {
 
 // tableau de bord – on injecte le username dans {{ username }}
 app.get('/dashboard', requireAuth, (req, res) => {
+  if (!req.user || !req.user.username) {
+    return res.redirect('/login.html');
+  }
   const filePath = path.join(__dirname, 'dashboard.html');
-  let html = fs.readFileSync(filePath, 'utf8');
-
-  // remplace toutes les occurrences de {{ username }} par le vrai pseudo
-  html = html.replace(/{{ username }}/g, req.user.username);
-
-  res.send(html);
+  fs.readFile(filePath, 'utf8', (err, html) => {
+    if (err) {
+      console.error('Error reading dashboard.html:', err);
+      return res.status(500).send('Erreur serveur.');
+    }
+    const personalizedHtml = html.replace(/{{ username }}/g, req.user.username);
+    res.send(personalizedHtml);
+  });
 });
 
 // déconnexion
@@ -138,19 +184,23 @@ app.get('/logout', (req, res) => {
 
 // inscription
 app.post('/signup', (req, res) => {
+  console.log('Signup request body:', req.body);
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
+    console.log('Signup failed: missing fields');
     return res.status(400).send('Champs manquants');
   }
+  const trimmedUsername = username.trim();
+  const trimmedEmail = email.trim();
 
   // NOTE : mdp non hashé = pas sécurisé, mais simple pour l'instant
   db.run(
     'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-    [username.trim(), email.trim(), password],
+    [trimmedUsername, trimmedEmail, password],
     function (err) {
       if (err) {
-        console.error(err);
+        console.error('Signup database error:', err);
         if (err.message.includes('UNIQUE constraint failed: users.username')) {
           return res.status(400).send('Ce nom d’utilisateur est déjà utilisé.');
         }
@@ -159,8 +209,10 @@ app.post('/signup', (req, res) => {
         }
         return res.status(500).send('Erreur serveur');
       }
-      // après inscription, on peut rediriger vers login
-      res.redirect('/login.html');
+      const userId = this.lastID;
+      console.log(`User created with ID: ${userId}`);
+      req.session.user = { id: userId, username: trimmedUsername, email: trimmedEmail };
+      res.redirect('/dashboard');
     }
   );
 });
@@ -504,60 +556,193 @@ app.post('/api/messages', requireAuth, (req, res) => {
   if (!toUsername || !content || !content.trim()) {
     return res.status(400).json({ error: 'missing_fields' });
   }
-
   const cleanContent = content.trim();
 
-  // 1. trouver le receveur
-  db.get(
-    'SELECT id FROM users WHERE username = ?',
-    [toUsername],
-    (err, friend) => {
+  db.get('SELECT id FROM users WHERE username = ?', [toUsername], (err, friend) => {
+    if (err || !friend) return res.status(404).json({ error: 'user_not_found' });
+    const receiverId = friend.id;
+
+    db.run('INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)', [currentUserId, receiverId, cleanContent], function (err) {
+      if (err) return res.status(500).json({ error: 'server_error' });
+
+      const message = {
+        type: 'message',
+        from: req.user.username,
+        to: toUsername,
+        content: cleanContent,
+        created_at: new Date().toISOString()
+      };
+      sendMessageToUser(toUsername, message);
+      sendMessageToUser(req.user.username, message); // send to self
+
+      res.status(201).json({ ok: true });
+    });
+  });
+});
+
+// === API GROUPES ===
+
+// créer un groupe
+app.post('/api/groups', requireAuth, (req, res) => {
+  const { name, members } = req.body;
+  const creatorId = req.user.id;
+
+  if (!name || !name.trim() || !Array.isArray(members) || members.length === 0) {
+    return res.status(400).json({ error: 'missing_fields' });
+  }
+
+  db.run('INSERT INTO groups (name, creator_id) VALUES (?, ?)', [name.trim(), creatorId], function (err) {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'server_error' });
+    }
+
+    const groupId = this.lastID;
+    const allMembers = [...new Set([creatorId, ...members])]; // créateur + membres
+
+    const placeholders = allMembers.map(() => '(?, ?)').join(',');
+    const sql = `INSERT INTO group_members (group_id, user_id) VALUES ${placeholders}`;
+    const params = allMembers.flatMap(userId => [groupId, userId]);
+
+    db.run(sql, params, (err) => {
       if (err) {
         console.error(err);
         return res.status(500).json({ error: 'server_error' });
       }
-      if (!friend) {
-        return res.status(404).json({ error: 'user_not_found' });
-      }
-
-      const receiverId = friend.id;
-
-      // 2. vérifier qu'ils sont amis
-      db.get(
-        'SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?',
-        [currentUserId, receiverId],
-        (err2, row) => {
-          if (err2) {
-            console.error(err2);
-            return res.status(500).json({ error: 'server_error' });
-          }
-          if (!row) {
-            return res.status(403).json({ error: 'not_friends' });
-          }
-
-          // 3. insérer le message
-          db.run(
-            'INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)',
-            [currentUserId, receiverId, cleanContent],
-            function (err3) {
-              if (err3) {
-                console.error(err3);
-                return res.status(500).json({ error: 'server_error' });
-              }
-
-              res.json({
-                ok: true,
-                messageId: this.lastID,
-              });
-            }
-          );
-        }
-      );
-    }
-  );
+      res.json({ ok: true, groupId });
+    });
+  });
 });
 
+// récupérer les groupes d'un utilisateur
+app.get('/api/groups', requireAuth, (req, res) => {
+  const userId = req.user.id;
+  db.all(`
+    SELECT g.id, g.name
+    FROM groups g
+    JOIN group_members gm ON g.id = gm.group_id
+    WHERE gm.user_id = ?
+    ORDER BY g.created_at DESC
+  `, [userId], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'server_error' });
+    }
+    res.json({ groups: rows });
+  });
+});
+
+// récupérer les messages d'un groupe
+app.get('/api/groups/:groupId/messages', requireAuth, (req, res) => {
+  const { groupId } = req.params;
+  const userId = req.user.id;
+
+  // 1. vérifier que l'utilisateur est membre du groupe
+  db.get('SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?', [groupId, userId], (err, row) => {
+    if (err || !row) {
+      return res.status(403).json({ error: 'not_member' });
+    }
+
+    // 2. récupérer les messages
+    db.all(`
+      SELECT gm.id, gm.content, gm.created_at, u.username as sender_username
+      FROM group_messages gm
+      JOIN users u ON u.id = gm.sender_id
+      WHERE gm.group_id = ?
+      ORDER BY gm.created_at ASC
+    `, [groupId], (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'server_error' });
+      }
+      res.json({ messages: rows });
+    });
+  });
+});
+
+// envoyer un message dans un groupe
+app.post('/api/groups/:groupId/messages', requireAuth, (req, res) => {
+  const { groupId } = req.params;
+  const { content } = req.body;
+  const senderId = req.user.id;
+
+  if (!content || !content.trim()) {
+    return res.status(400).json({ error: 'missing_content' });
+  }
+
+  db.get('SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?', [groupId, senderId], (err, row) => {
+    if (err || !row) return res.status(403).json({ error: 'not_member' });
+
+    db.run('INSERT INTO group_messages (group_id, sender_id, content) VALUES (?, ?, ?)', [groupId, senderId, content.trim()], function (err) {
+      if (err) return res.status(500).json({ error: 'server_error' });
+
+      const message = {
+        type: 'group_message',
+        groupId,
+        from: req.user.username,
+        content: content.trim(),
+        created_at: new Date().toISOString()
+      };
+
+      db.all('SELECT u.username FROM group_members gm JOIN users u ON u.id = gm.user_id WHERE gm.group_id = ?', [groupId], (err, rows) => {
+        if (err) return;
+        rows.forEach(member => sendMessageToUser(member.username, message));
+      });
+
+      res.status(201).json({ ok: true });
+    });
+  });
+});
+
+
+// === GESTION WEBSOCKET ===
+
+const clients = new Map(); // username -> WebSocket
+
+wss.on('connection', (ws, req) => {
+  sessionMiddleware(req, {}, () => {
+    if (!req.session || !req.session.user) {
+      ws.close();
+      return;
+    }
+
+    const { username, id } = req.session.user;
+    clients.set(username, ws);
+
+    // Notifier les amis que l'utilisateur est en ligne
+    broadcastStatus(id, { type: 'status', username, online: true });
+
+    ws.on('close', () => {
+      clients.delete(username);
+      // Notifier les amis que l'utilisateur est hors ligne
+      broadcastStatus(id, { type: 'status', username, online: false });
+    });
+
+    ws.on('message', (message) => {
+      // Ici on pourrait gérer les messages entrants du client, ex: typing status
+    });
+  });
+});
+
+function sendMessageToUser(username, message) {
+  const client = clients.get(username);
+  if (client && client.readyState === WebSocket.OPEN) {
+    client.send(JSON.stringify(message));
+  }
+}
+
+function broadcastStatus(userId, message) {
+  db.all(
+    'SELECT u.username FROM friends f JOIN users u ON f.friend_id = u.id WHERE f.user_id = ?',
+    [userId],
+    (err, rows) => {
+      if (err) return;
+      rows.forEach(friend => sendMessageToUser(friend.username, message));
+    }
+  );
+}
+
 // === LANCEMENT SERVEUR ===
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Serveur lancé sur http://localhost:${PORT}`);
 });
