@@ -1,6 +1,6 @@
 // ====================================================
 // FICHIER : server.js
-// VERSION : Complète (Chat + Amis + Favoris Utilisateur + Préférences Partenaire)
+// VERSION : Complète (Chat + Amis + Favoris + PRÉFÉRENCES PARTENAIRE)
 // ====================================================
 
 const express = require('express');
@@ -84,15 +84,15 @@ db.serialize(() => {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
-
-  // 7. PRÉFÉRENCES DE RECHERCHE DE PARTENAIRE (NOUVELLE TABLE)
+  
+  // 7. PRÉFÉRENCES PARTENAIRE PAR JEU (NOUVELLE TABLE)
   db.run(`
     CREATE TABLE IF NOT EXISTS partner_preferences (
       user_id INTEGER NOT NULL,
       game_id TEXT NOT NULL,
-      mode TEXT NOT NULL DEFAULT 'ranked', -- 'ranked' ou 'unrank'
-      min_rank TEXT NULL,                  -- Rang minimum recherché (NULL si mode='unrank')
-      vocal_required INTEGER NOT NULL DEFAULT 0, -- 0 (non) ou 1 (oui)
+      mode TEXT NOT NULL DEFAULT 'ranked',
+      min_rank TEXT,
+      vocal_required INTEGER NOT NULL DEFAULT 0,
       PRIMARY KEY (user_id, game_id),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
@@ -407,52 +407,58 @@ app.post('/api/favorites/:gameId', requireAuth, (req, res) => {
 // 8. API PRÉFÉRENCES PARTENAIRE
 // ====================================================
 
-// A. Sauvegarder les préférences de recherche de partenaire
+// 1. Sauvegarder les préférences partenaire
 app.post('/api/partner-preferences/:gameId', requireAuth, (req, res) => {
     const { gameId } = req.params;
-    const userId = req.user.id;
     const { mode, min_rank, vocal_required } = req.body;
+    const userId = req.user.id;
+    // Convertir le booléen en entier pour SQLite
+    const vocalInt = vocal_required ? 1 : 0; 
 
-    // Assurez-vous que vocal_required est 0 ou 1
-    const vocalInt = vocal_required ? 1 : 0;
-
-    // Utilise INSERT OR REPLACE pour mettre à jour ou insérer
+    // Utilise INSERT OR REPLACE pour mettre à jour si l'entrée existe déjà
     db.run(
-        `INSERT OR REPLACE INTO partner_preferences 
-         (user_id, game_id, mode, min_rank, vocal_required) 
-         VALUES (?, ?, ?, ?, ?)`,
-        [userId, gameId, mode, min_rank, vocalInt],
-        function (err) {
+        `INSERT OR REPLACE INTO partner_preferences (user_id, game_id, mode, min_rank, vocal_required) 
+         VALUES (?, ?, ?, ?, ?)`, 
+        [userId, gameId, mode, min_rank, vocalInt], 
+        function(err) {
             if (err) {
-                console.error('Erreur sauvegarde préférences partenaire:', err);
+                console.error('Erreur POST /api/partner-preferences:', err);
                 return res.status(500).json({ error: 'server_error' });
             }
-            res.json({ ok: true, status: 'saved' });
+            res.json({ ok: true });
         }
     );
 });
 
-// B. Récupérer les préférences de recherche de partenaire
+// 2. Récupérer les préférences partenaire
 app.get('/api/partner-preferences/:gameId', requireAuth, (req, res) => {
     const { gameId } = req.params;
     const userId = req.user.id;
 
+    // Paramètres par défaut si aucune entrée n'est trouvée en DB
+    const defaultSettings = {
+        mode: 'ranked',
+        min_rank: null,
+        vocal_required: false
+    };
+
     db.get(
-        'SELECT mode, min_rank, vocal_required FROM partner_preferences WHERE user_id = ? AND game_id = ?',
-        [userId, gameId],
+        `SELECT mode, min_rank, vocal_required FROM partner_preferences WHERE user_id = ? AND game_id = ?`, 
+        [userId, gameId], 
         (err, row) => {
             if (err) {
-                console.error('Erreur chargement préférences partenaire:', err);
+                console.error('Erreur GET /api/partner-preferences:', err);
                 return res.status(500).json({ error: 'server_error' });
             }
+
             if (row) {
-                // Convertir vocal_required (0 ou 1) en boolean
+                // Convertir l'entier en booléen pour le front-end
                 row.vocal_required = row.vocal_required === 1;
-                res.json(row);
-            } else {
-                // Valeurs par défaut si rien n'est trouvé
-                res.json({ mode: 'ranked', min_rank: null, vocal_required: false });
+                return res.json(row);
             }
+            
+            // Si aucune préférence n'est trouvée, renvoie les paramètres par défaut
+            res.json(defaultSettings);
         }
     );
 });
