@@ -55,17 +55,18 @@
     .game-content-area {
         flex: 1; /* Prend tout l'espace disponible au milieu */
         padding: 20px 30px; 
-        max-width: 100%; 
+        /* --- CORRECTION 1 : RÉDUCTION DE LA LARGEUR CENTRALE --- */
+        max-width: 800px; 
     }
     
     /* Structure 1 colonne (Anciennement 2, maintenant juste un conteneur) */
     .game-settings-layout {
-        display: flex; /* Garde Flexbox pour gérer la seule colonne */
+        display: flex; 
         gap: 30px;
         align-items: flex-start;
     }
     .settings-column {
-        flex: 1; /* S'assure que la colonne prend tout l'espace dans .game-settings-layout */
+        flex: 1; 
     }
 
 
@@ -108,13 +109,15 @@
         z-index: 700; 
         border-left: 1px solid rgba(255,255,255,0.05); 
         transition: margin-right 0.3s ease; 
+        display: flex; /* Ajout pour gestion du contenu */
+        flex-direction: column;
     }
     
     .social-sidebar.collapsed {
         margin-right: calc(-1 * var(--sidebar-width)); 
     }
     
-    /* Bouton pour basculer la sidebar (CORRIGÉ : utilise 'right' pour le décalage) */
+    /* Bouton pour basculer la sidebar */
     #sidebar-toggle {
         position: fixed; 
         right: var(--sidebar-width); 
@@ -130,10 +133,16 @@
         transition: right 0.3s ease; 
     }
     .social-sidebar.collapsed + #sidebar-toggle {
-        right: 0px; /* Quand la sidebar est repliée, le bouton va sur le bord droit */
+        right: 0px; 
     }
 
-    /* Le reste des styles sociaux et chat... (inchangés) */
+    /* --- CORRECTION 2 : Conteneur pour la liste d'amis scrollable --- */
+    .friends-list-container {
+        overflow-y: auto;
+        max-height: calc(100vh - 450px); /* Ajuster cette hauteur selon vos besoins */
+        padding-right: 5px; /* Pour éviter que la scrollbar colle le bord */
+    }
+
     .friend-card { background-color: var(--bg-card); padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: background-color 0.2s; display: flex; justify-content: space-between; align-items: center; }
     .friend-card:hover { background-color: #2b3a50; }
     .friend-request-title { color: var(--text-muted); font-size: 0.8rem; margin-top: 10px; margin-bottom: 5px; }
@@ -142,13 +151,13 @@
     .request-actions .btn-secondary { border-color: #ef4444; color: #ef4444; }
     #friend-notif { text-align: center; color: var(--primary-color); font-size: 0.9rem; margin-top: 10px; }
 
-    /* CHAT WINDOWS (AJUSTÉ pour la sidebar de gauche) */
+    /* CHAT WINDOWS (AJUSTÉ) */
     .chat-container { 
         position: fixed; 
         bottom: 0; 
-        right: calc(var(--sidebar-width) + 20px); /* Ancré à droite par rapport à la sidebar sociale */
-        left: calc(var(--game-info-width) + 20px); /* Espace à gauche pour le bandeau info jeu */
-        justify-content: flex-end; /* Pour coller les fenêtres à droite */
+        right: calc(var(--sidebar-width) + 20px); 
+        left: calc(var(--game-info-width) + 20px); 
+        justify-content: flex-end; 
         display: flex; 
         gap: 10px; 
         z-index: 900; 
@@ -168,9 +177,8 @@
     .chat-input-area { padding: 10px; border-top: 1px solid #334155; }
     .chat-input-area input { width: 100%; padding: 8px; border: 1px solid #475569; border-radius: 4px; background-color: #1e293b; color: var(--text-main); outline: none; }
 
-    /* RESPONSIVE (AJUSTÉ) */
+    /* RESPONSIVE (inchangé) */
     @media (max-width: 1200px) {
-        /* Ajustement des variables pour les petits écrans */
         .social-sidebar { width: 280px; --sidebar-width: 280px; }
         .game-info-sidebar { --game-info-width: 250px; }
         .chat-container { right: calc(280px + 20px); left: calc(250px + 20px); }
@@ -179,32 +187,17 @@
         .social-sidebar.collapsed + #sidebar-toggle { right: 0px; }
     }
     @media (max-width: 900px) {
-        /* En mode mobile, empilement vertical */
         main { flex-direction: column; }
-        
-        .game-info-sidebar { 
-            position: relative; 
-            width: 100%; 
-            top: auto; 
-            border-right: none; 
-            border-bottom: 1px solid rgba(255,255,255,0.05); 
-            gap: 10px; 
-        }
-        .game-info-sidebar > * { 
-            margin: 0 !important;
-            padding: 0 !important;
-        }
+        .game-info-sidebar { position: relative; width: 100%; top: auto; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 10px; }
+        .game-info-sidebar > * { margin: 0 !important; padding: 0 !important;}
         .game-info-sidebar img { margin-bottom: 5px !important; }
-
-        .game-content-area { padding: 20px; }
+        .game-content-area { padding: 20px; max-width: 100%; } /* Important: max-width 100% en mobile */
         .game-settings-layout { flex-direction: column; gap: 0; }
-        
         .social-sidebar { position: relative; width: 100%; top: auto; margin-right: 0 !important; border-left: none; border-bottom: 1px solid rgba(255,255,255,0.05); transform: none !important; padding: 20px; }
         .social-sidebar.collapsed { margin-right: 0 !important; } 
-
         #sidebar-toggle { display: none; } 
-
         .chat-container { right: 10px; left: 10px; } 
+        .friends-list-container { max-height: 250px; } /* Ajustement hauteur en mobile */
     }
   </style>
 </head>
@@ -346,9 +339,11 @@
       <div id="friend-requests-list" style="margin-bottom: 20px;">
         </div>
       
-      <div id="friends-list">
-        <p class="sidebar-section-title">Mes Amis</p>
-        </div>
+      <div class="friends-list-container">
+        <div id="friends-list">
+            <p class="sidebar-section-title">Mes Amis</p>
+            </div>
+      </div>
 
     </div>
   </main>
@@ -402,33 +397,27 @@
     let isFavorite = false; 
 
     // ====================================================
-    // --- LOGIQUE SIDEBAR SOCIALE RETRACTABLE (CORRIGÉE) ---
+    // --- LOGIQUE SIDEBAR SOCIALE RETRACTABLE ---
     // ====================================================
     window.toggleSocialSidebar = function() {
         const isCollapsed = socialSidebar.classList.toggle('collapsed');
-        
-        // Supprime l'ancienne classe de transformation et se base sur le CSS
         chatContainer.classList.toggle('sidebar-collapsed', isCollapsed);
-
         localStorage.setItem('socialSidebarCollapsed', isCollapsed);
     }
 
     // ====================================================
-    // --- LOGIQUE JEU INFO SIDEBAR (CORRIGÉE : Nom du jeu) ---
+    // --- LOGIQUE JEU INFO SIDEBAR ---
     // ====================================================
     async function loadGameInfo() {
-        // Charge les informations du jeu ou utilise des valeurs par défaut
         const info = GAME_INFOS[gameId] || { name: gameId.toUpperCase(), description: 'Description non disponible', image: '/img/games/default.png' };
         
         document.getElementById('game-title').textContent = `${info.name} - Matchmaking`;
-        document.getElementById('game-short-name').textContent = info.name; // CORRIGÉ : Affichage du nom du jeu
+        document.getElementById('game-short-name').textContent = info.name; 
         document.getElementById('game-description').innerHTML = info.description;
-        // La balise <img/> par défaut a déjà l'URL par défaut, donc on ne met à jour que si l'URL est spécifique.
         // if (info.image && info.image !== '/img/games/default.png') {
         //     document.getElementById('game-image').src = info.image;
         // }
 
-        // Charger l'état des favoris
         await checkFavoriteStatus();
     }
 
@@ -437,14 +426,11 @@
         try {
             const res = await fetch('/api/favorites'); 
             const data = await res.json();
-            
             isFavorite = data.favorites.includes(gameId);
-
         } catch(e) {
             console.error("Erreur chargement favoris:", e);
             isFavorite = false;
         }
-
         updateFavoriteButton(btn);
     }
 
@@ -513,7 +499,7 @@
 
 
     // ====================================================
-    // --- LOGIQUE PROFIL JOUEUR (Sauvegarde - CORRIGÉE) ---
+    // --- LOGIQUE PROFIL JOUEUR (Sauvegarde) ---
     // ====================================================
 
     window.selectRank = function(event, type) {
@@ -534,7 +520,6 @@
         }
     }
 
-    // CORRIGÉ : S'assure de l'appel après le statut du bouton radio
     window.toggleRanks = function(shouldSave = true) {
         const isRanked = document.getElementById('ranked').checked;
         document.getElementById('rank-selector').style.display = isRanked ? 'block' : 'none';
@@ -568,7 +553,6 @@
 
         const settings = JSON.parse(savedSettings);
         
-        // Correction: cocher le bon bouton radio
         if(settings.mode === 'ranked') {
             settingsRadio.checked = true;
             settingsUnrank.checked = false;
@@ -579,7 +563,6 @@
         
         document.getElementById('discord-vocal').checked = settings.vocal;
         
-        // Appeler toggleRanks APRÈS avoir coché le bouton radio
         toggleRanks(false); 
 
         if (settings.rank && settings.mode === 'ranked') {
@@ -592,7 +575,7 @@
     }
 
     // ====================================================
-    // --- LOGIQUE PRÉFÉRENCES PARTENAIRE (CORRIGÉE) ---
+    // --- LOGIQUE PRÉFÉRENCES PARTENAIRE ---
     // ====================================================
 
     window.savePartnerPreferences = async function() {
@@ -623,7 +606,6 @@
             
             const prefs = await response.json();
             
-            // Correction: cocher le bon bouton radio
             if(prefs.mode === 'ranked') {
                 partnerRankedRadio.checked = true;
                 partnerUnrankRadio.checked = false;
@@ -634,7 +616,6 @@
 
             document.getElementById('partner-discord-vocal').checked = prefs.vocal_required;
             
-            // Appeler togglePartnerRanks APRÈS avoir coché le bouton radio
             togglePartnerRanks(false);
 
             if (prefs.min_rank && prefs.mode === 'ranked') {
@@ -652,7 +633,6 @@
         }
     }
 
-    // CORRIGÉ : S'assure de l'appel après le statut du bouton radio
     window.togglePartnerRanks = function(shouldSave = true) {
         const isRanked = document.getElementById('partner-ranked').checked;
         document.getElementById('partner-rank-selector').style.display = isRanked ? 'block' : 'none';
@@ -664,7 +644,7 @@
     }
 
     // ====================================================
-    // --- LOGIQUE PROFIL JOUEUR PUBLICATION/RECHERCHE (inchangée) ---
+    // --- LOGIQUE PROFIL JOUEUR PUBLICATION/RECHERCHE ---
     // ====================================================
 
     window.publishProfile = async function() {
@@ -779,7 +759,7 @@
 
 
     // ====================================================
-    // --- LOGIQUE GÉNÉRALE SOCIALE (inchangée) ---
+    // --- LOGIQUE GÉNÉRALE SOCIALE ---
     // ====================================================
     
     window.sendFriendRequest = async function(e) {
@@ -956,11 +936,11 @@
         const gameRanks = RANKS[gameId] || RANKS.valorant;
         setupRankGrids(gameRanks);
 
-        // Chargement des données (Ces fonctions appellent désormais toggleRanks/togglePartnerRanks correctement)
+        // Chargement des données 
         loadGameSettings();
         await loadPartnerPreferences();
 
-        await loadGameInfo(); // CORRIGÉ : Affichage du nom du jeu ici.
+        await loadGameInfo(); 
 
         loadSocial();
         setInterval(loadSocial, 5000);
