@@ -1,6 +1,6 @@
 // ====================================================
 // FICHIER : server.js
-// VERSION : Complète (Chat + Amis + Favoris + PRÉFÉRENCES PARTENAIRE)
+// VERSION : Complète (Chat + Amis + Favoris + Matchmaking)
 // ====================================================
 
 const express = require('express');
@@ -93,6 +93,20 @@ db.serialize(() => {
       mode TEXT NOT NULL DEFAULT 'ranked',
       min_rank TEXT,
       vocal_required INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (user_id, game_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+  
+  // 8. PROFILS JOUEURS PUBLIÉS (pour Matchmaking)
+  // Permet de stocker le profil du joueur qui sera recherché par les autres.
+  db.run(`
+    CREATE TABLE IF NOT EXISTS published_profiles (
+      user_id INTEGER NOT NULL,
+      game_id TEXT NOT NULL,
+      mode TEXT NOT NULL DEFAULT 'ranked',
+      rank TEXT, /* Le rang actuel du joueur (si mode=ranked) */
+      vocal INTEGER NOT NULL DEFAULT 0,
       PRIMARY KEY (user_id, game_id),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
@@ -459,6 +473,113 @@ app.get('/api/partner-preferences/:gameId', requireAuth, (req, res) => {
             
             // Si aucune préférence n'est trouvée, renvoie les paramètres par défaut
             res.json(defaultSettings);
+        }
+    );
+});
+
+
+// ====================================================
+// 9. API MATCHMAKING (Nouveau Bloc)
+// ====================================================
+
+// 1. Publier le profil actuel du joueur pour qu'il soit trouvable
+app.post('/api/publish-profile/:gameId', requireAuth, (req, res) => {
+    const { gameId } = req.params;
+    const { mode, rank, vocal_discord } = req.body;
+    const userId = req.user.id;
+    const vocalInt = vocal_discord ? 1 : 0; 
+
+    // Validation basique (si mode est 'ranked', rank ne peut pas être null)
+    if (mode === 'ranked' && !rank) {
+        return res.status(400).json({ error: 'Le rang est requis en mode classé.' });
+    }
+
+    // INSERT OR REPLACE assure que le profil est toujours à jour
+    db.run(
+        `INSERT OR REPLACE INTO published_profiles (user_id, game_id, mode, rank, vocal) 
+         VALUES (?, ?, ?, ?, ?)`, 
+        [userId, gameId, mode, rank, vocalInt], 
+        function(err) {
+            if (err) {
+                console.error('Erreur POST /api/publish-profile:', err);
+                return res.status(500).json({ error: 'server_error' });
+            }
+            res.json({ status: 'profile_published' });
+        }
+    );
+});
+
+
+// 2. Trouver les joueurs qui correspondent aux préférences du joueur actuel
+app.get('/api/match-players/:gameId', requireAuth, (req, res) => {
+    const { gameId } = req.params;
+    const userId = req.user.id;
+
+    // 1. Récupérer les préférences du partenaire de l'utilisateur (Critères de recherche)
+    db.get(
+        `SELECT mode, min_rank, vocal_required FROM partner_preferences WHERE user_id = ? AND game_id = ?`, 
+        [userId, gameId], 
+        (err, prefs) => {
+            if (err) {
+                console.error('Erreur GET /api/match-players (prefs):', err);
+                return res.status(500).json({ error: 'server_error' });
+            }
+
+            // Utiliser les défauts si aucune préférence n'est trouvée
+            const A_prefs = prefs || { mode: 'ranked', min_rank: null, vocal_required: 0 };
+            const vocalInt = A_prefs.vocal_required ? 1 : 0;
+            
+            // Construction de la requête SQL de matching
+            let sql = `
+                SELECT 
+                    pp.rank, 
+                    pp.vocal, 
+                    pp.mode,
+                    u.username 
+                FROM published_profiles pp
+                JOIN users u ON u.id = pp.user_id
+                WHERE 
+                    pp.user_id != ? AND                  /* 1. Pas soi-même */
+                    pp.game_id = ? AND                  /* 2. Bon jeu */
+                    pp.mode = ? AND                     /* 3. Mode (ranked/unrank) correspondant aux critères de A */
+                    (pp.vocal >= ? OR ?) AND            /* 4. Vocal requis (pp.vocal doit être 1 si A.vocal_required est 1) */
+                    pp.user_id NOT IN (                 /* 5. Exclure les amis et les demandes en cours (pour éviter les doublons/profils non pertinents) */
+                        SELECT friend_id FROM friends WHERE user_id = ?
+                        UNION
+                        SELECT receiver_id FROM friend_requests WHERE sender_id = ? AND status = 'pending'
+                        UNION
+                        SELECT sender_id FROM friend_requests WHERE receiver_id = ? AND status = 'pending'
+                    )
+                    /* NOTE SUR LE RANG: La comparaison des rangs ('Bronze' < 'Argent') est trop complexe pour une simple requête SQLite sans table de mapping numérique. Nous nous concentrons ici sur le mode et le vocal. */
+            `;
+
+            // Arguments pour la requête
+            const params = [
+                userId, 
+                gameId, 
+                A_prefs.mode, 
+                vocalInt, 
+                vocalInt === 0, // Si vocalInt=0, cette partie est TRUE (ce qui désactive la contrainte vocal)
+                userId, // pour friends
+                userId, // pour outgoing requests
+                userId  // pour incoming requests
+            ];
+            
+            db.all(sql, params, (err, matches) => {
+                if (err) {
+                    console.error('Erreur GET /api/match-players (match):', err);
+                    return res.status(500).json({ error: 'server_error' });
+                }
+                
+                // Formater les résultats pour le front-end
+                const formattedMatches = matches.map(m => ({
+                    username: m.username,
+                    rank: m.rank,
+                    vocal: m.vocal === 1 // Convertir en booléen
+                }));
+
+                res.json({ matches: formattedMatches });
+            });
         }
     );
 });
