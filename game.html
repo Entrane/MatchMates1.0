@@ -12,7 +12,7 @@
     :root { 
         --primary-color: #22c55e; 
         --sidebar-width: 320px; 
-        --game-info-width: 280px; /* NOUVEAU: Largeur du bandeau Info Jeu */
+        --game-info-width: 280px; /* Largeur du bandeau Info Jeu */
         --bg-dark: #0f172a; 
         --bg-card: #1e293b; 
         --text-main: #f1f5f9; 
@@ -27,7 +27,7 @@
     .nav-links a:hover { color: var(--primary-color); }
     .user-info { color: var(--text-main); font-weight: 500; }
     
-    /* LAYOUT PRINCIPAL (CORRIGÉ : Structure à 3 zones avec Flexbox) */
+    /* LAYOUT PRINCIPAL (Structure à 3 zones avec Flexbox) */
     main { 
         padding-top: 80px; 
         display: flex;
@@ -36,7 +36,7 @@
         min-height: calc(100vh - 80px); 
     }
 
-    /* NOUVEAU: Bandeau d'information du jeu à gauche (Statique) */
+    /* Bandeau d'information du jeu à gauche (Statique) */
     .game-info-sidebar {
         width: var(--game-info-width);
         min-height: calc(100vh - 80px);
@@ -58,14 +58,14 @@
         max-width: 100%; 
     }
     
-    /* Structure 2 colonnes du contenu spécifique au jeu */
+    /* Structure 1 colonne (Anciennement 2, maintenant juste un conteneur) */
     .game-settings-layout {
-        display: flex;
+        display: flex; /* Garde Flexbox pour gérer la seule colonne */
         gap: 30px;
         align-items: flex-start;
     }
     .settings-column {
-        flex: 1;
+        flex: 1; /* S'assure que la colonne prend tout l'espace dans .game-settings-layout */
     }
 
 
@@ -151,7 +151,7 @@
         position: fixed; 
         bottom: 0; 
         right: calc(var(--sidebar-width) + 20px); /* Ancré à droite par rapport à la sidebar sociale */
-        left: calc(var(--game-info-width) + 20px); /* NOUVEAU: Espace à gauche pour le bandeau info jeu */
+        left: calc(var(--game-info-width) + 20px); /* Espace à gauche pour le bandeau info jeu */
         justify-content: flex-end; /* Pour coller les fenêtres à droite */
         display: flex; 
         gap: 10px; 
@@ -192,9 +192,9 @@
             top: auto; 
             border-right: none; 
             border-bottom: 1px solid rgba(255,255,255,0.05); 
-            gap: 10px; /* Moins d'espace en mode mobile */
+            gap: 10px; 
         }
-        .game-info-sidebar > * { /* Réduire les marges et les paddings */
+        .game-info-sidebar > * { 
             margin: 0 !important;
             padding: 0 !important;
         }
@@ -235,24 +235,17 @@
         </p>
 
         <button class="action-btn btn-secondary" id="favorite-toggle-btn" onclick="toggleFavorite()" style="width: 100%; font-size: 0.9rem; padding: 10px;">
-            ⭐ Charger...
+            ⭐ Ajouter aux Favoris
         </button>
 
-        <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.05);">
-
-        <div style="font-size: 0.9rem;">
-            <p style="margin-bottom: 5px;">**Joueurs Actifs:** <span style="float: right;">...</span></p>
-            <p style="margin-bottom: 5px;">**Meilleur Rank:** <span style="float: right;">...</span></p>
-            <p style="margin-bottom: 0;">**Publié:** <span style="float: right;">...</span></p>
         </div>
-    </div>
     
     <div class="game-content-area">
         <h1 id="game-title">Chargement du Jeu...</h1>
 
         <div class="game-settings-layout">
             
-            <div class="settings-column"> 
+            <div class="settings-column" style="flex: 1;"> 
                 
                 <div class="card">
                     <h3>Ton profil de joueur</h3>
@@ -339,27 +332,7 @@
                 </div>
 
             </div>
-
-            <div class="settings-column" style="flex: 0.6;"> 
-                <div class="card">
-                    <h3 style="font-size: 1.2rem;">Actualités & Infos</h3>
-                    <p style="color: var(--text-muted);">
-                        Ici, vous pourriez intégrer des actualités, des statistiques ou d'autres informations spécifiques au jeu (via une API de jeu ou des données fictives).
-                    </p>
-                    
-                    <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                        <h4 style="font-size: 0.95rem; margin-bottom: 5px;">Description de Profil</h4>
-                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 6px;">
-                            "Je suis un joueur orienté support, cherchant une équipe chill pour monter en Platine. Je suis dispo le soir après 20h !"
-                        </p>
-                        <button class="action-btn btn-secondary" style="width: 100%; font-size: 0.85rem; padding: 8px 15px;">
-                            🔗 Lier compte {{ gameId }}
-                        </button>
-                    </div>
-                </div>
             </div>
-
-        </div>
     </div> <button id="sidebar-toggle" onclick="toggleSocialSidebar()">
         <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
     </button>
@@ -451,12 +424,15 @@
     // --- LOGIQUE JEU INFO SIDEBAR ---
     // ====================================================
     async function loadGameInfo() {
+        // Charge les informations du jeu ou utilise des valeurs par défaut
         const info = GAME_INFOS[gameId] || { name: gameId.toUpperCase(), description: 'Description non disponible', image: '/img/games/default.png' };
         
         document.getElementById('game-title').textContent = `${info.name} - Matchmaking`;
         document.getElementById('game-short-name').textContent = info.name;
         document.getElementById('game-description').innerHTML = info.description;
-        document.getElementById('game-image').src = info.image;
+        // On vérifie si l'image existe localement avant d'utiliser la valeur par défaut du placeholder HTML
+        // (En vrai, le chemin devrait pointer vers une image existante ou être géré côté serveur)
+        // document.getElementById('game-image').src = info.image; 
 
         // Charger l'état des favoris
         await checkFavoriteStatus();
@@ -465,7 +441,7 @@
     async function checkFavoriteStatus() {
         const btn = document.getElementById('favorite-toggle-btn');
         try {
-            // Suppose une API pour vérifier les favoris
+            // Requête à l'API pour vérifier les favoris (route définie dans server.js)
             const res = await fetch('/api/favorites'); 
             const data = await res.json();
             
@@ -473,7 +449,6 @@
 
         } catch(e) {
             console.error("Erreur chargement favoris:", e);
-            // Par défaut si échec
             isFavorite = false;
         }
 
@@ -497,12 +472,13 @@
         btn.disabled = true;
 
         try {
-            // Suppose une API qui gère l'ajout/suppression
+            // Envoie une requête POST à l'API (qui gère l'ajout ou la suppression)
             const res = await fetch(`/api/favorites/${gameId}`, { method: 'POST' });
             const data = await res.json();
 
             if (data.status === 'added') {
                 isFavorite = true;
+                // Logique pour mettre à jour la liste des favoris sur la page dashboard si on y était.
             } else if (data.status === 'removed') {
                 isFavorite = false;
             }
