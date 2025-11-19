@@ -235,227 +235,441 @@
   </aside>
 
   <div id="chat-container" class="chat-container"></div>
+<script>
+  // ====================================================
+// --- DÉCLARATION DES VARIABLES GLOBALES ---
+// ====================================================
+// Variables sociales/chat
+const friendsSidebar = document.getElementById('friendsSidebar');
+const chatContainer = document.getElementById('chat-container'); 
+const friendNotif = document.getElementById('friend-notif');
+const friendsCount = document.getElementById('friendsCount');
+const receivedCount = document.getElementById('receivedCount');
+const sentCount = document.getElementById('sentCount');
+const activeChats = {}; 
 
-  <script>
-    function toggleSidebar() { document.getElementById('friendsSidebar').classList.toggle('active'); }
+// Variables carrousel/jeux
+const carouselContainer = document.getElementById('carouselContainer');
+const track = document.getElementById('carouselTrack');
+const searchInput = document.getElementById('searchInput');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+let scrollAmount = 0;
+let isHovered = false;
+let isSearching = false;
 
-    (function() {
-        /* =========================================
-           1. CONFIG JEUX
-           ========================================= */
-        const ALL_GAMES = [
-            { id: 'lol', name: 'League of Legends', img: 'https://placehold.co/300x400/16213e/fff?text=LoL' },
-            { id: 'valorant', name: 'Valorant', img: 'https://placehold.co/300x400/ff4655/fff?text=Valorant' },
-            { id: 'wow', name: 'World of Warcraft', img: 'https://placehold.co/300x400/f1c40f/000?text=WoW' },
-            { id: 'minecraft', name: 'Minecraft', img: 'https://placehold.co/300x400/27ae60/fff?text=Minecraft' },
-            { id: 'gta', name: 'GTA V', img: 'https://placehold.co/300x400/2c3e50/fff?text=GTA+V' },
-            { id: 'rocket', name: 'Rocket League', img: 'https://placehold.co/300x400/2980b9/fff?text=Rocket+League' },
-            { id: 'fortnite', name: 'Fortnite', img: 'https://placehold.co/300x400/8e44ad/fff?text=Fortnite' },
-            { id: 'cod', name: 'Call of Duty', img: 'https://placehold.co/300x400/34495e/fff?text=CoD' },
-            { id: 'apex', name: 'Apex Legends', img: 'https://placehold.co/300x400/e74c3c/fff?text=Apex' },
-            { id: 'overwatch', name: 'Overwatch 2', img: 'https://placehold.co/300x400/e67e22/fff?text=Overwatch' },
-            { id: 'csgo', name: 'CS:GO 2', img: 'https://placehold.co/300x400/333/fff?text=CS:GO+2' },
-            { id: 'fifa', name: 'EA FC 24', img: 'https://placehold.co/300x400/222/fff?text=FC+24' },
-        ];
 
-        let favorites = JSON.parse(localStorage.getItem('mm_favorites')) || [];
+/* =========================================
+1. CONFIG JEUX / FAVORIS
+========================================= */
+const ALL_GAMES = [ 
+    { id: 'lol', name: 'League of Legends', img: 'https://placehold.co/300x400/16213e/fff?text=LoL' }, 
+    { id: 'valorant', name: 'Valorant', img: 'https://placehold.co/300x400/ff4655/fff?text=Valorant' }, 
+    { id: 'wow', name: 'World of Warcraft', img: 'https://placehold.co/300x400/f1c40f/000?text=WoW' }, 
+    { id: 'minecraft', name: 'Minecraft', img: 'https://placehold.co/300x400/27ae60/fff?text=Minecraft' }, 
+    { id: 'gta', name: 'GTA V', img: 'https://placehold.co/300x400/2c3e50/fff?text=GTA+V' }, 
+    { id: 'rocket', name: 'Rocket League', img: 'https://placehold.co/300x400/2980b9/fff?text=Rocket+League' }, 
+    { id: 'fortnite', name: 'Fortnite', img: 'https://placehold.co/300x400/8e44ad/fff?text=Fortnite' }, 
+    { id: 'cod', name: 'Call of Duty', img: 'https://placehold.co/300x400/34495e/fff?text=CoD' }, 
+    { id: 'apex', name: 'Apex Legends', img: 'https://placehold.co/300x400/e74c3c/fff?text=Apex' }, 
+    { id: 'overwatch', name: 'Overwatch 2', img: 'https://placehold.co/300x400/e67e22/fff?text=Overwatch' }, 
+    { id: 'csgo', name: 'CS:GO 2', img: 'https://placehold.co/300x400/333/fff?text=CS:GO+2' }, 
+    { id: 'fifa', name: 'EA FC 24', img: 'https://placehold.co/300x400/222/fff?text=FC+24' }, 
+]; 
+// On garde la liste des favoris en local, mais on gère la persistance serveur dans toggleGameFav
+let favorites = JSON.parse(localStorage.getItem('mm_favorites')) || []; 
 
-        /* =========================================
-           2. CARROUSEL & RECHERCHE
-           ========================================= */
-        const track = document.getElementById('carousel-track');
-        const favContainer = document.getElementById('favorites-container');
-        const searchInput = document.getElementById('game-search');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const carouselContainer = document.getElementById('carousel-container');
+const isFav = (id) => favorites.includes(id);
 
-        let isFav = (id) => favorites.includes(id);
-        let scrollAmount = 0;
-        let isHovered = false;
-        let isSearching = false;
-
-        // Génération HTML Carte
-        function createCardHTML(game) {
-    const active = isFav(game.id) ? 'active' : '';
-    const heart = isFav(game.id) ? '♥' : '♡';
-    
-    // On ajoute onclick="goToGame('...')" sur la div principale
+function createCardHTML(game) {
+    const activeClass = isFav(game.id) ? 'active' : '';
     return `
-        <div class="game-card" onclick="window.location.href='/game/${game.id}'" style="cursor:pointer;">
+        <button class="heart-btn ${activeClass}" onclick="toggleGameFav('${game.id}')">
+            <i class="fas fa-heart"></i>
+        </button>
+        <a href="/game/${game.id}">
             <img src="${game.img}" alt="${game.name}" class="game-img">
-            <div class="game-overlay"><div class="game-title">${game.name}</div></div>
-            
-            <button class="heart-btn ${active}" onclick="event.stopPropagation(); window.toggleGameFav('${game.id}')">
-                ${heart}
-            </button>
-        </div>
+            <div class="game-overlay">
+                <div class="game-title">${game.name}</div>
+            </div>
+        </a>
     `;
 }
 
-        // Rendu Favoris
-        function renderFavs() {
-            favContainer.innerHTML = "";
-            if(favorites.length === 0) {
-                favContainer.innerHTML = '<div class="empty-msg">Aucun favori. Ajoute des jeux ci-dessous !</div>';
-            } else {
-                favorites.forEach(fid => {
-                    const g = ALL_GAMES.find(x => x.id === fid);
-                    if(g) {
-                        const d = document.createElement('div');
-                        d.innerHTML = createCardHTML(g);
-                        favContainer.appendChild(d);
-                    }
-                });
-            }
-        }
+// Rendu de la section Favoris
+function renderFavs() {
+    const c = document.getElementById('favoritesGrid');
+    c.innerHTML = "";
+    
+    if (favorites.length === 0) {
+        c.innerHTML = `<div class="empty-msg">Vous n'avez pas encore de jeu favori. Cliquez sur le cœur pour en ajouter !</div>`;
+        return;
+    }
 
-        // Rendu Carrousel (liste filtrée ou complète)
-        function renderCarousel(list = ALL_GAMES) {
-            track.innerHTML = "";
-            // Si recherche active, on affiche juste la liste (pas de doublon pour boucle)
-            // Si pas de recherche, on double la liste pour effet infini
-            const displayList = isSearching ? list : [...list, ...list];
-            
-            if(displayList.length === 0) {
-                track.innerHTML = '<div style="color:#94a3b8; padding:20px;">Aucun jeu trouvé.</div>';
-                return;
-            }
+    const favGames = ALL_GAMES.filter(g => isFav(g.id));
 
-            displayList.forEach(g => {
-                const d = document.createElement('div');
-                d.className = 'carousel-item';
-                d.innerHTML = createCardHTML(g);
-                track.appendChild(d);
-            });
-        }
+    favGames.forEach(g => {
+        const d = document.createElement('div');
+        d.className = 'game-card';
+        d.innerHTML = createCardHTML(g);
+        c.appendChild(d);
+    });
+}
 
-        // Action Toggle Favori
-        window.toggleGameFav = (id) => {
-            if(isFav(id)) favorites = favorites.filter(x => x !== id);
-            else favorites.push(id);
-            localStorage.setItem('mm_favorites', JSON.stringify(favorites));
-            renderFavs();
-            // Re-render carrousel pour mettre à jour les coeurs, en gardant le filtre actuel
-            const term = searchInput.value.toLowerCase().trim();
-            const filtered = term ? ALL_GAMES.filter(g => g.name.toLowerCase().includes(term)) : ALL_GAMES;
-            renderCarousel(filtered);
-        };
+// Action Toggle Favori
+window.toggleGameFav = (id) => { 
+    if(isFav(id)) favorites = favorites.filter(x => x !== id); 
+    else favorites.push(id); 
+    
+    // Mise à jour du localStorage ET du serveur
+    localStorage.setItem('mm_favorites', JSON.stringify(favorites)); 
+    // Appel API pour la persistance
+    fetch(`/api/favorites/${id}`, {method: 'POST'}); 
+    
+    renderFavs(); 
+    // Re-render carrousel pour mettre à jour les coeurs, en gardant le filtre actuel 
+    const term = searchInput.value.toLowerCase().trim(); 
+    const filtered = term ? ALL_GAMES.filter(g => g.name.toLowerCase().includes(term)) : ALL_GAMES; 
+    renderCarousel(filtered); 
+};
 
-        // --- LOGIQUE RECHERCHE ---
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase().trim();
-            if(term.length > 0) {
-                isSearching = true;
-                const filtered = ALL_GAMES.filter(g => g.name.toLowerCase().includes(term));
-                renderCarousel(filtered);
-                track.style.transform = `translateX(0px)`; // Reset position
-            } else {
-                isSearching = false;
-                renderCarousel(ALL_GAMES);
-            }
-        });
+/* =========================================
+2. LOGIQUE CARROUSEL / RECHERCHE
+========================================= */
 
-        // --- LOGIQUE FLÈCHES ---
-        prevBtn.addEventListener('click', () => {
-            if(isSearching) return; // Pas de scroll manuel si filtre actif (liste courte)
-            scrollAmount -= 300; // Reculer
-            if(scrollAmount < 0) scrollAmount = 0; // Bloquer au début
+// Rendu du Carrousel
+function renderCarousel(list) {
+    if (!track) return;
+    track.innerHTML = "";
+    list.forEach(g => { 
+        const d = document.createElement('div'); 
+        d.className = 'carousel-item'; 
+        d.innerHTML = createCardHTML(g); 
+        track.appendChild(d); 
+    }); 
+} 
+
+// --- LOGIQUE RECHERCHE --- 
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => { 
+        const term = e.target.value.toLowerCase().trim(); 
+        if(term.length > 0) { 
+            isSearching = true; 
+            const filtered = ALL_GAMES.filter(g => g.name.toLowerCase().includes(term)); 
+            renderCarousel(filtered); 
+            if (track) track.style.transform = `translateX(0px)`; // Reset position 
+        } else { 
+            isSearching = false; 
+            renderCarousel(ALL_GAMES); 
+        } 
+    }); 
+}
+
+
+// --- LOGIQUE FLÈCHES --- 
+if (prevBtn && nextBtn && track && carouselContainer) {
+    prevBtn.addEventListener('click', () => { 
+        if(isSearching) return; 
+        scrollAmount -= 300; 
+        if(scrollAmount < 0) scrollAmount = 0; 
+        track.style.transition = 'transform 0.5s ease-out';
+        track.style.transform = `translateX(-${scrollAmount}px)`; 
+    }); 
+
+    nextBtn.addEventListener('click', () => { 
+        if(isSearching) return; 
+        scrollAmount += 300; 
+        const maxScroll = track.scrollWidth - carouselContainer.clientWidth;
+        
+        if(scrollAmount >= maxScroll && maxScroll > 0) {
+            scrollAmount = 0; 
+            track.style.transition = 'none'; 
+            track.style.transform = `translateX(0px)`;
+            setTimeout(() => {
+                 track.style.transition = 'transform 0.5s ease-out';
+            }, 50); 
+        } else if (maxScroll <= 0) {
+            scrollAmount = 0;
+        } else {
+            track.style.transition = 'transform 0.5s ease-out';
             track.style.transform = `translateX(-${scrollAmount}px)`;
+        }
+    }); 
+}
+
+
+// --- AUTO SCROLL --- 
+if (carouselContainer) {
+    carouselContainer.addEventListener('mouseenter', () => isHovered = true); 
+    carouselContainer.addEventListener('mouseleave', () => isHovered = false); 
+}
+
+function autoScrollLoop() { 
+    if (!isHovered && !isSearching && track && carouselContainer) {
+        const itemWidth = 200 + 20; 
+        const visibleItems = Math.floor(carouselContainer.clientWidth / itemWidth);
+        const maxScroll = track.scrollWidth - carouselContainer.clientWidth;
+
+        if (maxScroll <= 0) {
+             scrollAmount = 0; 
+        } else {
+             scrollAmount += itemWidth; 
+
+             if (scrollAmount >= maxScroll) {
+                 scrollAmount = 0; 
+                 track.style.transition = 'none'; 
+                 track.style.transform = `translateX(0px)`;
+                 setTimeout(() => {
+                     track.style.transition = 'transform 0.5s ease-out';
+                 }, 50); 
+             } else {
+                 track.style.transition = 'transform 0.5s ease-out';
+                 track.style.transform = `translateX(-${scrollAmount}px)`; 
+             }
+        }
+    }
+}
+// Lance le défilement automatique
+setInterval(autoScrollLoop, 3000); 
+
+// ----------------------------------------------------------------
+// --- LOGIQUE SOCIALE (La clé de la synchronisation) ---
+// ----------------------------------------------------------------
+
+// --- FONCTION DE BASCULE DE LA SIDEBAR (Amis) ---
+window.toggleSidebar = function() {
+    if (!friendsSidebar) return;
+    const isActive = friendsSidebar.classList.toggle('active');
+    const toggleBtn = document.querySelector('.toggle-friends-btn');
+    
+    if(toggleBtn) toggleBtn.classList.toggle('active', isActive);
+    
+    if (!isActive) {
+        // Ferme tous les chats si la sidebar est fermée
+        Object.keys(activeChats).forEach(closeChat);
+    }
+
+    localStorage.setItem('socialSidebarActive', isActive);
+};
+
+// --- LOGIQUE SOCIALE (Amis/Requests) ---
+// Cette fonction est appelée immédiatement après une action et toutes les 5 secondes
+async function loadSocial() {
+    try {
+        // Récupère les amis et les demandes en parallèle
+        const [fRes, rRes] = await Promise.all([
+            fetch('/api/friends'), 
+            fetch('/api/friends/requests')
+        ]);
+        
+        const fData = await fRes.json();
+        const rData = await rRes.json();
+
+        renderFriends(fData.friends || []);
+        renderRequests(rData.incoming || []); 
+        renderSent(rData.outgoing || []); 
+
+    } catch (e) {
+        console.error("Erreur chargement social:", e);
+    }
+}
+
+// Fonctions de rendu
+function renderFriends(list) {
+    const c = document.getElementById('friendsList');
+    if (!c) return;
+    c.innerHTML = "";
+    if (friendsCount) friendsCount.textContent = list.length;
+    
+    if (!list.length) {
+        c.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.9rem;">Ajoutez des amis !</p>`;
+        return;
+    }
+
+    list.forEach(f => {
+        const d = document.createElement('div');
+        d.className = 'friend-card';
+        d.onclick = () => openChat(f.username); 
+        d.innerHTML = `
+            <div style="display: flex; align-items: center;">
+                <div class="friend-avatar">${f.username.charAt(0).toUpperCase()}</div>
+                <span>${f.username}</span>
+            </div>
+        `;
+        c.appendChild(d);
+    });
+}
+
+function renderRequests(list) {
+    const c = document.getElementById('requestsList');
+    if (!c) return;
+    c.innerHTML = "";
+    if (receivedCount) receivedCount.textContent = list.length;
+    
+    const title = document.getElementById('receivedRequestsTitle');
+    if (title) title.style.display = list.length ? 'block' : 'none';
+
+    list.forEach(r => {
+        const d = document.createElement('div');
+        d.className = 'friend-card';
+        d.innerHTML = `
+            <div style="display: flex; align-items: center; flex-grow: 1;">
+                <div class="friend-avatar">${r.from_username.charAt(0).toUpperCase()}</div>
+                <span>${r.from_username}</span>
+            </div>
+            <div class="request-actions" style="display:flex; gap:5px;">
+                <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #10b981;" onclick="hReq(${r.id}, 'accept')"><i class="fas fa-check"></i></button>
+                <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #ef4444;" onclick="hReq(${r.id}, 'reject')"><i class="fas fa-times"></i></button>
+            </div>
+        `;
+        c.appendChild(d);
+    });
+}
+
+function renderSent(list) {
+    const c = document.getElementById('sentList');
+    if (!c) return;
+    c.innerHTML = "";
+    if (sentCount) sentCount.textContent = list.length;
+    
+    const title = document.getElementById('sentRequestsTitle');
+    if (title) title.style.display = list.length ? 'block' : 'none';
+
+    list.forEach(r => {
+        const d = document.createElement('div');
+        d.className = 'friend-card';
+        d.style.opacity = 0.7; 
+        d.innerHTML = `
+            <div style="display: flex; align-items: center; flex-grow: 1;">
+                <div class="friend-avatar">${r.to_username.charAt(0).toUpperCase()}</div>
+                <span style="font-style:italic;">${r.to_username} (En attente)</span>
+            </div>
+            <div class="request-actions">
+                <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #334155;" onclick="hReq(${r.id}, 'reject')"><i class="fas fa-minus-circle"></i></button>
+            </div>
+        `;
+        c.appendChild(d);
+    });
+}
+
+// Gère l'envoi de la demande d'ami
+const addFriendForm = document.getElementById('add-friend-form');
+if (addFriendForm) {
+    addFriendForm.addEventListener('submit', async function(e) { 
+        e.preventDefault(); 
+        const input = document.getElementById('friend-input'); 
+        
+        const res = await fetch('/api/friends/request', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({toUsername:input.value})
         });
-
-        nextBtn.addEventListener('click', () => {
-            if(isSearching) return;
-            scrollAmount += 300; // Avancer
-            // Reset si trop loin (boucle simple)
-            if(scrollAmount > track.scrollWidth / 2) scrollAmount = 0;
-            track.style.transform = `translateX(-${scrollAmount}px)`;
-        });
-
-        // --- AUTO SCROLL ---
-        carouselContainer.addEventListener('mouseenter', () => isHovered = true);
-        carouselContainer.addEventListener('mouseleave', () => isHovered = false);
-
-        function autoScrollLoop() {
-            // On ne scroll pas si : souris dessus OU recherche active
-            if (!isHovered && !isSearching) {
-                scrollAmount += 0.8; // Vitesse
-                if (scrollAmount >= track.scrollWidth / 2) {
-                    scrollAmount = 0; // Retour au début invisible
-                }
-                track.style.transform = `translateX(-${scrollAmount}px)`;
-            }
-            requestAnimationFrame(autoScrollLoop);
+        const d = await res.json();
+        
+        // Appel clé pour la SYNCHRONISATION IMMÉDIATE
+        loadSocial(); 
+        
+        if (friendNotif) {
+            friendNotif.innerText = d.ok ? `Demande envoyée à ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
+            input.value = "";
+            setTimeout(()=>friendNotif.innerText="",3000); 
         }
+    });
+}
 
-        // Init
-        renderFavs();
-        renderCarousel(ALL_GAMES);
-        autoScrollLoop();
+// Gère l'acceptation/rejet d'une demande d'ami (hReq pour 'handleRequest')
+window.hReq = async(id, a) => { 
+    await fetch(`/api/friends/requests/${id}/${a}`, {method:'POST'}); 
+    // Appel clé pour la SYNCHRONISATION IMMÉDIATE
+    loadSocial(); 
+};
 
-        /* =========================================
-           3. LOGIQUE SOCIALE (Chat & Amis)
-           ========================================= */
-        const friendNotif = document.getElementById('friend-notif');
-        const chatContainer = document.getElementById('chat-container');
-        const activeChats = {}; 
+// --- LOGIQUE DE CHAT ---
 
-        async function loadSocial() {
-            try {
-                const [fRes, rRes] = await Promise.all([fetch('/api/friends'), fetch('/api/friends/requests')]);
-                const fData = await fRes.json();
-                const rData = await rRes.json();
-                renderFriends(fData.friends);
-                renderRequests(rData.incoming, rData.outgoing);
-            } catch(e) {}
-        }
+async function fetchMessages(u) {
+    const c = document.getElementById(`msg-${u}`);
+    if (!c) return;
 
-        function renderFriends(list) {
-            const c = document.getElementById('friends-list');
-            document.getElementById('friend-count').innerText = list.length;
-            c.innerHTML = "";
-            if(list.length===0) { c.innerHTML='<div style="text-align:center;color:#64748b;font-size:0.8rem;margin-top:10px;">Aucun ami.</div>'; return; }
-            list.forEach(f => {
-                const d = document.createElement('div'); d.className='friend-card'; d.onclick=()=>openChat(f.username);
-                d.innerHTML=`<div style="display:flex;align-items:center;"><div class="friend-avatar">${f.username[0].toUpperCase()}</div><div><div style="font-size:0.9rem;font-weight:500;color:white;">${f.username}</div><div class="friend-status">● En ligne</div></div></div><span>💬</span>`;
-                c.appendChild(d);
-            });
-        }
+    const res = await fetch(`/api/messages/${u}`);
+    const d = await res.json();
+    
+    const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 1;
+    
+    c.innerHTML = d.messages.map(m =>
+        `<div class="msg ${m.fromSelf ? 'self' : 'other'}">${m.content}</div>`
+    ).join('');
+    
+    if (isScrolledToBottom || d.messages.length === 1) {
+        c.scrollTop = c.scrollHeight;
+    }
+}
 
-        function renderRequests(inc, out) {
-            const iC=document.getElementById('list-requests-in'); document.getElementById('section-requests-in').style.display=inc.length?'block':'none'; iC.innerHTML="";
-            inc.forEach(r=>{ const d=document.createElement('div'); d.className='friend-card'; d.style.border='1px solid #eab308';
-                d.innerHTML=`<span style="font-size:0.85rem;">${r.from_username}</span><div><button onclick="hReq(${r.id},'accept')" style="background:#22c55e;border:none;border-radius:4px;cursor:pointer;">✔</button><button onclick="hReq(${r.id},'reject')" style="background:#ef4444;border:none;border-radius:4px;cursor:pointer;margin-left:5px;">✖</button></div>`; iC.appendChild(d); });
-            
-            const oC=document.getElementById('list-requests-out'); document.getElementById('section-requests-out').style.display=out.length?'block':'none'; oC.innerHTML="";
-            out.forEach(r=>{ const d=document.createElement('div'); d.className='friend-card'; d.style.cursor='default';
-                d.innerHTML=`<div style="display:flex;align-items:center;opacity:0.7;"><div class="friend-avatar" style="background:#64748b;width:24px;height:24px;font-size:0.7rem;">?</div><div><div style="font-size:0.85rem;">${r.to_username}</div><div class="friend-status pending">En attente...</div></div></div>`; oC.appendChild(d); });
-        }
+window.openChat = (u) => { 
+    if(document.getElementById(`cw-${u}`)) return;
+    const d=document.createElement('div'); d.className='chat-window'; d.id=`cw-${u}`;
+    d.innerHTML=`
+        <div class="chat-header" onclick="closeChat('${u}')">
+            <span>${u}</span>
+            <span><i class="fas fa-times"></i></span>
+        </div>
+        <div class="chat-body" id="msg-${u}"></div>
+        <form class="chat-input-area" onsubmit="sM(event,'${u}')">
+            <input type="text" placeholder="Écrire un message..." autocomplete="off">
+            <button type="submit"><i class="fas fa-paper-plane"></i></button>
+        </form>
+    `;
+    if (chatContainer) chatContainer.appendChild(d); 
+    fetchMessages(u); 
+    activeChats[u]=setInterval(()=>fetchMessages(u),3000);
+};
 
-        document.getElementById('add-friend-form').addEventListener('submit', async(e)=>{
-            e.preventDefault(); const i=document.getElementById('friend-input'); if(!i.value.trim()) return;
-            const res=await fetch('/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:i.value.trim()})});
-            const d=await res.json(); friendNotif.innerText=d.ok?"Envoyé !":d.error; friendNotif.style.color=d.ok?"#22c55e":"#ef4444";
-            i.value=""; loadSocial(); setTimeout(()=>friendNotif.innerText="",3000);
-        });
+window.closeChat = (u) => { 
+    const el=document.getElementById(`cw-${u}`); 
+    if(el) el.remove(); 
+    if(activeChats[u]){
+        clearInterval(activeChats[u]);
+        delete activeChats[u];
+    } 
+};
 
-        window.hReq = async(id,a)=>{ await fetch(`/api/friends/requests/${id}/${a}`,{method:'POST'}); loadSocial(); };
+window.sM = async (e, u) => {
+    e.preventDefault();
+    const input = e.target.querySelector('input');
+    if (!input.value.trim()) return; 
 
-        window.openChat=(u)=>{ if(document.getElementById(`cw-${u}`)) return;
-            const d=document.createElement('div'); d.className='chat-window'; d.id=`cw-${u}`;
-            d.innerHTML=`<div class="chat-header" onclick="closeChat('${u}')"><span>${u}</span><span>✖</span></div><div class="chat-body" id="msg-${u}"></div><form class="chat-input-area" onsubmit="sM(event,'${u}')"><input type="text" placeholder="..." autocomplete="off"></form>`;
-            chatContainer.appendChild(d); fM(u); activeChats[u]=setInterval(()=>fM(u),3000);
-        };
-        window.closeChat=(u)=>{ const el=document.getElementById(`cw-${u}`); if(el) el.remove(); if(activeChats[u]){clearInterval(activeChats[u]);delete activeChats[u];} };
-        window.sM=async(e,u)=>{ e.preventDefault(); const i=e.target.querySelector('input'); if(!i.value.trim()) return;
-            await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:u,content:i.value.trim()})}); i.value=""; fM(u); };
-        async function fM(u){ const c=document.getElementById(`msg-${u}`); if(!c) return;
-            const res=await fetch(`/api/messages/${u}`); const d=await res.json();
-            c.innerHTML=d.messages.map(m=>`<div class="msg ${m.fromSelf?'me':'them'}">${m.content}</div>`).join(''); c.scrollTop=c.scrollHeight; }
+    await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toUsername: u, content: input.value.trim() })
+    });
+    
+    input.value = "";
+    fetchMessages(u); 
+};
 
-        loadSocial(); setInterval(loadSocial, 5000);
 
-    })();
+/* =========================================
+3. INITIALISATION FINALE
+========================================= */
+
+(async function() {
+    // --- Initialisation JEUX / CAROUSEL ---
+    renderFavs();
+    renderCarousel(ALL_GAMES);
+    
+    // --- Initialisation SOCIAL ---
+    // Rétablit l'état de la sidebar (Amis) au chargement
+    if (localStorage.getItem('socialSidebarActive') === 'true' && friendsSidebar) {
+        friendsSidebar.classList.add('active');
+        const toggleBtn = document.querySelector('.toggle-friends-btn');
+        if(toggleBtn) toggleBtn.classList.add('active');
+    }
+    
+    // Chargement des données sociales initiales
+    loadSocial();
+    // Le rafraîchissement périodique est CRUCIAL pour la synchro entre les pages.
+    setInterval(loadSocial, 5000); // Rafraîchissement toutes les 5 secondes
+})();
   </script>
 </body>
 </html>
