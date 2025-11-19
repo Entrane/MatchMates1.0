@@ -105,7 +105,7 @@
       transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    /* NOUVELLES RÈGLES POUR LE BOUTON ACTIF */
+    /* RÈGLES POUR LE BOUTON ACTIF */
     .toggle-friends-btn.active {
         /* Déplace le bouton vers la gauche: 320px (sidebar) + 20px (marge initiale) */
         right: calc(var(--sidebar-width) + 20px); 
@@ -165,8 +165,9 @@
     .chat-input-area { padding: 10px; background: #1e293b; border-top: 1px solid #334155; display: flex; }
     .chat-input-area input { flex: 1; padding: 8px; border-radius: 20px; border: none; background: #334155; color: white; outline: none; }
     .msg { padding: 6px 12px; border-radius: 12px; max-width: 80%; font-size: 0.85rem; }
-    .msg.me { align-self: flex-end; background: var(--primary-color); color: #020617; }
-    .msg.them { align-self: flex-start; background: #334155; color: white; }
+    /* Correction du nom des classes de message pour correspondre au code JS */
+    .msg.self { align-self: flex-end; background: var(--primary-color); color: #020617; }
+    .msg.other { align-self: flex-start; background: #334155; color: white; }
 
     /* RESPONSIVE */
     @media (max-width: 1200px) {
@@ -765,7 +766,9 @@
             const rData = await rRes.json();
             renderFriends(fData.friends);
             renderRequests(rData.incoming, rData.outgoing);
-        } catch(e) {}
+        } catch(e) {
+             console.error("Erreur de chargement des données sociales:", e);
+        }
     }
 
     function renderFriends(list) {
@@ -802,14 +805,29 @@
     window.openChat=(u)=>{ if(document.getElementById(`cw-${u}`)) return;
         const d=document.createElement('div'); d.className='chat-window'; d.id=`cw-${u}`;
         d.innerHTML=`<div class="chat-header" onclick="closeChat('${u}')"><span>${u}</span><span>✖</span></div><div class="chat-body" id="msg-${u}"></div><form class="chat-input-area" onsubmit="sM(event,'${u}')"><input type="text" placeholder="..." autocomplete="off"></form>`;
-        chatContainer.appendChild(d); fM(u); activeChats[u]=setInterval(()=>fM(u),3000);
+        chatContainer.appendChild(d); fetchMessages(u); activeChats[u]=setInterval(()=>fetchMessages(u),3000);
     };
     window.closeChat=(u)=>{ const el=document.getElementById(`cw-${u}`); if(el) el.remove(); if(activeChats[u]){clearInterval(activeChats[u]);delete activeChats[u];} };
     window.sM=async(e,u)=>{ e.preventDefault(); const i=e.target.querySelector('input'); if(!i.value.trim()) return;
-        await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:u,content:i.value.trim()})}); i.value=\"\"; fM(u); };
-    async function fM(u){ const c=document.getElementById(`msg-${u}`); if(!c) return;
-        const res=await fetch(`/api/messages/${u}`); const d=await res.json();
-        c.innerHTML=d.messages.map(m=>`<div class="msg ${m.fromSelf?'me':'them'}">${m.content}</div>`).join(''); c.scrollTop=c.scrollHeight; }
+        await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:u,content:i.value.trim()})}); i.value=\"\"; fetchMessages(u); };
+    
+    // Renommage de fM en fetchMessages pour plus de clarté
+    async function fetchMessages(u){ 
+        const c=document.getElementById(`msg-${u}`); 
+        if(!c) return;
+        const res=await fetch(`/api/messages/${u}`); 
+        const d=await res.json();
+        
+        // Ajout d'une gestion basique du scroll
+        const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 1;
+        
+        // CORRECTION: Changement des classes CSS des messages (me -> self, them -> other)
+        c.innerHTML=d.messages.map(m=>`<div class="msg ${m.fromSelf?'self':'other'}">${m.content}</div>`).join(''); 
+        
+        if (isScrolledToBottom || d.messages.length === 1) {
+             c.scrollTop = c.scrollHeight;
+        }
+    }
 
     
     // ====================================================
@@ -827,7 +845,7 @@
 
         await loadGameInfo(); 
 
-        // Initialisation de la logique sociale réintégrée
+        // Initialisation de la logique sociale
         loadSocial(); 
         setInterval(loadSocial, 5000);
     })();
