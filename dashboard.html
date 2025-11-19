@@ -392,237 +392,70 @@
         renderFavs();
         renderCarousel(ALL_GAMES);
         autoScrollLoop();
-    // ====================================================
-    // --- DÉCLARATION DES VARIABLES GLOBALES ---
-    // ====================================================
-    const friendsSidebar = document.getElementById('friendsSidebar');
-    const chatContainer = document.getElementById('chat-container'); 
-    const friendNotif = document.getElementById('friend-notif');
-    const friendsCount = document.getElementById('friendsCount');
-    const receivedCount = document.getElementById('receivedCount');
-    const sentCount = document.getElementById('sentCount');
-    const activeChats = {}; 
 
-    // ====================================================
-    // --- 1. FONCTION DE BASCULE DE LA SIDEBAR (Amis) ---
-    // ====================================================
-    window.toggleSidebar = function() {
-        const isActive = friendsSidebar.classList.toggle('active');
-        const toggleBtn = document.querySelector('.toggle-friends-btn');
-        
-        toggleBtn.classList.toggle('active', isActive);
-        
-        if (!isActive) {
-            Object.keys(activeChats).forEach(closeChat);
+        /* =========================================
+           3. LOGIQUE SOCIALE (Chat & Amis)
+           ========================================= */
+        const friendNotif = document.getElementById('friend-notif');
+        const chatContainer = document.getElementById('chat-container');
+        const activeChats = {}; 
+
+        async function loadSocial() {
+            try {
+                const [fRes, rRes] = await Promise.all([fetch('/api/friends'), fetch('/api/friends/requests')]);
+                const fData = await fRes.json();
+                const rData = await rRes.json();
+                renderFriends(fData.friends);
+                renderRequests(rData.incoming, rData.outgoing);
+            } catch(e) {}
         }
 
-        localStorage.setItem('socialSidebarActive', isActive);
-    };
+        function renderFriends(list) {
+            const c = document.getElementById('friends-list');
+            document.getElementById('friend-count').innerText = list.length;
+            c.innerHTML = "";
+            if(list.length===0) { c.innerHTML='<div style="text-align:center;color:#64748b;font-size:0.8rem;margin-top:10px;">Aucun ami.</div>'; return; }
+            list.forEach(f => {
+                const d = document.createElement('div'); d.className='friend-card'; d.onclick=()=>openChat(f.username);
+                d.innerHTML=`<div style="display:flex;align-items:center;"><div class="friend-avatar">${f.username[0].toUpperCase()}</div><div><div style="font-size:0.9rem;font-weight:500;color:white;">${f.username}</div><div class="friend-status">● En ligne</div></div></div><span>💬</span>`;
+                c.appendChild(d);
+            });
+        }
 
-    // ====================================================
-    // --- 2. LOGIQUE SOCIALE (Amis/Requests) ---
-    // (Cette fonction est clé pour la synchro)
-    // ====================================================
-    async function loadSocial() {
-        try {
-            // Récupère les amis et les demandes en parallèle (même API que game.html)
-            const [fRes, rRes] = await Promise.all([
-                fetch('/api/friends'), 
-                fetch('/api/friends/requests')
-            ]);
+        function renderRequests(inc, out) {
+            const iC=document.getElementById('list-requests-in'); document.getElementById('section-requests-in').style.display=inc.length?'block':'none'; iC.innerHTML="";
+            inc.forEach(r=>{ const d=document.createElement('div'); d.className='friend-card'; d.style.border='1px solid #eab308';
+                d.innerHTML=`<span style="font-size:0.85rem;">${r.from_username}</span><div><button onclick="hReq(${r.id},'accept')" style="background:#22c55e;border:none;border-radius:4px;cursor:pointer;">✔</button><button onclick="hReq(${r.id},'reject')" style="background:#ef4444;border:none;border-radius:4px;cursor:pointer;margin-left:5px;">✖</button></div>`; iC.appendChild(d); });
             
-            const fData = await fRes.json();
-            const rData = await rRes.json();
-
-            renderFriends(fData.friends || []);
-            renderRequests(rData.incoming || []); 
-            renderSent(rData.outgoing || []); 
-
-        } catch (e) {
-            console.error("Erreur chargement social:", e);
-        }
-    }
-
-    // Fonctions de rendu (restent les mêmes)
-    function renderFriends(list) {
-        const c = document.getElementById('friendsList');
-        c.innerHTML = "";
-        friendsCount.textContent = list.length;
-        
-        if (!list.length) {
-            c.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.9rem;">Ajoutez des amis !</p>`;
-            return;
+            const oC=document.getElementById('list-requests-out'); document.getElementById('section-requests-out').style.display=out.length?'block':'none'; oC.innerHTML="";
+            out.forEach(r=>{ const d=document.createElement('div'); d.className='friend-card'; d.style.cursor='default';
+                d.innerHTML=`<div style="display:flex;align-items:center;opacity:0.7;"><div class="friend-avatar" style="background:#64748b;width:24px;height:24px;font-size:0.7rem;">?</div><div><div style="font-size:0.85rem;">${r.to_username}</div><div class="friend-status pending">En attente...</div></div></div>`; oC.appendChild(d); });
         }
 
-        list.forEach(f => {
-            const d = document.createElement('div');
-            d.className = 'friend-card';
-            d.onclick = () => openChat(f.username); 
-            d.innerHTML = `
-                <div style="display: flex; align-items: center;">
-                    <div class="friend-avatar">${f.username.charAt(0).toUpperCase()}</div>
-                    <span>${f.username}</span>
-                </div>
-            `;
-            c.appendChild(d);
+        document.getElementById('add-friend-form').addEventListener('submit', async(e)=>{
+            e.preventDefault(); const i=document.getElementById('friend-input'); if(!i.value.trim()) return;
+            const res=await fetch('/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:i.value.trim()})});
+            const d=await res.json(); friendNotif.innerText=d.ok?"Envoyé !":d.error; friendNotif.style.color=d.ok?"#22c55e":"#ef4444";
+            i.value=""; loadSocial(); setTimeout(()=>friendNotif.innerText="",3000);
         });
-    }
 
-    function renderRequests(list) {
-        const c = document.getElementById('requestsList');
-        c.innerHTML = "";
-        receivedCount.textContent = list.length;
-        document.getElementById('receivedRequestsTitle').style.display = list.length ? 'block' : 'none';
+        window.hReq = async(id,a)=>{ await fetch(`/api/friends/requests/${id}/${a}`,{method:'POST'}); loadSocial(); };
 
-        list.forEach(r => {
-            const d = document.createElement('div');
-            d.className = 'friend-card';
-            d.innerHTML = `
-                <div style="display: flex; align-items: center; flex-grow: 1;">
-                    <div class="friend-avatar">${r.from_username.charAt(0).toUpperCase()}</div>
-                    <span>${r.from_username}</span>
-                </div>
-                <div class="request-actions" style="display:flex; gap:5px;">
-                    <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #10b981;" onclick="hReq(${r.id}, 'accept')"><i class="fas fa-check"></i></button>
-                    <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #ef4444;" onclick="hReq(${r.id}, 'reject')"><i class="fas fa-times"></i></button>
-                </div>
-            `;
-            c.appendChild(d);
-        });
-    }
+        window.openChat=(u)=>{ if(document.getElementById(`cw-${u}`)) return;
+            const d=document.createElement('div'); d.className='chat-window'; d.id=`cw-${u}`;
+            d.innerHTML=`<div class="chat-header" onclick="closeChat('${u}')"><span>${u}</span><span>✖</span></div><div class="chat-body" id="msg-${u}"></div><form class="chat-input-area" onsubmit="sM(event,'${u}')"><input type="text" placeholder="..." autocomplete="off"></form>`;
+            chatContainer.appendChild(d); fM(u); activeChats[u]=setInterval(()=>fM(u),3000);
+        };
+        window.closeChat=(u)=>{ const el=document.getElementById(`cw-${u}`); if(el) el.remove(); if(activeChats[u]){clearInterval(activeChats[u]);delete activeChats[u];} };
+        window.sM=async(e,u)=>{ e.preventDefault(); const i=e.target.querySelector('input'); if(!i.value.trim()) return;
+            await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:u,content:i.value.trim()})}); i.value=""; fM(u); };
+        async function fM(u){ const c=document.getElementById(`msg-${u}`); if(!c) return;
+            const res=await fetch(`/api/messages/${u}`); const d=await res.json();
+            c.innerHTML=d.messages.map(m=>`<div class="msg ${m.fromSelf?'me':'them'}">${m.content}</div>`).join(''); c.scrollTop=c.scrollHeight; }
 
-    function renderSent(list) {
-        const c = document.getElementById('sentList');
-        c.innerHTML = "";
-        sentCount.textContent = list.length;
-        document.getElementById('sentRequestsTitle').style.display = list.length ? 'block' : 'none';
+        loadSocial(); setInterval(loadSocial, 5000);
 
-        list.forEach(r => {
-            const d = document.createElement('div');
-            d.className = 'friend-card';
-            d.style.opacity = 0.7; 
-            d.innerHTML = `
-                <div style="display: flex; align-items: center; flex-grow: 1;">
-                    <div class="friend-avatar">${r.to_username.charAt(0).toUpperCase()}</div>
-                    <span style="font-style:italic;">${r.to_username} (En attente)</span>
-                </div>
-                <div class="request-actions">
-                    <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #334155;" onclick="hReq(${r.id}, 'reject')"><i class="fas fa-minus-circle"></i></button>
-                </div>
-            `;
-            c.appendChild(d);
-        });
-    }
-
-    // Gère l'envoi de la demande d'ami
-    document.getElementById('add-friend-form').addEventListener('submit', async function(e) { 
-        e.preventDefault(); 
-        const input = document.getElementById('friend-input'); 
-        
-        const res = await fetch('/api/friends/request', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({toUsername:input.value})
-        });
-        const d = await res.json();
-        
-        // Mise à jour immédiate de l'interface (synchro)
-        loadSocial(); 
-        
-        friendNotif.innerText = d.ok ? `Demande envoyée à ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
-        input.value = "";
-        setTimeout(()=>friendNotif.innerText="",3000); 
-    });
-    
-    // Gère l'acceptation/rejet d'une demande d'ami
-    window.hReq = async(id, a) => { 
-        await fetch(`/api/friends/requests/${id}/${a}`, {method:'POST'}); 
-        // Mise à jour immédiate de l'interface (synchro)
-        loadSocial(); 
-    };
-
-    // ====================================================
-    // --- 3. LOGIQUE DE CHAT (Identique à game.html) ---
-    // ====================================================
-
-    async function fetchMessages(u) {
-        const c = document.getElementById(`msg-${u}`);
-        if (!c) return;
-
-        const res = await fetch(`/api/messages/${u}`);
-        const d = await res.json();
-        
-        const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 1;
-        
-        c.innerHTML = d.messages.map(m =>
-            `<div class="msg ${m.fromSelf ? 'self' : 'other'}">${m.content}</div>`
-        ).join('');
-        
-        if (isScrolledToBottom || d.messages.length === 1) {
-            c.scrollTop = c.scrollHeight;
-        }
-    }
-    
-    window.openChat = (u) => { 
-        if(document.getElementById(`cw-${u}`)) return;
-        const d=document.createElement('div'); d.className='chat-window'; d.id=`cw-${u}`;
-        d.innerHTML=`
-            <div class="chat-header" onclick="closeChat('${u}')">
-                <span>${u}</span>
-                <span><i class="fas fa-times"></i></span>
-            </div>
-            <div class="chat-body" id="msg-${u}"></div>
-            <form class="chat-input-area" onsubmit="sM(event,'${u}')">
-                <input type="text" placeholder="Écrire un message..." autocomplete="off">
-                <button type="submit"><i class="fas fa-paper-plane"></i></button>
-            </form>
-        `;
-        chatContainer.appendChild(d); 
-        fetchMessages(u); 
-        activeChats[u]=setInterval(()=>fetchMessages(u),3000);
-    };
-    
-    window.closeChat = (u) => { 
-        const el=document.getElementById(`cw-${u}`); 
-        if(el) el.remove(); 
-        if(activeChats[u]){
-            clearInterval(activeChats[u]);
-            delete activeChats[u];
-        } 
-    };
-    
-    window.sM = async (e, u) => {
-        e.preventDefault();
-        const input = e.target.querySelector('input');
-        if (!input.value.trim()) return; 
-
-        await fetch('/api/messages', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ toUsername: u, content: input.value.trim() })
-        });
-        
-        input.value = "";
-        fetchMessages(u); 
-    };
-
-    // ====================================================
-    // --- 4. INITIALISATION FINALE ---
-    // ====================================================
-    (async function() {
-        // Rétablit l'état de la sidebar (Amis) au chargement
-        if (localStorage.getItem('socialSidebarActive') === 'true') {
-            friendsSidebar.classList.add('active');
-            document.querySelector('.toggle-friends-btn').classList.add('active');
-        }
-        
-        // Chargement des données sociales et rafraîchissement
-        loadSocial();
-        // Le rafraîchissement périodique est CRUCIAL pour la synchro entre les pages.
-        setInterval(loadSocial, 5000); 
     })();
-
-</script>
   </script>
 </body>
 </html>
