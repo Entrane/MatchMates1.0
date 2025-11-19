@@ -32,11 +32,6 @@
     .game-sidebar-left {
         position: sticky;
         top: 100px; /* Commence 100px sous le header */
-        padding: 20px;
-        background: var(--bg-card);
-        border-radius: 15px;
-        border: 1px solid rgba(255,255,255,0.05);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
     .game-sidebar-img {
         width: 100%;
@@ -44,6 +39,7 @@
         object-fit: cover;
         border-radius: 10px;
         margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
     .game-title-sidebar {
         font-size: 2rem;
@@ -65,8 +61,8 @@
         min-height: 800px; /* Assure un défilement */
     }
 
-    /* CARTES DE CONTENU */
-    .card { background: var(--bg-card); border-radius: 15px; padding: 25px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px; }
+    /* CARTES DE CONTENU (Utilisé pour les sections de la sidebar maintenant) */
+    .card { background: var(--bg-card); border-radius: 15px; padding: 25px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }
     h3 { margin-top: 0; color: white; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px; }
     p { line-height: 1.6; color: #cbd5e1; }
 
@@ -133,25 +129,24 @@
     <div class="game-main-layout">
         
         <aside class="game-sidebar-left">
-            <img src="" id="game-img-sidebar" class="game-sidebar-img" alt="Game Cover">
-            <h1 class="game-title-sidebar" id="game-title">Chargement...</h1>
-            <div class="game-genre-sidebar" id="game-genre">Genre • Multijoueur</div>
             
-            <div class="actions-bar" style="border-top: 1px solid #1e293b; padding-top: 15px;">
-                <button id="fav-action-btn" class="action-btn btn-secondary" onclick="toggleCurrentFav()">
-                    ♡ Ajouter aux favoris
-                </button>
-                <button class="action-btn btn-primary" style="flex-grow:1;">📢 Trouver des joueurs</button>
+            <div class="card" style="padding: 20px;">
+                <img src="" id="game-img-sidebar" class="game-sidebar-img" alt="Game Cover">
+                <h1 class="game-title-sidebar" id="game-title">Chargement...</h1>
+                <div class="game-genre-sidebar" id="game-genre">Genre • Multijoueur</div>
+                
+                <div class="actions-bar" style="border-top: 1px solid #1e293b; padding-top: 15px; margin-bottom: 0;">
+                    <button id="fav-action-btn" class="action-btn btn-secondary" style="flex-grow:1;" onclick="toggleCurrentFav()">
+                        ♡ Ajouter aux favoris
+                    </button>
+                </div>
             </div>
-        </aside>
-
-        <div class="game-content-area">
 
             <section id="game-about" class="card">
                 <h3>À Propos</h3>
                 <p id="game-desc">Description du jeu en chargement...</p>
                 <div style="margin-top: 20px;">
-                    <button class="action-btn btn-secondary">💬 Discussion publique</button>
+                    <button class="action-btn btn-secondary" style="width: 100%;">💬 Discussion publique</button>
                 </div>
             </section>
 
@@ -165,13 +160,17 @@
                     <button class="action-btn btn-secondary" style="flex-grow:1;">Voir l'historique</button>
                 </div>
             </section>
+        </aside>
 
-            <section id="game-lfg" class="card">
-                <h3>Dernières annonces de groupe</h3>
-                <div style="text-align:center; padding: 20px; color: var(--text-muted); font-style: italic;">
-                    Aucune annonce pour le moment.
-                </div>
-            </section>
+        <div class="game-content-area">
+
+            <div class="card">
+                <h3>Activités du jeu</h3>
+                <p style="color: var(--text-muted);">
+                    Cette zone accueillera les annonces "Recherche de groupe", les événements en cours, etc.
+                </p>
+            </div>
+            
         </div>
 
     </div>
