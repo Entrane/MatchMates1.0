@@ -1,1 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jeu – MatchMates</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 
+  <style>
+    /* On réutilise les mêmes variables et styles de base pour la cohérence */
+    :root { --primary-color: #22c55e; --sidebar-width: 320px; --bg-dark: #0f172a; --bg-card: #1e293b; --text-main: #f1f5f9; --text-muted: #94a3b8; }
+    body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+    
+    /* HEADER */
+    header { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(10px); position: fixed; top: 0; width: 100%; z-index: 800; box-sizing: border-box; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    nav a { color: var(--text-muted); text-decoration: none; margin-left: 20px; font-size: 0.9rem; }
+    nav a:hover { color: white; }
+
+    /* LAYOUT */
+    .game-layout { max-width: 1100px; margin: 80px auto 40px; padding: 0 20px; }
+    
+    /* HERO BANNER JEU */
+    .game-hero {
+        position: relative; height: 300px; border-radius: 20px; overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 30px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .game-hero-img { width: 100%; height: 100%; object-fit: cover; }
+    .game-hero-overlay {
+        position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(to top, #0f172a 10%, transparent 80%);
+        display: flex; align-items: flex-end; padding: 30px; box-sizing: border-box;
+    }
+    .game-hero-content { position: relative; z-index: 2; width: 100%; display: flex; justify-content: space-between; align-items: flex-end; }
+    .game-title-large { font-size: 3rem; font-weight: 800; color: white; margin: 0; text-shadow: 0 4px 10px rgba(0,0,0,0.8); line-height: 1; }
+    .back-btn { display: inline-flex; align-items: center; gap: 5px; color: var(--text-muted); text-decoration: none; margin-bottom: 20px; font-weight: 600; transition: 0.2s; }
+    .back-btn:hover { color: white; transform: translateX(-5px); }
+
+    /* ACTIONS BAR */
+    .actions-bar { display: flex; gap: 15px; margin-bottom: 30px; }
+    .action-btn { padding: 12px 24px; border-radius: 30px; border: none; font-weight: 600; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+    .btn-primary { background: var(--primary-color); color: #020617; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
+    .btn-secondary { background: var(--bg-card); color: white; border: 1px solid #334155; }
+    .btn-secondary:hover { background: #334155; }
+
+    /* CONTENU DÉTAILS */
+    .game-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+    .card { background: var(--bg-card); border-radius: 15px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }
+    h3 { margin-top: 0; color: white; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px; }
+    p { line-height: 1.6; color: #cbd5e1; }
+
+    /* SIDEBAR & CHAT (Copiés du dashboard pour garder la persistance) */
+    .toggle-friends-btn { position: fixed; top: 80px; right: 20px; z-index: 1100; background: var(--primary-color); color: #020617; border: none; padding: 10px 16px; border-radius: 30px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .friends-sidebar { position: fixed; top: 0; right: -340px; width: var(--sidebar-width); height: 100vh; background: rgba(15, 23, 42, 0.98); border-left: 1px solid rgba(255,255,255,0.1); box-shadow: -10px 0 30px rgba(0,0,0,0.5); padding: 80px 15px 20px; z-index: 1000; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(12px); }
+    .friends-sidebar.active { right: 0; }
+    .friends-sidebar.active ~ .toggle-friends-btn { right: 280px; background: #ef4444; color: white; }
+    .friends-sidebar.active ~ .toggle-friends-btn span { display: none; } .friends-sidebar.active ~ .toggle-friends-btn::after { content: "✕"; }
+    .sidebar-section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-top: 15px; font-weight: 700; }
+    .friend-card { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); cursor: pointer; margin-bottom: 5px;} .friend-card:hover { background: rgba(255,255,255,0.08); }
+    .friend-avatar { width: 32px; height: 32px; border-radius: 50%; background: #3b82f6; display: flex; justify-content: center; align-items: center; font-weight: bold; margin-right: 10px; }
+    .friend-status.pending { color: #fbbf24; }
+    .add-friend-box { display: flex; gap: 5px; } .add-friend-box input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid #334155; border-radius: 20px; padding: 6px 12px; color: white; outline: none; } .add-friend-box button { background: var(--primary-color); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold; }
+    .chat-container { position: fixed; bottom: 0; right: 360px; display: flex; flex-direction: row-reverse; gap: 15px; z-index: 900; pointer-events: none; } @media(max-width: 900px) { .chat-container { right: 10px; } }
+    .chat-window { width: 300px; height: 400px; background: var(--bg-card); border-radius: 12px 12px 0 0; display: flex; flex-direction: column; pointer-events: auto; border: 1px solid #334155; }
+    .chat-header { background: #0f172a; padding: 10px; cursor: pointer; display: flex; justify-content: space-between; border-bottom: 1px solid #334155; }
+    .chat-body { flex: 1; padding: 10px; overflow-y: auto; background: #020617; display: flex; flex-direction: column; gap: 8px; }
+    .chat-input-area { padding: 10px; background: #1e293b; border-top: 1px solid #334155; display: flex; } .chat-input-area input { flex: 1; padding: 8px; border-radius: 20px; border: none; background: #334155; color: white; outline: none; }
+    .msg { padding: 6px 12px; border-radius: 12px; max-width: 80%; font-size: 0.85rem; } .msg.me { align-self: flex-end; background: var(--primary-color); color: #020617; } .msg.them { align-self: flex-start; background: #334155; color: white; }
+  </style>
+</head>
+
+<body data-current-username="{{ username }}" data-game-id="{{ gameId }}">
+
+  <header>
+    <div style="font-weight: 800; font-size: 1.2rem; display:flex; align-items:center; gap:10px;">
+        <span style="color:var(--primary-color); font-size:1.5rem;">M</span> MatchMates
+    </div>
+    <nav>
+        <a href="/dashboard">Tableau de bord</a>
+        <a href="/logout">Déconnexion</a>
+    </nav>
+  </header>
+
+  <main class="game-layout">
+      <a href="/dashboard" class="back-btn">← Retour au tableau de bord</a>
+
+      <div class="game-hero">
+          <img src="" id="hero-img" class="game-hero-img" alt="Game Cover">
+          <div class="game-hero-overlay">
+              <div class="game-hero-content">
+                  <div>
+                      <h1 class="game-title-large" id="game-title">Chargement...</h1>
+                      <div style="color: #cbd5e1; margin-top: 10px;" id="game-genre">Genre • Multijoueur</div>
+                  </div>
+                  <button id="fav-action-btn" class="btn-secondary" onclick="toggleCurrentFav()">
+                     ♡ Ajouter aux favoris
+                  </button>
+              </div>
+          </div>
+      </div>
+
+      <div class="actions-bar">
+          <button class="action-btn btn-primary">📢 Trouver des joueurs</button>
+          <button class="action-btn btn-secondary">💬 Discussion publique</button>
+      </div>
+
+      <div class="game-grid">
+          <div>
+              <div class="card">
+                  <h3>À propos</h3>
+                  <p id="game-desc">Description du jeu en chargement...</p>
+              </div>
+              <div class="card">
+                  <h3>Dernières annonces de groupe</h3>
+                  <div style="text-align:center; padding: 20px; color: var(--text-muted); font-style: italic;">
+                      Aucune annonce pour le moment. Sois le premier !
+                  </div>
+              </div>
+          </div>
+
+          <div>
+              <div class="card">
+                  <h3>Mes Stats</h3>
+                  <p style="font-size: 0.9rem; color: var(--text-muted);">Connecte ton compte pour voir tes statistiques sur ce jeu.</p>
+                  <button class="action-btn btn-secondary" style="width:100%; justify-content:center; margin-top:10px;">Lier un compte</button>
+              </div>
+          </div>
+      </div>
+
+  </main>
+
+  <button class="toggle-friends-btn" onclick="toggleSidebar()"><span>💬 Amis</span></button>
+  <aside class="friends-sidebar" id="friendsSidebar">
+    <h2 style="margin: 0; font-size: 1.1rem;">Social</h2>
+    <div class="sidebar-section-title">Ajouter</div>
+    <form class="add-friend-box" id="add-friend-form"><input type="text" id="friend-input" placeholder="Pseudo..." autocomplete="off"><button type="submit">+</button></form>
+    <div id="friend-notif" style="font-size:0.75rem; margin-top:5px; min-height:1em;"></div>
+    <div id="section-requests-in" style="display:none;"><div class="sidebar-section-title">Reçues</div><div id="list-requests-in"></div></div>
+    <div id="section-requests-out" style="display:none;"><div class="sidebar-section-title">Envoyées</div><div id="list-requests-out"></div></div>
+    <div class="sidebar-section-title">Mes Amis (<span id="friend-count">0</span>)</div><div id="friends-list" style="overflow-y: auto; flex: 1;"></div>
+  </aside>
+  <div id="chat-container" class="chat-container"></div>
+
+  <script>
+    function toggleSidebar() { document.getElementById('friendsSidebar').classList.toggle('active'); }
+
+    (function() {
+        /* --- DONNÉES JEUX (Mêmes que Dashboard pour cohérence) --- */
+        const GAMES_DB = {
+            'lol': { name: 'League of Legends', genre: 'MOBA', img: 'https://placehold.co/1200x400/16213e/fff?text=League+of+Legends', desc: 'League of Legends est un jeu de stratégie en équipe dans lequel deux équipes de cinq champions s\'affrontent pour détruire la base adverse.' },
+            'valorant': { name: 'Valorant', genre: 'FPS Tactique', img: 'https://placehold.co/1200x400/ff4655/fff?text=Valorant', desc: 'Un jeu de tir tactique 5c5 basé sur les personnages, où la précision des armes à feu rencontre des compétences d\'agent uniques.' },
+            'wow': { name: 'World of Warcraft', genre: 'MMORPG', img: 'https://placehold.co/1200x400/f1c40f/000?text=World+of+Warcraft', desc: 'Le MMORPG légendaire. Explorez Azeroth, combattez des monstres épiques et rejoignez des guildes.' },
+            'minecraft': { name: 'Minecraft', genre: 'Sandbox', img: 'https://placehold.co/1200x400/27ae60/fff?text=Minecraft', desc: 'Préparez-vous à une aventure aux possibilités illimitées. Construisez, minez, combattez des mobs et explorez des paysages infinis.' },
+            'gta': { name: 'GTA V', genre: 'Action-Aventure', img: 'https://placehold.co/1200x400/2c3e50/fff?text=GTA+V', desc: 'Explorez le monde ouvert de Los Santos et Blaine County dans l\'expérience ultime de Grand Theft Auto V.' },
+            'rocket': { name: 'Rocket League', genre: 'Sport', img: 'https://placehold.co/1200x400/2980b9/fff?text=Rocket+League', desc: 'Un mélange détonant de football d\'arcade et de chaos motorisé.' },
+            'fortnite': { name: 'Fortnite', genre: 'Battle Royale', img: 'https://placehold.co/1200x400/8e44ad/fff?text=Fortnite', desc: 'Le jeu de Battle Royale où 100 joueurs s\'affrontent pour être le dernier survivant.' },
+            'cod': { name: 'Call of Duty', genre: 'FPS', img: 'https://placehold.co/1200x400/34495e/fff?text=Call+of+Duty', desc: 'L\'expérience FPS ultime, avec des modes multijoueurs intenses et réalistes.' },
+            'apex': { name: 'Apex Legends', genre: 'Battle Royale', img: 'https://placehold.co/1200x400/e74c3c/fff?text=Apex+Legends', desc: 'Maîtrisez des personnages légendaires avec de puissantes capacités et faites équipe pour remporter la gloire.' },
+            'overwatch': { name: 'Overwatch 2', genre: 'FPS Héroïque', img: 'https://placehold.co/1200x400/e67e22/fff?text=Overwatch+2', desc: 'Overwatch 2 est un jeu d\'action en équipe gratuit et toujours actif, qui se déroule dans un futur optimiste.' },
+            'csgo': { name: 'CS:GO 2', genre: 'FPS', img: 'https://placehold.co/1200x400/333/fff?text=CS:GO+2', desc: 'La nouvelle ère de Counter-Strike avec des graphismes et un gameplay améliorés.' },
+            'fifa': { name: 'EA FC 24', genre: 'Sport', img: 'https://placehold.co/1200x400/222/fff?text=EA+FC+24', desc: 'Le jeu de football le plus réaliste au monde.' }
+        };
+
+        // 1. Récupération ID depuis l'URL ou data-attribute
+        const gameId = document.body.getAttribute('data-game-id');
+        const gameData = GAMES_DB[gameId];
+
+        if (gameData) {
+            document.getElementById('game-title').textContent = gameData.name;
+            document.getElementById('hero-img').src = gameData.img;
+            document.getElementById('game-genre').textContent = gameData.genre;
+            document.getElementById('game-desc').textContent = gameData.desc;
+            document.title = `${gameData.name} – MatchMates`;
+        } else {
+            document.getElementById('game-title').textContent = "Jeu introuvable";
+        }
+
+        // 2. Gestion Favoris sur cette page
+        let favorites = JSON.parse(localStorage.getItem('mm_favorites')) || [];
+        const favBtn = document.getElementById('fav-action-btn');
+
+        function updateFavBtn() {
+            if(favorites.includes(gameId)) {
+                favBtn.textContent = "♥ Retirer des favoris";
+                favBtn.style.background = "#ef4444";
+                favBtn.style.color = "white";
+                favBtn.style.border = "none";
+            } else {
+                favBtn.textContent = "♡ Ajouter aux favoris";
+                favBtn.style.background = ""; // reset class
+                favBtn.style.color = "";
+                favBtn.style.border = "";
+            }
+        }
+        updateFavBtn();
+
+        window.toggleCurrentFav = () => {
+            if(favorites.includes(gameId)) favorites = favorites.filter(id => id !== gameId);
+            else favorites.push(gameId);
+            localStorage.setItem('mm_favorites', JSON.stringify(favorites));
+            updateFavBtn();
+        };
+
+        /* --- LOGIQUE SOCIALE (Copié-collé du dashboard pour fonctionnement) --- */
+        const friendNotif = document.getElementById('friend-notif');
+        const chatContainer = document.getElementById('chat-container');
+        const activeChats = {}; 
+        async function loadSocial() { try { const [f, r] = await Promise.all([fetch('/api/friends'), fetch('/api/friends/requests')]); const fd=await f.json(); const rd=await r.json(); renderFriends(fd.friends); renderRequests(rd.incoming, rd.outgoing); } catch(e){} }
+        function renderFriends(l) { const c=document.getElementById('friends-list'); document.getElementById('friend-count').innerText=l.length; c.innerHTML=""; if(!l.length){c.innerHTML='<div style="text-align:center;color:#64748b;font-size:0.8rem;margin-top:10px;">Aucun ami.</div>';return;} l.forEach(f=>{ const d=document.createElement('div');d.className='friend-card';d.onclick=()=>openChat(f.username);d.innerHTML=`<div style="display:flex;align-items:center;"><div class="friend-avatar">${f.username[0].toUpperCase()}</div><div><div style="font-size:0.9rem;font-weight:500;color:white;">${f.username}</div><div class="friend-status">● En ligne</div></div></div><span>💬</span>`;c.appendChild(d);}); }
+        function renderRequests(inc,out){ const ic=document.getElementById('list-requests-in'); document.getElementById('section-requests-in').style.display=inc.length?'block':'none'; ic.innerHTML=""; inc.forEach(r=>{const d=document.createElement('div');d.className='friend-card';d.style.border='1px solid #eab308';d.innerHTML=`<span style="font-size:0.85rem;">${r.from_username}</span><div><button onclick="hReq(${r.id},'accept')" style="background:#22c55e;border:none;border-radius:4px;cursor:pointer;">✔</button><button onclick="hReq(${r.id},'reject')" style="background:#ef4444;border:none;border-radius:4px;cursor:pointer;margin-left:5px;">✖</button></div>`;ic.appendChild(d);}); const oc=document.getElementById('list-requests-out'); document.getElementById('section-requests-out').style.display=out.length?'block':'none'; oc.innerHTML=""; out.forEach(r=>{const d=document.createElement('div');d.className='friend-card';d.style.cursor='default';d.innerHTML=`<div style="display:flex;align-items:center;opacity:0.7;"><div class="friend-avatar" style="background:#64748b;width:24px;height:24px;font-size:0.7rem;">?</div><div><div style="font-size:0.85rem;">${r.to_username}</div><div class="friend-status pending">En attente...</div></div></div>`;oc.appendChild(d);}); }
+        document.getElementById('add-friend-form').addEventListener('submit', async(e)=>{ e.preventDefault(); const i=document.getElementById('friend-input'); if(!i.value.trim())return; const res=await fetch('/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:i.value.trim()})}); const d=await res.json(); friendNotif.innerText=d.ok?"Envoyé !":d.error; friendNotif.style.color=d.ok?"#22c55e":"#ef4444"; i.value=""; loadSocial(); setTimeout(()=>friendNotif.innerText="",3000); });
+        window.hReq=async(id,a)=>{await fetch(`/api/friends/requests/${id}/${a}`,{method:'POST'});loadSocial();};
+        window.openChat=(u)=>{if(document.getElementById(`cw-${u}`))return; const d=document.createElement('div');d.className='chat-window';d.id=`cw-${u}`;d.innerHTML=`<div class="chat-header" onclick="closeChat('${u}')"><span>${u}</span><span>✖</span></div><div class="chat-body" id="msg-${u}"></div><form class="chat-input-area" onsubmit="sM(event,'${u}')"><input type="text" placeholder="..." autocomplete="off"></form>`;chatContainer.appendChild(d);fM(u);activeChats[u]=setInterval(()=>fM(u),3000);};
+        window.closeChat=(u)=>{const el=document.getElementById(`cw-${u}`);if(el)el.remove();if(activeChats[u]){clearInterval(activeChats[u]);delete activeChats[u];}};
+        window.sM=async(e,u)=>{e.preventDefault();const i=e.target.querySelector('input');if(!i.value.trim())return;await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:u,content:i.value.trim()})});i.value="";fM(u);};
+        async function fM(u){const c=document.getElementById(`msg-${u}`);if(!c)return;const res=await fetch(`/api/messages/${u}`);const d=await res.json();c.innerHTML=d.messages.map(m=>`<div class="msg ${m.fromSelf?'me':'them'}">${m.content}</div>`).join('');c.scrollTop=c.scrollHeight;}
+        loadSocial(); setInterval(loadSocial, 5000);
+    })();
+  </script>
+</body>
+</html>
