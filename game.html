@@ -849,6 +849,88 @@
         loadSocial(); 
         setInterval(loadSocial, 5000);
     })();
+// Définition de l'objet pour stocker les intervalles de rafraîchissement
+const activeChats = {};
+
+// Renommer fM en fetchMessages pour une meilleure clarté
+async function fetchMessages(u) {
+    const c = document.getElementById(`msg-${u}`);
+    if (!c) return;
+    
+    // Récupère les messages pour l'utilisateur (u)
+    const res = await fetch(`/api/messages/${u}`);
+    const d = await res.json();
+    
+    // Vérifie si l'utilisateur était déjà en bas du chat
+    const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 1;
+
+    // Affiche les messages
+    c.innerHTML = d.messages.map(m => 
+        `<div class="msg ${m.fromSelf ? 'self' : 'other'}">${m.content}</div>`
+    ).join('');
+    
+    // Scrolle en bas si c'était le cas ou si c'est le premier message
+    if (isScrolledToBottom || d.messages.length === 1) {
+        c.scrollTop = c.scrollHeight;
+    }
+}
+
+// Ouvre la fenêtre de chat
+window.openChat = (u) => {
+    // Si la fenêtre existe, on ne fait rien
+    if (document.getElementById(`cw-${u}`)) return; 
+
+    const chatContainer = document.getElementById('chat-container');
+    const d = document.createElement('div');
+    d.className = 'chat-window';
+    d.id = `cw-${u}`;
+    
+    // Le contenu HTML de la fenêtre de chat
+    d.innerHTML = `
+        <div class="chat-header" onclick="closeChat('${u}')">
+            <span>${u}</span>
+            <span>✖</span>
+        </div>
+        <div class="chat-body" id="msg-${u}"></div>
+        <form class="chat-input-area" onsubmit="sM(event,'${u}')">
+            <input type="text" placeholder="Écrire un message..." autocomplete="off">
+        </form>
+    `;
+    
+    chatContainer.appendChild(d);
+    
+    // Lance le premier chargement des messages et met en place le rafraîchissement automatique
+    fetchMessages(u);
+    activeChats[u] = setInterval(() => fetchMessages(u), 3000); // Rafraîchissement toutes les 3 secondes
+};
+
+// Ferme la fenêtre de chat
+window.closeChat = (u) => {
+    const el = document.getElementById(`cw-${u}`);
+    if (el) el.remove();
+    
+    // Arrête le rafraîchissement automatique
+    if (activeChats[u]) {
+        clearInterval(activeChats[u]);
+        delete activeChats[u];
+    }
+};
+
+// Envoie un message (sM pour 'sendMessage')
+window.sM = async (e, u) => {
+    e.preventDefault();
+    const input = e.target.querySelector('input');
+    if (!input.value.trim()) return; // Ne rien envoyer si le message est vide
+
+    await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toUsername: u, content: input.value.trim() })
+    });
+
+    input.value = "";
+    fetchMessages(u); // Rafraîchit le chat immédiatement après l'envoi
+};
   </script>
 </body>
 </html>
