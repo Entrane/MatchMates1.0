@@ -277,16 +277,21 @@
 
         // Génération HTML Carte
         function createCardHTML(game) {
-            const active = isFav(game.id) ? 'active' : '';
-            const heart = isFav(game.id) ? '♥' : '♡';
-            return `
-                <div class="game-card">
-                    <img src="${game.img}" alt="${game.name}" class="game-img">
-                    <div class="game-overlay"><div class="game-title">${game.name}</div></div>
-                    <button class="heart-btn ${active}" onclick="window.toggleGameFav('${game.id}')">${heart}</button>
-                </div>
-            `;
-        }
+    const active = isFav(game.id) ? 'active' : '';
+    const heart = isFav(game.id) ? '♥' : '♡';
+    
+    // On ajoute onclick="goToGame('...')" sur la div principale
+    return `
+        <div class="game-card" onclick="window.location.href='/game/${game.id}'" style="cursor:pointer;">
+            <img src="${game.img}" alt="${game.name}" class="game-img">
+            <div class="game-overlay"><div class="game-title">${game.name}</div></div>
+            
+            <button class="heart-btn ${active}" onclick="event.stopPropagation(); window.toggleGameFav('${game.id}')">
+                ${heart}
+            </button>
+        </div>
+    `;
+}
 
         // Rendu Favoris
         function renderFavs() {
