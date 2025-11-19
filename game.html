@@ -55,7 +55,7 @@
     .game-content-area {
         flex: 1; /* Prend tout l'espace disponible au milieu */
         padding: 20px 30px; 
-        /* --- CORRECTION 1 : RÉDUCTION DE LA LARGEUR CENTRALE --- */
+        /* RÉDUCTION DE LA LARGEUR CENTRALE */
         max-width: 800px; 
     }
     
@@ -109,8 +109,9 @@
         z-index: 700; 
         border-left: 1px solid rgba(255,255,255,0.05); 
         transition: margin-right 0.3s ease; 
-        display: flex; /* Ajout pour gestion du contenu */
-        flex-direction: column;
+        display: flex; 
+        flex-direction: column; /* Important pour le flex: 1 sur la liste d'amis */
+        gap: 15px;
     }
     
     .social-sidebar.collapsed {
@@ -136,20 +137,15 @@
         right: 0px; 
     }
 
-    /* --- CORRECTION 2 : Conteneur pour la liste d'amis scrollable --- */
-    .friends-list-container {
-        overflow-y: auto;
-        max-height: calc(100vh - 450px); /* Ajuster cette hauteur selon vos besoins */
-        padding-right: 5px; /* Pour éviter que la scrollbar colle le bord */
-    }
+    .sidebar-section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 5px; }
 
-    .friend-card { background-color: var(--bg-card); padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: background-color 0.2s; display: flex; justify-content: space-between; align-items: center; }
-    .friend-card:hover { background-color: #2b3a50; }
-    .friend-request-title { color: var(--text-muted); font-size: 0.8rem; margin-top: 10px; margin-bottom: 5px; }
-    .request-actions button { margin-left: 5px; padding: 4px 8px; font-size: 0.7rem; border-radius: 4px; }
-    .request-actions .btn-primary { background-color: #10b981; }
-    .request-actions .btn-secondary { border-color: #ef4444; color: #ef4444; }
-    #friend-notif { text-align: center; color: var(--primary-color); font-size: 0.9rem; margin-top: 10px; }
+    /* Styles pour les amis / requêtes (réutilisé du dashboard) */
+    .friend-card { 
+        display: flex; align-items: center; justify-content: space-between; 
+        padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.03); 
+        border: 1px solid rgba(255,255,255,0.05); cursor: pointer; margin-bottom: 5px;
+    }
+    .friend-card:hover { background: rgba(255,255,255,0.08); }
 
     /* CHAT WINDOWS (AJUSTÉ) */
     .chat-container { 
@@ -168,14 +164,15 @@
     }
     
     .chat-window { width: 300px; height: 400px; background-color: var(--bg-card); border-radius: 8px 8px 0 0; overflow: hidden; box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; }
-    .chat-header { background-color: var(--primary-color); color: var(--bg-dark); padding: 10px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .chat-header { background-color: #0f172a; color: var(--text-main); padding: 10px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
     .chat-header span:last-child { font-size: 1.2rem; }
-    .chat-body { flex-grow: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; font-size: 0.9rem; }
+    .chat-body { flex-grow: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; font-size: 0.9rem; background: #020617; }
     .chat-body .msg { max-width: 80%; padding: 8px 12px; border-radius: 15px; }
     .chat-body .msg.self { background-color: var(--primary-color); color: var(--bg-dark); align-self: flex-end; border-bottom-right-radius: 0; }
     .chat-body .msg.other { background-color: #334155; color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 0; }
-    .chat-input-area { padding: 10px; border-top: 1px solid #334155; }
-    .chat-input-area input { width: 100%; padding: 8px; border: 1px solid #475569; border-radius: 4px; background-color: #1e293b; color: var(--text-main); outline: none; }
+    .chat-input-area { padding: 10px; background: #1e293b; border-top: 1px solid #334155; display: flex; }
+    .chat-input-area input { flex: 1; padding: 8px; border-radius: 20px; border: none; background: #334155; color: white; outline: none; }
+
 
     /* RESPONSIVE (inchangé) */
     @media (max-width: 1200px) {
@@ -328,23 +325,25 @@
     <div class="social-sidebar" id="social-sidebar">
       <h3>Social</h3>
 
-      <div class="card" style="background: rgba(255,255,255,0.05); margin-bottom: 20px; padding: 15px;">
-        <form onsubmit="sendFriendRequest(event)">
-          <input type="text" id="friend-username" placeholder="Pseudo à ajouter" style="width: calc(100% - 70px); padding: 8px; border-radius: 4px; border: 1px solid #475569; background: #1e293b; color: var(--text-main);" required>
-          <button type="submit" class="action-btn" style="padding: 8px 10px; margin-left: 5px;">+ Ami</button>
-        </form>
-        <div id="friend-notif"></div>
-      </div>
+      <div class="sidebar-section-title">Ajouter</div>
+      <form class="add-friend-box" id="add-friend-form" style="display: flex; gap: 5px; margin-bottom: 10px;">
+          <input type="text" id="friend-input" placeholder="Pseudo..." autocomplete="off" style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid #334155; border-radius: 20px; padding: 6px 12px; color: white; outline: none;">
+          <button type="submit" style="background: var(--primary-color); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold;">+</button>
+      </form>
+      <div id="friend-notif" style="font-size:0.75rem; margin-top:5px; min-height:1em;"></div>
 
-      <div id="friend-requests-list" style="margin-bottom: 20px;">
-        </div>
+      <div id="section-requests-in" style="display:none; margin-bottom: 10px;">
+          <div class="sidebar-section-title">Reçues</div>
+          <div id="list-requests-in"></div>
+      </div>
+      <div id="section-requests-out" style="display:none; margin-bottom: 10px;">
+          <div class="sidebar-section-title">Envoyées</div>
+          <div id="list-requests-out"></div>
+      </div>
       
-      <div class="friends-list-container">
-        <div id="friends-list">
-            <p class="sidebar-section-title">Mes Amis</p>
-            </div>
-      </div>
-
+      <div class="sidebar-section-title">Mes Amis (<span id="friend-count">0</span>)</div>
+      <div id="friends-list" style="overflow-y: auto; flex: 1;">
+          </div>
     </div>
   </main>
 
@@ -355,9 +354,8 @@
     const chatContainer = document.getElementById('chat-container');
     const socialSidebar = document.getElementById('social-sidebar'); 
     const sidebarToggle = document.getElementById('sidebar-toggle'); 
-    const friendNotif = document.getElementById('friend-notif');
+    // const friendNotif est maintenant défini dans la section sociale
     const friendsListEl = document.getElementById('friends-list');
-    const friendRequestsListEl = document.getElementById('friend-requests-list');
     const pathSegments = window.location.pathname.split('/');
     const gameId = pathSegments[pathSegments.length - 1]; 
 
@@ -406,7 +404,7 @@
     }
 
     // ====================================================
-    // --- LOGIQUE JEU INFO SIDEBAR ---
+    // --- LOGIQUE JEU INFO SIDEBAR (Inchangé) ---
     // ====================================================
     async function loadGameInfo() {
         const info = GAME_INFOS[gameId] || { name: gameId.toUpperCase(), description: 'Description non disponible', image: '/img/games/default.png' };
@@ -414,9 +412,6 @@
         document.getElementById('game-title').textContent = `${info.name} - Matchmaking`;
         document.getElementById('game-short-name').textContent = info.name; 
         document.getElementById('game-description').innerHTML = info.description;
-        // if (info.image && info.image !== '/img/games/default.png') {
-        //     document.getElementById('game-image').src = info.image;
-        // }
 
         await checkFavoriteStatus();
     }
@@ -470,7 +465,7 @@
     }
     
     // ====================================================
-    // --- LOGIQUE GÉNÉRALE ET INITIALISATION ---
+    // --- LOGIQUE PROFIL JOUEUR / PARTENAIRE (Inchangé) ---
     // ====================================================
     
     function setupRankGrids(gameRanks) {
@@ -496,11 +491,6 @@
         item.onclick = onClickHandler;
         return item;
     }
-
-
-    // ====================================================
-    // --- LOGIQUE PROFIL JOUEUR (Sauvegarde) ---
-    // ====================================================
 
     window.selectRank = function(event, type) {
         const rankItem = event.currentTarget;
@@ -574,10 +564,6 @@
         }
     }
 
-    // ====================================================
-    // --- LOGIQUE PRÉFÉRENCES PARTENAIRE ---
-    // ====================================================
-
     window.savePartnerPreferences = async function() {
         const mode = document.getElementById('partner-ranked').checked ? 'ranked' : 'unrank';
         const min_rank = currentPartnerRankSelection ? currentPartnerRankSelection.getAttribute('data-rank') : null;
@@ -642,10 +628,6 @@
         }
         if (shouldSave) savePartnerPreferences();
     }
-
-    // ====================================================
-    // --- LOGIQUE PROFIL JOUEUR PUBLICATION/RECHERCHE ---
-    // ====================================================
 
     window.publishProfile = async function() {
         const statusEl = document.getElementById('publish-status');
@@ -759,168 +741,140 @@
 
 
     // ====================================================
-    // --- LOGIQUE GÉNÉRALE SOCIALE ---
+    // --- LOGIQUE GÉNÉRALE SOCIALE (Reprise Dashboard) ---
     // ====================================================
-    
-    window.sendFriendRequest = async function(e) {
-        e.preventDefault();
-        const usernameInput = document.getElementById('friend-username');
-        const toUsername = usernameInput.value.trim();
-        usernameInput.value = '';
-        
-        const res = await fetch('/api/friends/request', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ toUsername })
-        });
-        const data = await res.json();
-
-        if (data.ok) {
-            friendNotif.innerText = `Demande envoyée à ${toUsername}!`;
-        } else {
-            friendNotif.innerText = `Erreur : ${data.error}`;
-        }
-        setTimeout(() => friendNotif.innerText = "", 3000);
-        loadSocial();
-    }
-
-    window.handleRequest = async function(id, action) {
-        await fetch(`/api/friends/requests/${id}/${action}`, { method: 'POST' });
-        loadSocial();
-    }
-
-    window.openChat = (username) => {
-        if (document.getElementById(`cw-${username}`)) return;
-
-        const chatWindow = document.createElement('div');
-        chatWindow.className = 'chat-window';
-        chatWindow.id = `cw-${username}`;
-        chatWindow.innerHTML = `
-            <div class="chat-header" onclick="closeChat('${username}')">
-                <span>${username}</span>
-                <span>✖</span>
-            </div>
-            <div class="chat-body" id="msg-${username}"></div>
-            <form class="chat-input-area" onsubmit="sendMessage(event, '${username}')">
-                <input type="text" placeholder="Écrire un message..." autocomplete="off">
-            </form>
-        `;
-        chatContainer.appendChild(chatWindow);
-        fetchMessages(username);
-        
-        activeChats[username] = setInterval(() => fetchMessages(username), 3000);
-    }
-
-    window.closeChat = (username) => {
-        const el = document.getElementById(`cw-${username}`);
-        if (el) el.remove();
-        if (activeChats[username]) {
-            clearInterval(activeChats[username]);
-            delete activeChats[username];
-        }
-    }
-
-    window.sendMessage = async function(e, username) {
-        e.preventDefault();
-        const input = e.target.querySelector('input');
-        if (!input.value.trim()) return;
-
-        await fetch('/api/messages', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ toUsername: username, content: input.value.trim() })
-        });
-        input.value = "";
-        fetchMessages(username);
-    }
-
-    async function fetchMessages(username) {
-        const chatBody = document.getElementById(`msg-${username}`);
-        if (!chatBody) return;
-
-        const res = await fetch(`/api/messages/${username}`);
-        const data = await res.json();
-        
-        if (!data.messages) return;
-
-        const isScrolledToBottom = chatBody.scrollHeight - chatBody.clientHeight <= chatBody.scrollTop + 1;
-        
-        chatBody.innerHTML = data.messages.map(msg => `
-            <div class="msg ${msg.fromSelf ? 'self' : 'other'}">${msg.content}</div>
-        `).join('');
-
-        if (isScrolledToBottom || data.messages.length === 1) {
-            chatBody.scrollTop = chatBody.scrollHeight;
-        }
-    }
+    const friendNotif = document.getElementById('friend-notif');
 
     async function loadSocial() {
         try {
-            const friendsRes = await fetch('/api/friends');
-            const friendsData = await friendsRes.json();
-            renderFriends(friendsData.friends || []);
-
-            const requestsRes = await fetch('/api/friends/requests');
-            const requestsData = await requestsRes.json();
-            renderRequests(requestsData.incoming || [], requestsData.outgoing || []);
-
-        } catch (e) {
+            const [fRes, rRes] = await Promise.all([fetch('/api/friends'), fetch('/api/friends/requests')]);
+            const fData = await fRes.json();
+            const rData = await rRes.json();
+            renderFriends(fData.friends || []); 
+            renderRequests(rData.incoming || [], rData.outgoing || []); 
+        } catch(e) {
             console.error("Erreur chargement social:", e);
         }
     }
 
-    function renderFriends(friends) {
-        friendsListEl.innerHTML = '<p class="sidebar-section-title">Mes Amis</p>';
-        if (!friends.length) {
-            friendsListEl.innerHTML += '<p style="color:var(--text-muted); font-size:0.9rem;">Aucun ami pour l\'instant.</p>';
-            return;
-        }
-
-        friends.forEach(friend => {
-            const card = document.createElement('div');
-            card.className = 'friend-card';
-            card.textContent = friend.username;
-            card.addEventListener('click', () => openChat(friend.username));
-            friendsListEl.appendChild(card);
+    function renderFriends(list) {
+        const c = document.getElementById('friends-list');
+        document.getElementById('friend-count').innerText = list.length;
+        c.innerHTML = "";
+        if(list.length===0) { c.innerHTML='<div style="text-align:center;color:#64748b;font-size:0.8rem;margin-top:10px;">Aucun ami.</div>'; return; }
+        list.forEach(f => {
+            const d = document.createElement('div'); d.className='friend-card'; d.onclick=()=>openChat(f.username);
+            // Styles pour avatar et statut inclus ici (du dashboard)
+            d.innerHTML=`<div style="display:flex;align-items:center;"><div class="friend-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: #3b82f6; display: flex; justify-content: center; align-items: center; font-weight: bold; margin-right: 10px;">${f.username[0].toUpperCase()}</div><div><div style="font-size:0.9rem;font-weight:500;color:white;">${f.username}</div><div class="friend-status" style="color:#22c55e; font-size: 0.8rem;">● En ligne</div></div></div><span>💬</span>`;
+            c.appendChild(d);
         });
     }
 
-    function renderRequests(incoming, outgoing) {
-        friendRequestsListEl.innerHTML = '';
+    function renderRequests(inc, out) {
+        const iC=document.getElementById('list-requests-in'); 
+        const sectionIn = document.getElementById('section-requests-in');
+        sectionIn.style.display=inc.length?'block':'none'; 
+        iC.innerHTML="";
+        inc.forEach(r=>{ 
+            const d=document.createElement('div'); 
+            d.className='friend-card'; 
+            d.style.border='1px solid #eab308'; // Style pour demande reçue
+            d.style.marginBottom='5px'; d.style.padding='10px'; d.style.fontSize='0.85rem';
+            d.innerHTML=`
+                <span style="font-size:0.85rem;">${r.from_username}</span>
+                <div>
+                    <button onclick="handleRequest(${r.id},'accept')" style="background:#22c55e;border:none;border-radius:4px;cursor:pointer;padding: 5px 8px; font-size: 0.75rem;">✔</button>
+                    <button onclick="handleRequest(${r.id},'reject')" style="background:#ef4444;border:none;border-radius:4px;cursor:pointer;margin-left:5px;padding: 5px 8px; font-size: 0.75rem;">✖</button>
+                </div>`; 
+            iC.appendChild(d); 
+        });
+        
+        const oC=document.getElementById('list-requests-out'); 
+        const sectionOut = document.getElementById('section-requests-out');
+        sectionOut.style.display=out.length?'block':'none'; 
+        oC.innerHTML="";
+        out.forEach(r=>{ 
+            const d=document.createElement('div'); 
+            d.className='friend-card'; 
+            d.style.cursor='default';
+            d.style.marginBottom='5px'; d.style.padding='10px'; d.style.fontSize='0.85rem';
+            d.innerHTML=`<div style="display:flex;align-items:center;opacity:0.7;"><div class="friend-avatar" style="width:24px;height:24px;border-radius: 50%; background:#64748b;display:flex;justify-content:center;align-items:center;font-size:0.7rem;margin-right:10px;">?</div><div><div style="font-size:0.85rem;">${r.to_username}</div><div class="friend-status" style="color: #fbbf24; font-size: 0.8rem;">En attente...</div></div></div>`; 
+            oC.appendChild(d); 
+        });
+    }
 
-        if (incoming.length > 0) {
-            const title = document.createElement('p');
-            title.textContent = `Demandes reçues (${incoming.length})`;
-            title.className = 'friend-request-title';
-            friendRequestsListEl.appendChild(title);
+    // Attach the event listener for the Add Friend form
+    document.getElementById('add-friend-form').addEventListener('submit', async(e)=>{
+        e.preventDefault(); 
+        const i=document.getElementById('friend-input'); 
+        if(!i.value.trim()) return;
+        
+        const res=await fetch('/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:i.value.trim()})});
+        const d=await res.json(); 
+        friendNotif.innerText=d.ok?`Demande envoyée à ${i.value.trim()} !`:d.error; 
+        friendNotif.style.color=d.ok?"#22c55e":"#ef4444";
+        i.value=""; 
+        loadSocial(); 
+        setTimeout(()=>friendNotif.innerText="",3000);
+    });
 
-            incoming.forEach(req => {
-                const card = document.createElement('div');
-                card.className = 'friend-card';
-                card.innerHTML = `
-                    <span>${req.from_username}</span>
-                    <div class="request-actions">
-                        <button class="action-btn btn-primary" onclick="handleRequest(${req.id}, 'accept')">Accepter</button>
-                        <button class="action-btn btn-secondary" onclick="handleRequest(${req.id}, 'reject')">Refuser</button>
-                    </div>
-                `;
-                friendRequestsListEl.appendChild(card);
-            });
-        }
+    // Renaming hReq to handleRequest for consistency
+    window.handleRequest = async(id,a)=>{ await fetch(`/api/friends/requests/${id}/${a}`,{method:'POST'}); loadSocial(); };
 
-        if (outgoing.length > 0) {
-            const title = document.createElement('p');
-            title.textContent = `Demandes envoyées en attente (${outgoing.length})`;
-            title.className = 'friend-request-title';
-            friendRequestsListEl.appendChild(title);
+    window.openChat=(u)=>{ 
+        if(document.getElementById(`cw-${u}`)) return;
 
-            outgoing.forEach(req => {
-                const card = document.createElement('div');
-                card.className = 'friend-card';
-                card.style.opacity = 0.7;
-                card.innerHTML = `
-                    <span>${req.to_username} (En attente)</span>
-                `;
-                friendRequestsListEl.appendChild(card);
-            });
+        const chatWindow = document.createElement('div');
+        chatWindow.className = 'chat-window';
+        chatWindow.id = `cw-${u}`;
+        chatWindow.innerHTML = `
+            <div class="chat-header" onclick="closeChat('${u}')">
+                <span>${u}</span>
+                <span>✖</span>
+            </div>
+            <div class="chat-body" id="msg-${u}"></div>
+            <form class="chat-input-area" onsubmit="sendMessage(event, '${u}')">
+                <input type="text" placeholder="Écrire un message..." autocomplete="off">
+            </form>
+        `;
+        chatContainer.appendChild(chatWindow); 
+        fetchMessages(u); 
+        
+        activeChats[u] = setInterval(() => fetchMessages(u), 3000); 
+    }
+
+    window.closeChat=(u)=>{ 
+        const el=document.getElementById(`cw-${u}`); 
+        if(el) el.remove(); 
+        if(activeChats[u]){clearInterval(activeChats[u]);delete activeChats[u];} 
+    };
+
+    window.sendMessage=async(e,u)=>{ 
+        e.preventDefault(); 
+        const i=e.target.querySelector('input'); 
+        if(!i.value.trim()) return;
+        
+        await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toUsername:u,content:i.value.trim()})}); 
+        i.value=""; 
+        fetchMessages(u); 
+    };
+
+    async function fetchMessages(u){ 
+        const c=document.getElementById(`msg-${u}`); 
+        if(!c) return;
+
+        const res=await fetch(`/api/messages/${u}`); 
+        const d=await res.json();
+        
+        const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 1;
+            
+        c.innerHTML=d.messages.map(m=>`<div class="msg ${m.fromSelf?'self':'other'}">${m.content}</div>`).join(''); 
+        
+        if (isScrolledToBottom || d.messages.length === 1) {
+            c.scrollTop = c.scrollHeight;
         }
     }
+
 
     // ====================================================
     // --- INITIALISATION FINALE ---
