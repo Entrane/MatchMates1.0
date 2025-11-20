@@ -48,101 +48,34 @@
     .toggle-friends-btn:hover { background: #334155; }
     .toggle-friends-btn.active { background: var(--primary-color); color: var(--bg-dark); }
 
-    /* --- BOUTON SIDEBAR --- */
-    .toggle-friends-btn {
-      position: fixed; top: 80px; right: 20px; z-index: 9999; 
-      background: var(--primary-color); color: #020617; border: none;
-      padding: 10px 16px; border-radius: 30px; cursor: pointer;
-      display: flex; align-items: center; gap: 8px; font-weight: 600;
-      box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
-      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* --- SIDEBAR AMIS --- */
+    #friendsSidebar { 
+        position: fixed; top: 0; right: calc(-1 * var(--sidebar-width)); 
+        width: var(--sidebar-width); height: 100%; 
+        background: var(--bg-card); 
+        box-shadow: -4px 0 8px rgba(0, 0, 0, 0.3); 
+        z-index: 900; 
+        transition: right 0.3s ease-in-out; 
+        padding: 20px; 
+        box-sizing: border-box; 
+        overflow-y: auto;
     }
+    #friendsSidebar.active { right: 0; }
+    .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .sidebar-tabs { display: flex; justify-content: space-around; margin-bottom: 20px; border-bottom: 1px solid var(--bg-dark); }
+    .sidebar-tabs button { background: none; border: none; color: var(--text-muted); padding: 10px 15px; cursor: pointer; transition: color 0.2s, border-bottom 0.2s; }
+    .sidebar-tabs button.active { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
     
-    /* RÈGLES POUR LE BOUTON ACTIF */
-    .toggle-friends-btn.active {
-        /* Déplace le bouton vers la gauche: 320px (sidebar) + 20px (marge initiale) */
-        right: calc(var(--sidebar-width) + 20px); 
-        background: #ef4444; 
-        color: white;
-    }
-    .toggle-friends-btn.active span {
-        display: none; 
-    }
-    .toggle-friends-btn.active::after {
-        content: "✕"; 
-    }
-
-    /* --- SIDEBAR SOCIALE (Amis) --- */
-    .friends-sidebar {
-      position: fixed; top: 0; 
-      /* Position cachée: -320px (largeur de la sidebar) */
-      right: calc(0px - var(--sidebar-width)); 
-      width: var(--sidebar-width); height: 100vh;
-      background: rgba(15, 23, 42, 0.98); border-left: 1px solid rgba(255,255,255,0.1);
-      box-shadow: -10px 0 30px rgba(0,0,0,0.5); 
-      padding: 80px 15px 20px; 
-      z-index: 1000;
-      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(12px);
-      box-sizing: border-box; 
-    }
-    .friends-sidebar.active { right: 0; } /* Révèle la sidebar */
-
-    .sidebar-section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-top: 15px; font-weight: 700; }
     .friend-card { 
-        display: flex; align-items: center; justify-content: space-between; padding: 10px; 
-        border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); 
-        cursor: pointer; margin-bottom: 5px;
+        display: flex; align-items: center; padding: 10px; margin-bottom: 8px; 
+        background: var(--bg-dark); border-radius: 4px; cursor: pointer; 
+        transition: background 0.2s; justify-content: space-between; 
     }
-    .friend-card:hover { background: rgba(255,255,255,0.08); }
-    .friend-avatar { 
-        width: 32px; height: 32px; border-radius: 50%; background: #3b82f6; 
-        display: flex; justify-content: center; align-items: center; font-weight: bold; 
-        margin-right: 10px; color: white;
-    }
-    .add-friend-box { display: flex; gap: 5px; }
-    .add-friend-box input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid #334155; border-radius: 20px; padding: 6px 12px; color: white; outline: none; }
-    .add-friend-box button { background: var(--primary-color); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold; color: var(--bg-dark);}
-
-    /* CHAT CONTAINER & WINDOW */
-    .chat-container { 
-        position: fixed; bottom: 0; right: calc(20px); /* Position sans la sidebar */
-        display: flex; flex-direction: row-reverse; gap: 15px; z-index: 900; 
-        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        pointer-events: none; /* Important pour laisser cliquer en dessous */
-    }
-    /* Déplace le chat lorsque la sidebar est ouverte */
-    .friends-sidebar.active ~ .chat-container { 
-        right: calc(var(--sidebar-width) + 20px); /* Position du chat AVEC la sidebar */
-    }
-    .chat-window {
-        width: 300px; height: 400px; background: var(--bg-card); 
-        border-radius: 12px 12px 0 0; display: flex; flex-direction: column;
-        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
-        pointer-events: auto; /* Rétablit le clic sur la fenêtre de chat */
-    }
-    .chat-header {
-        padding: 10px 15px; background: var(--primary-color); color: var(--bg-dark); 
-        font-weight: 600; cursor: pointer; display: flex;
-        justify-content: space-between; align-items: center; border-radius: 10px 10px 0 0;
-    }
-    .chat-body {
-        flex-grow: 1; overflow-y: auto; padding: 15px; 
-        display: flex; flex-direction: column; gap: 8px; background: #141c2c;
-    }
-    .msg { max-width: 80%; padding: 8px 12px; border-radius: 16px; font-size: 0.9rem; word-wrap: break-word; }
-    .msg.self { background: var(--primary-color); color: var(--bg-dark); align-self: flex-end; border-bottom-right-radius: 4px; }
-    .msg.other { background: #334155; color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; }
-    .chat-input-area { display: flex; padding: 10px; border-top: 1px solid #334155; }
-    .chat-input-area input {
-        flex-grow: 1; padding: 10px; border: 1px solid #334155; border-radius: 8px; 
-        background: var(--bg-dark); color: var(--text-main); margin-right: 10px;
-        outline: none;
-    }
-    .chat-input-area button {
-        background: var(--primary-color); color: var(--bg-dark); border: none;
-        width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1rem;
-    }
+    .friend-card:hover { background: #1f3045; }
+    .friend-avatar { width: 30px; height: 30px; border-radius: 50%; background: #475569; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-right: 10px; }
+    
     /* Demandes */
     .request-actions button { border: none; border-radius: 4px; color: white; cursor: pointer; line-height: 1; }
     
