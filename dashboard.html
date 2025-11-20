@@ -170,7 +170,6 @@
     }
 
     /* --- CHAT WINDOWS --- */
-    /* Ce bloc est la partie "bandeau" CSS synchronisée */
     #chat-container {
         position: fixed;
         bottom: 0;
@@ -336,7 +335,7 @@
 // ====================================================
 // --- DÉCLARATION DES VARIABLES GLOBALES ---
 // ====================================================
-// Variables sociales/chat (Synchronisé)
+// Variables sociales/chat
 const friendsSidebar = document.getElementById('friendsSidebar');
 const chatContainer = document.getElementById('chat-container'); 
 const friendNotif = document.getElementById('friend-notif');
@@ -378,6 +377,7 @@ let favorites = JSON.parse(localStorage.getItem('mm_favorites')) || [];
 
 const isFav = (id) => favorites.includes(id);
 
+// MODIFICATION ICI : Rétablissement du bouton cœur
 function createCardHTML(game) {
     const activeClass = isFav(game.id) ? 'active' : '';
     return `
@@ -529,7 +529,7 @@ function autoScrollLoop() {
 setInterval(autoScrollLoop, 3000); 
 
 // ----------------------------------------------------------------
-// --- LOGIQUE SOCIALE (Partie "bandeau" JavaScript synchronisée) ---
+// --- LOGIQUE SOCIALE (Bandeau/Sidebar/Chat) ---
 // ----------------------------------------------------------------
 
 // Permet de basculer entre les onglets Amis et Demandes
@@ -769,8 +769,9 @@ window.sM = async (e, u) => {
         if(toggleBtn) toggleBtn.classList.add('active');
     }
     
-    // 1. Chargement initial et rafraîchissement périodique
+    // 1. Chargement initial
     loadSocial();
+    // 2. Le rafraîchissement périodique est CRUCIAL pour la synchro entre les pages.
     setInterval(loadSocial, 5000); 
 })();
   </script>
