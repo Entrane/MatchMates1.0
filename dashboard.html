@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <meta charset="UTF-8" />
   <title>Tableau de bord – MatchMates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -392,7 +393,12 @@ function createCardHTML(game) {
             <img src="${game.img}" alt="${game.name}" class="game-img">
             <div class="game-overlay">
                 <div class="game-title">${game.name}</div>
-            </div>
+                <div class="game-card favorite">
+  <img src="league-of-legends-cover.jpg" alt="League of Legends">
+  <div class="favorite-icon">
+    <i class="fa-solid fa-heart"></i> </div>
+  <p>League of Legends</p>
+</div>
         </a>
     `;
 }
