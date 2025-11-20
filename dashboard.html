@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Tableau de bord â€“ MatchMates</title>
+  <title>Tableau de bord – MatchMates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -10,10 +10,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
   <style>
-    /* Styles CSS basÃ©s sur les versions prÃ©cÃ©dentes */
+    /* Styles CSS basés sur les versions précédentes */
     :root {
       --primary-color: #22c55e;
-      --sidebar-width: 320px; /* RÃ©activÃ© pour la sidebar sociale */
+      --sidebar-width: 320px; /* Réactivé pour la sidebar sociale */
       --bg-dark: #0f172a;
       --bg-card: #1e293b;
       --text-main: #f1f5f9;
@@ -79,17 +79,21 @@
     }
     .game-title { color: white; font-weight: 600; font-size: 1.1rem; }
     .carousel-btn { 
-        position: absolute; top: 50%; transform: translateY(-50%); 
+        position: absolute; top: 50%; 
+        transform: translateY(-50%); /* Assure une position stable */
         background: rgba(30, 41, 59, 0.7); color: white; border: none; 
         padding: 10px 15px; border-radius: 50%; cursor: pointer; 
         z-index: 10; 
-        transition: background 0.2s;
+        /* FIX: Ajout de 'transform' à la transition pour éliminer les saccades au survol */
+        transition: background 0.2s ease, transform 0.2s ease;
     }
-    .carousel-btn:hover { background: rgba(34, 197, 94, 0.8); }
+    .carousel-btn:hover { 
+        background: var(--primary-color); /* Utilisation du vert principal pour le survol */
+    }
     #prevBtn { left: -10px; }
     #nextBtn { right: -10px; }
     
-    /* Bouton CÅ“ur Favori */
+    /* Bouton Cœur Favori */
     .heart-btn {
         position: absolute; top: 10px; right: 10px;
         background: rgba(0, 0, 0, 0.5); color: #fff;
@@ -129,7 +133,7 @@
         border-radius: 8px;
     }
     
-    /* --- Styles sociaux (RÃ©-intÃ©grÃ©s) --- */
+    /* --- Styles sociaux (Ré-intégrés) --- */
     /* --- BOUTON SIDEBAR --- */
     .toggle-friends-btn {
       position: fixed; top: 80px; right: 20px; z-index: 9999; 
@@ -148,7 +152,7 @@
         display: none; 
     }
     .toggle-friends-btn.active::after {
-        content: "âœ•"; 
+        content: "✕"; 
     }
 
     /* --- SIDEBAR SOCIALE (Amis) --- */
@@ -231,7 +235,7 @@
     <a href="/" class="logo">MatchMates</a>
     <div class="nav-links">
       <a href="/">Tableau de bord</a>
-      <a href="/logout">DÃ©connexion</a>
+      <a href="/logout">Déconnexion</a>
     </div>
     <div class="profile-section">
       <div class="profile-avatar">U</div> 
@@ -241,7 +245,7 @@
   <div class="dashboard-layout">
 
     <div class="carousel-section">
-      <h2>Jeux recommandÃ©s</h2>
+      <h2>Jeux recommandés</h2>
       <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Rechercher un jeu...">
       </div>
@@ -282,11 +286,11 @@
             <p style="text-align:center; color:var(--text-muted); font-size:0.9rem;">Ajoutez des amis !</p>
         </div>
 
-        <div class="sidebar-section-title" id="receivedRequestsTitle" style="display:none;">Demandes reÃ§ues (<span id="receivedCount">0</span>)</div>
+        <div class="sidebar-section-title" id="receivedRequestsTitle" style="display:none;">Demandes reçues (<span id="receivedCount">0</span>)</div>
         <div id="requestsList">
             </div>
         
-        <div class="sidebar-section-title" id="sentRequestsTitle" style="display:none;">Demandes envoyÃ©es (<span id="sentCount">0</span>)</div>
+        <div class="sidebar-section-title" id="sentRequestsTitle" style="display:none;">Demandes envoyées (<span id="sentCount">0</span>)</div>
         <div id="sentList">
             </div>
 
@@ -295,9 +299,9 @@
     <div id="chat-container" class="chat-container"></div>
   <script>
 // ====================================================
-// --- DÃ‰CLARATION DES VARIABLES GLOBALES ---
+// --- DÉCLARATION DES VARIABLES GLOBALES ---
 // ====================================================
-// Variables sociales/chat (RÃ©-intÃ©grÃ©es)
+// Variables sociales/chat (Ré-intégrées)
 const activeChats = {}; 
 const friendsSidebar = document.getElementById('friendsSidebar');
 const chatContainer = document.getElementById('chat-container'); 
@@ -313,23 +317,14 @@ let isSearching = false;
 
 
 /* =========================================
-1. CONFIG JEUX / FAVORIS (ConservÃ©)
+1. CONFIG JEUX / FAVORIS (Conservé)
 ========================================= */
+// LISTE DES JEUX FILTRÉE : VALORANT ET LEAGUE OF LEGENDS SEULEMENT
 const ALL_GAMES = [ 
-    { id: 'lol', name: 'League of Legends', img: 'image match mates/lol.jpg' }, 
     { id: 'valorant', name: 'Valorant', img: 'image match mates/valorant.jpg' }, 
-    { id: 'wow', name: 'World of Warcraft', img: 'image match mates/world of warcraft.jpg' }, 
-    { id: 'minecraft', name: 'Minecraft', img: 'image match mates/minecraft.avif' }, 
-    { id: 'gta', name: 'GTA V', img: 'image match mates/gta.jpg' }, 
-    { id: 'rocket', name: 'Rocket League', img: 'image match mates/rocket league.jpg' }, 
-    { id: 'fortnite', name: 'Fortnite', img: 'image match mates/fortnite.jpg' }, 
-    { id: 'cod', name: 'Call of Duty', img: 'image match mates/cod.jpg' }, 
-    { id: 'apex', name: 'Apex Legends', img: 'image match mates/apex.webp' }, 
-    { id: 'overwatch', name: 'Overwatch 2', img: 'image match mates/overwatch 2.jpg' }, 
-    { id: 'csgo', name: 'CS:GO 2', img: 'image match mates/csgo.jpg' }, 
-    { id: 'fifa', name: 'EA FC 24', img: 'image match mates/lol.jpg' }, 
+    { id: 'lol', name: 'League of Legends', img: 'image match mates/lol.jpg' }, 
 ]; 
-// Liste des favoris stockÃ©e localement
+// Liste des favoris stockée localement
 let favorites = JSON.parse(localStorage.getItem('mm_favorites')) || []; 
 
 const isFav = (id) => favorites.includes(id);
@@ -356,7 +351,7 @@ function renderFavs() {
     c.innerHTML = "";
     
     if (favorites.length === 0) {
-        c.innerHTML = `<div class="empty-msg">Vous n'avez pas encore de jeu favori. Cliquez sur le cÅ“ur pour en ajouter !</div>`;
+        c.innerHTML = `<div class="empty-msg">Vous n'avez pas encore de jeu favori. Cliquez sur le cœur pour en ajouter !</div>`;
         return;
     }
 
@@ -375,19 +370,19 @@ window.toggleGameFav = (id) => {
     if(isFav(id)) favorites = favorites.filter(x => x !== id); 
     else favorites.push(id); 
     
-    // Mise Ã  jour du localStorage ET du serveur
+    // Mise à jour du localStorage ET du serveur
     localStorage.setItem('mm_favorites', JSON.stringify(favorites)); 
     fetch(`/api/favorites/${id}`, {method: 'POST'}); 
     
     renderFavs(); 
-    // Re-render carrousel pour mettre Ã  jour les coeurs
+    // Re-render carrousel pour mettre à jour les coeurs
     const term = searchInput ? searchInput.value.toLowerCase().trim() : ''; 
     const filtered = term ? ALL_GAMES.filter(g => g.name.toLowerCase().includes(term)) : ALL_GAMES; 
     renderCarousel(filtered); 
 };
 
 /* =========================================
-2. LOGIQUE CARROUSEL / RECHERCHE (ConservÃ©)
+2. LOGIQUE CARROUSEL / RECHERCHE (Conservé)
 ========================================= */
 
 // Rendu du Carrousel
@@ -419,7 +414,7 @@ if (searchInput) {
 }
 
 
-// --- LOGIQUE FLÃˆCHES --- 
+// --- LOGIQUE FLÈCHES --- 
 if (prevBtn && nextBtn && track && carouselContainer) {
     prevBtn.addEventListener('click', () => { 
         if(isSearching) return; 
@@ -481,11 +476,24 @@ function autoScrollLoop() {
         }
     }
 }
-// Lance le dÃ©filement automatique
+// Lance le défilement automatique
 setInterval(autoScrollLoop, 3000); 
 
+// ====================================================
+// --- NOUVELLE LOGIQUE PROFIL AVATAR ---
+// ====================================================
+function updateProfileHeader(username = 'Utilisateur') {
+    const profileAvatar = document.querySelector('.profile-avatar');
+    if (profileAvatar) {
+        // Affiche la première lettre du nom en majuscule
+        profileAvatar.textContent = username.charAt(0).toUpperCase();
+        profileAvatar.title = `Profil de ${username}`; 
+    }
+}
+const CURRENT_USER_NAME = "Utilisateur"; // Placeholder à adapter/charger depuis votre API
+
 // ----------------------------------------------------------------
-// --- LOGIQUE SOCIALE (RÃ©-intÃ©grÃ©e) ---
+// --- LOGIQUE SOCIALE (Ré-intégrée) ---
 // ----------------------------------------------------------------
 
 // ====================================================
@@ -498,12 +506,12 @@ window.toggleSidebar = function() {
     
     if (toggleBtn) toggleBtn.classList.toggle('active', isActive);
     
-    // Si la sidebar est fermÃ©e, on ferme aussi tous les chats actifs.
+    // Si la sidebar est fermée, on ferme aussi tous les chats actifs.
     if (!isActive) {
         Object.keys(activeChats).forEach(closeChat);
     }
 
-    // Sauvegarde l'Ã©tat dans le stockage local
+    // Sauvegarde l'état dans le stockage local
     localStorage.setItem('socialSidebarActive', isActive);
 };
 
@@ -513,7 +521,7 @@ window.toggleSidebar = function() {
 
 async function loadSocial() {
     try {
-        // Appels API pour rÃ©cupÃ©rer les donnÃ©es sociales
+        // Appels API pour récupérer les données sociales
         const [fRes, rRes] = await Promise.all([fetch('/api/friends'), fetch('/api/friends/requests')]);
         const fData = await fRes.json();
         const rData = await rRes.json();
@@ -523,7 +531,7 @@ async function loadSocial() {
         renderSent(rData.outgoing || []); 
 
     } catch (e) {
-        // Afficher un Ã©tat vide en cas d'erreur API
+        // Afficher un état vide en cas d'erreur API
         renderFriends([]);
         renderRequests([]); 
         renderSent([]); 
@@ -609,7 +617,7 @@ function renderSent(list) {
     });
 }
 
-// GÃ¨re l'envoi de la demande d'ami
+// Gère l'envoi de la demande d'ami
 const addFriendForm = document.getElementById('add-friend-form');
 if (addFriendForm) {
     addFriendForm.addEventListener('submit', async function(e) { 
@@ -624,14 +632,14 @@ if (addFriendForm) {
         });
         const d = await res.json();
         
-        friendNotif.innerText = d.ok ? `Demande envoyÃ©e Ã  ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
+        friendNotif.innerText = d.ok ? `Demande envoyée à ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
         input.value = "";
         loadSocial();
         setTimeout(()=>friendNotif.innerText="",3000); 
     });
 }
 
-// GÃ¨re l'acceptation/rejet d'une demande d'ami
+// Gère l'acceptation/rejet d'une demande d'ami
 window.hReq = async(id, a) => { 
     await fetch(`/api/friends/requests/${id}/${a}`, {method:'POST'}); 
     loadSocial(); 
@@ -669,7 +677,7 @@ window.openChat = (u) => {
         </div>
         <div class="chat-body" id="msg-${u}"></div>
         <form class="chat-input-area" onsubmit="sM(event,'${u}')">
-            <input type="text" placeholder="Ã‰crire un message..." autocomplete="off">
+            <input type="text" placeholder="Écrire un message..." autocomplete="off">
             <button type="submit"><i class="fas fa-paper-plane"></i></button>
         </form>
     `;
@@ -714,8 +722,11 @@ window.sM = async (e, u) => {
     renderFavs();
     renderCarousel(ALL_GAMES);
     
+    // --- Initialisation PROFIL AVATAR ---
+    updateProfileHeader(CURRENT_USER_NAME);
+
     // --- Initialisation SOCIAL ---
-    // RÃ©tablit l'Ã©tat de la sidebar (Amis) au chargement
+    // Rétablit l'état de la sidebar (Amis) au chargement
     if (localStorage.getItem('socialSidebarActive') === 'true' && friendsSidebar) {
         friendsSidebar.classList.add('active');
         const toggleBtn = document.querySelector('.toggle-friends-btn');
@@ -724,7 +735,7 @@ window.sM = async (e, u) => {
     
     // 1. Chargement initial
     loadSocial();
-    // 2. RafraÃ®chissement automatique
+    // 2. Rafraîchissement automatique
     setInterval(loadSocial, 5000); 
 })();
   </script>
