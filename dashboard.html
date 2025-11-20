@@ -194,6 +194,33 @@
         color: #ffc107; /* Or yellow */
     }
 
+    /* Styles pour les boutons de navigation du carousel */
+    .carousel-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(30, 41, 59, 0.7); /* bg-card with transparency */
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 10;
+        /* MISE À JOUR ICI: transition sur plusieurs propriétés pour la fluidité */
+        transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+    .carousel-btn:hover {
+        background: var(--primary-color); /* Changement au survol */
+        color: var(--bg-dark); /* Assurons que le texte change aussi si besoin */
+        /* transform: translateY(-50%) scale(1.05); /* Optionnel: léger agrandissement au survol */
+    }
+    #prevBtn {
+        left: 10px;
+    }
+    #nextBtn {
+        right: 10px;
+    }
+
     /* --- FAV SECTION --- */
     .favorites-grid {
         display: grid;
@@ -236,6 +263,8 @@
         <div class="game-carousel">
             <div class="carousel-track" id="carouselTrack">
                 </div>
+            <button class="carousel-btn" id="prevBtn"><i class="fas fa-chevron-left"></i></button>
+            <button class="carousel-btn" id="nextBtn"><i class="fas fa-chevron-right"></i></button>
         </div>
 
     </div>
@@ -400,6 +429,27 @@ function autoScrollLoop() {
 // Lance le défilement automatique
 setInterval(autoScrollLoop, 3000); 
 
+// Défilement manuel
+window.scrollCarousel = (direction) => {
+    const track = document.getElementById('carouselTrack');
+    const carouselContainer = document.querySelector('.game-carousel');
+    if (!track || !carouselContainer) return;
+
+    const itemWidth = 200 + 20; // Largeur de la carte + gap
+    const visibleItems = Math.floor(carouselContainer.clientWidth / itemWidth);
+    
+    // Calculate scroll step based on visible items, or just one item
+    const scrollStep = visibleItems * itemWidth;
+
+    if (direction === 'prev') {
+        scrollAmount = Math.max(0, scrollAmount - scrollStep);
+    } else {
+        const maxScroll = track.scrollWidth - carouselContainer.clientWidth;
+        scrollAmount = Math.min(maxScroll, scrollAmount + scrollStep);
+    }
+    track.style.transform = `translateX(-${scrollAmount}px)`;
+};
+
 
 /* =========================================
 2. LOGIQUE SOCIALE (Amis/Requests)
@@ -486,186 +536,4 @@ function renderFriends(list) {
                 <span>${f.username}</span>
             </div>
         `;
-        c.appendChild(d);
-    });
-}
-
-// Rendu des requêtes reçues
-function renderRequests(list) {
-    const c = document.getElementById('requestsList');
-    if (!c) return;
-    c.innerHTML = "";
-    const countSpan = document.getElementById('receivedCount');
-    if(countSpan) countSpan.textContent = list.length;
-    const title = document.getElementById('receivedRequestsTitle');
-    if(title) title.style.display = list.length ? 'block' : 'none';
-
-    list.forEach(r => {
-        const d = document.createElement('div');
-        d.className = 'friend-card';
-        d.innerHTML = `
-            <div style="display: flex; align-items: center; flex-grow: 1;">
-                <div class="friend-avatar">${r.from_username.charAt(0).toUpperCase()}</div>
-                <span>${r.from_username}</span>
-            </div>
-            <div class="request-actions" style="display:flex; gap:5px;">
-                <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #10b981;" onclick="hReq(${r.id}, 'accept')"><i class="fas fa-check"></i></button>
-                <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #ef4444;" onclick="hReq(${r.id}, 'reject')"><i class="fas fa-times"></i></button>
-            </div>
-        `;
-        c.appendChild(d);
-    });
-}
-
-// Rendu des requêtes envoyées
-function renderSent(list) {
-    const c = document.getElementById('sentList');
-    if (!c) return;
-    c.innerHTML = "";
-    const countSpan = document.getElementById('sentCount');
-    if(countSpan) countSpan.textContent = list.length;
-    const title = document.getElementById('sentRequestsTitle');
-    if(title) title.style.display = list.length ? 'block' : 'none';
-
-    list.forEach(r => {
-        const d = document.createElement('div');
-        d.className = 'friend-card';
-        d.style.opacity = 0.7; 
-        d.innerHTML = `
-            <div style="display: flex; align-items: center; flex-grow: 1;">
-                <div class="friend-avatar">${r.to_username.charAt(0).toUpperCase()}</div>
-                <span style="font-style:italic;">${r.to_username} (En attente)</span>
-            </div>
-            <div class="request-actions">
-                <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #334155;" onclick="hReq(${r.id}, 'reject')"><i class="fas fa-minus-circle"></i></button>
-            </div>
-        `;
-        c.appendChild(d);
-    });
-}
-
-// Gère l'envoi de la demande d'ami
-const addFriendForm = document.getElementById('add-friend-form');
-if (addFriendForm) {
-    addFriendForm.addEventListener('submit', async function(e) { 
-        e.preventDefault(); 
-        const input = document.getElementById('friend-input'); 
-        const friendNotif = document.getElementById('friend-notif');
-        
-        const res = await fetch('/api/friends/request', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({toUsername:input.value})
-        });
-        const d = await res.json();
-        
-        friendNotif.innerText = d.ok ? `Demande envoyée à ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
-        input.value = "";
-        loadSocial();
-        setTimeout(()=>friendNotif.innerText="",3000); 
-    });
-}
-
-// Gère l'acceptation/rejet d'une demande d'ami
-window.hReq = async(id, a) => { 
-    await fetch(`/api/friends/requests/${id}/${a}`, {method:'POST'}); 
-    loadSocial(); 
-};
-
-// =========================================
-// --- LOGIQUE DE CHAT ---
-// =========================================
-
-async function fetchMessages(u) {
-    const c = document.getElementById(`msg-${u}`);
-    if (!c) return;
-
-    const res = await fetch(`/api/messages/${u}`);
-    const d = await res.json();
-    
-    const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 1;
-    
-    c.innerHTML = d.messages.map(m =>
-        `<div class="msg ${m.fromSelf ? 'self' : 'other'}">${m.content}</div>`
-    ).join('');
-    
-    if (isScrolledToBottom || d.messages.length === 1) {
-        c.scrollTop = c.scrollHeight;
-    }
-}
-
-window.openChat = (u) => { 
-    if(document.getElementById(`cw-${u}`)) return;
-    const d=document.createElement('div'); d.className='chat-window'; d.id=`cw-${u}`;
-    d.innerHTML=`
-        <div class="chat-header" onclick="closeChat('${u}')">
-            <span>${u}</span>
-            <span><i class="fas fa-times"></i></span>
-        </div>
-        <div class="chat-body" id="msg-${u}"></div>
-        <form class="chat-input-area" onsubmit="sM(event,'${u}')">
-            <input type="text" placeholder="Écrire un message..." autocomplete="off">
-            <button type="submit"><i class="fas fa-paper-plane"></i></button>
-        </form>
-    `;
-    if (chatContainer) {
-         chatContainer.appendChild(d); 
-         fetchMessages(u); 
-         activeChats[u]=setInterval(()=>fetchMessages(u),3000);
-    }
-};
-
-window.closeChat = (u) => { 
-    const el=document.getElementById(`cw-${u}`); 
-    if(el) el.remove(); 
-    if(activeChats[u]){
-        clearInterval(activeChats[u]);
-        delete activeChats[u];
-    } 
-};
-
-window.sM = async (e, u) => {
-    e.preventDefault();
-    const input = e.target.querySelector('input');
-    if (!input.value.trim()) return; 
-
-    await fetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toUsername: u, content: input.value.trim() })
-    });
-    
-    input.value = "";
-    fetchMessages(u); 
-};
-
-
-/* =========================================
-4. INITIALISATION FINALE
-========================================= */
-
-(async function() {
-    // --- Initialisation JEUX / CAROUSEL ---
-    renderFavs();
-    renderCarousel(ALL_GAMES);
-    
-    // --- Initialisation SOCIAL & PROFIL ---
-    // METTRE À JOUR LE PROFIL AVATAR
-    updateProfileHeader(CURRENT_USER_NAME); // Utilise la variable définie plus haut (ex: "Alice")
-    
-    // Rétablit l'état de la sidebar (Amis) au chargement
-    if (localStorage.getItem('socialSidebarActive') === 'true' && friendsSidebar) {
-        friendsSidebar.classList.add('active');
-        const toggleBtn = document.querySelector('.toggle-friends-btn');
-        if(toggleBtn) toggleBtn.classList.add('active');
-    }
-    
-    // 1. Chargement initial
-    loadSocial();
-    // 2. Refresh toutes les 5 secondes
-    setInterval(loadSocial, 5000); 
-})();
-  </script>
-
-</body>
-</html>
+        c.appendChild
