@@ -130,9 +130,15 @@
     /* Bouton Cœur Favori */
     .heart-btn {
         position: absolute; top: 10px; right: 10px;
-        background: rgba(0, 0, 0, 0.5); color: #fff;
+        background: rgba(0, 0, 0, 0.5); 
+        color: #fff; /* COULEUR PAR DÉFAUT DU CŒUR (BLANC/VISIBLE) */
         border: none; border-radius: 50%;
-        width: 30px; height: 30px; line-height: 30px;
+        width: 30px; height: 30px; 
+        /* MODIFICATION POUR CENTRER L'ICÔNE DE CŒUR */
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        /* FIN MODIFICATION */
         text-align: center; cursor: pointer;
         z-index: 5;
         font-size: 1rem;
