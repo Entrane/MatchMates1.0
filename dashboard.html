@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <meta charset="UTF-8" />
   <title>Tableau de bord – MatchMates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -131,15 +130,9 @@
     /* Bouton Cœur Favori */
     .heart-btn {
         position: absolute; top: 10px; right: 10px;
-        background: rgba(0, 0, 0, 0.5); 
-        color: #fff; /* COULEUR PAR DÉFAUT DU CŒUR (BLANC/VISIBLE) */
+        background: rgba(0, 0, 0, 0.5); color: #fff;
         border: none; border-radius: 50%;
-        width: 30px; height: 30px; 
-        /* MODIFICATION POUR CENTRER L'ICÔNE DE CŒUR */
-        display: flex; 
-        align-items: center; 
-        justify-content: center;
-        /* FIN MODIFICATION */
+        width: 30px; height: 30px; line-height: 30px;
         text-align: center; cursor: pointer;
         z-index: 5;
         font-size: 1rem;
@@ -160,6 +153,8 @@
         margin-top: 20px;
     }
     .favorites-grid .game-card {
+        /* Ligne de hauteur fixe retirée pour s'adapter à la taille de l'image */
+        /* height: 300px; */ 
         background: var(--bg-card);
         border-radius: 8px;
         overflow: hidden;
@@ -175,6 +170,7 @@
     }
 
     /* --- CHAT WINDOWS --- */
+    /* Ce bloc est la partie "bandeau" CSS synchronisée */
     #chat-container {
         position: fixed;
         bottom: 0;
@@ -340,7 +336,7 @@
 // ====================================================
 // --- DÉCLARATION DES VARIABLES GLOBALES ---
 // ====================================================
-// Variables sociales/chat
+// Variables sociales/chat (Synchronisé)
 const friendsSidebar = document.getElementById('friendsSidebar');
 const chatContainer = document.getElementById('chat-container'); 
 const friendNotif = document.getElementById('friend-notif');
@@ -392,8 +388,7 @@ function createCardHTML(game) {
             <img src="${game.img}" alt="${game.name}" class="game-img">
             <div class="game-overlay">
                 <div class="game-title">${game.name}</div>
-  <div class="favorite-icon">
-</div>
+            </div>
         </a>
     `;
 }
@@ -534,7 +529,7 @@ function autoScrollLoop() {
 setInterval(autoScrollLoop, 3000); 
 
 // ----------------------------------------------------------------
-// --- LOGIQUE SOCIALE (La clé de la synchronisation) ---
+// --- LOGIQUE SOCIALE (Partie "bandeau" JavaScript synchronisée) ---
 // ----------------------------------------------------------------
 
 // Permet de basculer entre les onglets Amis et Demandes
@@ -572,7 +567,6 @@ window.toggleSidebar = function() {
 };
 
 // --- LOGIQUE SOCIALE (Amis/Requests) ---
-// Cette fonction est appelée immédiatement après une action et toutes les 5 secondes (pour la synchro)
 async function loadSocial() {
     try {
         const [fRes, rRes] = await Promise.all([
@@ -592,7 +586,7 @@ async function loadSocial() {
     }
 }
 
-// Fonctions de rendu (identiques aux précédentes)
+// Fonctions de rendu 
 function renderFriends(list) {
     const c = document.getElementById('friendsList');
     if (!c) return;
@@ -678,7 +672,6 @@ if (addFriendForm) {
         });
         const d = await res.json();
         
-        // C'est cet appel qui assure la SYNCHRONISATION IMMÉDIATE après l'action
         loadSocial(); 
         
         if (friendNotif) {
@@ -689,14 +682,13 @@ if (addFriendForm) {
     });
 }
 
-// Gère l'acceptation/rejet d'une demande d'ami (hReq pour 'handleRequest')
+// Gère l'acceptation/rejet d'une demande d'ami
 window.hReq = async(id, a) => { 
     await fetch(`/api/friends/requests/${id}/${a}`, {method:'POST'}); 
-    // C'est cet appel qui assure la SYNCHRONISATION IMMÉDIATE après l'action
     loadSocial(); 
 };
 
-// --- LOGIQUE DE CHAT (Identique à la version précédente) ---
+// --- LOGIQUE DE CHAT ---
 
 async function fetchMessages(u) {
     const c = document.getElementById(`msg-${u}`);
@@ -777,10 +769,9 @@ window.sM = async (e, u) => {
         if(toggleBtn) toggleBtn.classList.add('active');
     }
     
-    // 1. Chargement initial
+    // 1. Chargement initial et rafraîchissement périodique
     loadSocial();
-    // 2. Le rafraîchissement périodique est CRUCIAL pour la synchro entre les pages.
-    setInterval(loadSocial, 5000); // Rafraîchissement toutes les 5 secondes
+    setInterval(loadSocial, 5000); 
 })();
   </script>
 
