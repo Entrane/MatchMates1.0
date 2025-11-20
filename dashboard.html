@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <meta charset="UTF-8" />
-  <title>Tableau de bord – MatchMates</title>
+  <title>Tableau de bord â€“ MatchMates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 
   <style>
-    /* Styles CSS basés sur les versions précédentes */
+    /* Styles CSS basÃ©s sur les versions prÃ©cÃ©dentes */
     :root {
       --primary-color: #22c55e;
       --sidebar-width: 320px;
@@ -127,12 +128,18 @@
     #prevBtn { left: -10px; }
     #nextBtn { right: -10px; }
     
-    /* Bouton Cœur Favori */
+    /* Bouton CÅ“ur Favori */
     .heart-btn {
         position: absolute; top: 10px; right: 10px;
-        background: rgba(0, 0, 0, 0.5); color: #fff;
+        background: rgba(0, 0, 0, 0.5); 
+        color: #fff; /* COULEUR PAR DÃ‰FAUT DU CÅ’UR (BLANC/VISIBLE) */
         border: none; border-radius: 50%;
-        width: 30px; height: 30px; line-height: 30px;
+        width: 30px; height: 30px; 
+        /* MODIFICATION POUR CENTRER L'ICÃ”NE DE CÅ’UR */
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        /* FIN MODIFICATION */
         text-align: center; cursor: pointer;
         z-index: 5;
         font-size: 1rem;
@@ -153,8 +160,6 @@
         margin-top: 20px;
     }
     .favorites-grid .game-card {
-        /* Ligne de hauteur fixe retirée pour s'adapter à la taille de l'image */
-        /* height: 300px; */ 
         background: var(--bg-card);
         border-radius: 8px;
         overflow: hidden;
@@ -173,7 +178,7 @@
     #chat-container {
         position: fixed;
         bottom: 0;
-        right: 340px; /* Espace pour la sidebar fermée + 20px */
+        right: 340px; /* Espace pour la sidebar fermÃ©e + 20px */
         display: flex;
         gap: 15px;
         z-index: 950;
@@ -260,7 +265,7 @@
     <a href="/" class="logo">MatchMates</a>
     <div class="nav-links">
       <a href="/">Tableau de bord</a>
-      <a href="/logout">Déconnexion</a>
+      <a href="/logout">DÃ©connexion</a>
     </div>
     <div class="profile-section">
       <div class="profile-avatar">U</div> 
@@ -273,7 +278,7 @@
   <div class="dashboard-layout">
 
     <div class="carousel-section">
-      <h2>Jeux recommandés</h2>
+      <h2>Jeux recommandÃ©s</h2>
       <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Rechercher un jeu...">
       </div>
@@ -318,10 +323,10 @@
     </div>
 
     <div id="requestsTab" class="tab-content">
-        <h4 id="receivedRequestsTitle" style="color:var(--text-muted); margin-top:0;">Demandes reçues</h4>
+        <h4 id="receivedRequestsTitle" style="color:var(--text-muted); margin-top:0;">Demandes reÃ§ues</h4>
         <div id="requestsList">
             </div>
-        <h4 id="sentRequestsTitle" style="color:var(--text-muted); margin-top:20px;">Demandes envoyées (<span id="sentCount">0</span>)</h4>
+        <h4 id="sentRequestsTitle" style="color:var(--text-muted); margin-top:20px;">Demandes envoyÃ©es (<span id="sentCount">0</span>)</h4>
         <div id="sentList">
             </div>
     </div>
@@ -333,7 +338,7 @@
   <script src="https://kit.fontawesome.com/b16e1e8310.js" crossorigin="anonymous"></script>
   <script>
 // ====================================================
-// --- DÉCLARATION DES VARIABLES GLOBALES ---
+// --- DÃ‰CLARATION DES VARIABLES GLOBALES ---
 // ====================================================
 // Variables sociales/chat
 const friendsSidebar = document.getElementById('friendsSidebar');
@@ -372,12 +377,11 @@ const ALL_GAMES = [
     { id: 'csgo', name: 'CS:GO 2', img: 'image match mates/csgo.jpg' }, 
     { id: 'fifa', name: 'EA FC 24', img: 'image match mates/lol.jpg' }, 
 ]; 
-// Liste des favoris stockée localement
+// Liste des favoris stockÃ©e localement
 let favorites = JSON.parse(localStorage.getItem('mm_favorites')) || []; 
 
 const isFav = (id) => favorites.includes(id);
 
-// MODIFICATION ICI : Rétablissement du bouton cœur
 function createCardHTML(game) {
     const activeClass = isFav(game.id) ? 'active' : '';
     return `
@@ -388,7 +392,8 @@ function createCardHTML(game) {
             <img src="${game.img}" alt="${game.name}" class="game-img">
             <div class="game-overlay">
                 <div class="game-title">${game.name}</div>
-            </div>
+  <div class="favorite-icon">
+</div>
         </a>
     `;
 }
@@ -400,7 +405,7 @@ function renderFavs() {
     c.innerHTML = "";
     
     if (favorites.length === 0) {
-        c.innerHTML = `<div class="empty-msg">Vous n'avez pas encore de jeu favori. Cliquez sur le cœur pour en ajouter !</div>`;
+        c.innerHTML = `<div class="empty-msg">Vous n'avez pas encore de jeu favori. Cliquez sur le cÅ“ur pour en ajouter !</div>`;
         return;
     }
 
@@ -419,12 +424,12 @@ window.toggleGameFav = (id) => {
     if(isFav(id)) favorites = favorites.filter(x => x !== id); 
     else favorites.push(id); 
     
-    // Mise à jour du localStorage ET du serveur
+    // Mise Ã  jour du localStorage ET du serveur
     localStorage.setItem('mm_favorites', JSON.stringify(favorites)); 
     fetch(`/api/favorites/${id}`, {method: 'POST'}); 
     
     renderFavs(); 
-    // Re-render carrousel pour mettre à jour les coeurs
+    // Re-render carrousel pour mettre Ã  jour les coeurs
     const term = searchInput ? searchInput.value.toLowerCase().trim() : ''; 
     const filtered = term ? ALL_GAMES.filter(g => g.name.toLowerCase().includes(term)) : ALL_GAMES; 
     renderCarousel(filtered); 
@@ -463,7 +468,7 @@ if (searchInput) {
 }
 
 
-// --- LOGIQUE FLÈCHES --- 
+// --- LOGIQUE FLÃˆCHES --- 
 if (prevBtn && nextBtn && track && carouselContainer) {
     prevBtn.addEventListener('click', () => { 
         if(isSearching) return; 
@@ -525,11 +530,11 @@ function autoScrollLoop() {
         }
     }
 }
-// Lance le défilement automatique
+// Lance le dÃ©filement automatique
 setInterval(autoScrollLoop, 3000); 
 
 // ----------------------------------------------------------------
-// --- LOGIQUE SOCIALE (Bandeau/Sidebar/Chat) ---
+// --- LOGIQUE SOCIALE (La clÃ© de la synchronisation) ---
 // ----------------------------------------------------------------
 
 // Permet de basculer entre les onglets Amis et Demandes
@@ -559,7 +564,7 @@ window.toggleSidebar = function() {
     if(toggleBtn) toggleBtn.classList.toggle('active', isActive);
     
     if (!isActive) {
-        // Ferme tous les chats si la sidebar est fermée
+        // Ferme tous les chats si la sidebar est fermÃ©e
         Object.keys(activeChats).forEach(closeChat);
     }
 
@@ -567,6 +572,7 @@ window.toggleSidebar = function() {
 };
 
 // --- LOGIQUE SOCIALE (Amis/Requests) ---
+// Cette fonction est appelÃ©e immÃ©diatement aprÃ¨s une action et toutes les 5 secondes (pour la synchro)
 async function loadSocial() {
     try {
         const [fRes, rRes] = await Promise.all([
@@ -586,13 +592,13 @@ async function loadSocial() {
     }
 }
 
-// Fonctions de rendu 
+// Fonctions de rendu (identiques aux prÃ©cÃ©dentes)
 function renderFriends(list) {
     const c = document.getElementById('friendsList');
     if (!c) return;
     c.innerHTML = "";
     if (friendsCount) friendsCount.textContent = list.length;
-    // ... (Reste de la fonction inchangé)
+    // ... (Reste de la fonction inchangÃ©)
     if (!list.length) {
         c.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.9rem;">Ajoutez des amis !</p>`;
         return;
@@ -658,7 +664,7 @@ function renderSent(list) {
     });
 }
 
-// Gère l'envoi de la demande d'ami
+// GÃ¨re l'envoi de la demande d'ami
 const addFriendForm = document.getElementById('add-friend-form');
 if (addFriendForm) {
     addFriendForm.addEventListener('submit', async function(e) { 
@@ -672,23 +678,25 @@ if (addFriendForm) {
         });
         const d = await res.json();
         
+        // C'est cet appel qui assure la SYNCHRONISATION IMMÃ‰DIATE aprÃ¨s l'action
         loadSocial(); 
         
         if (friendNotif) {
-            friendNotif.innerText = d.ok ? `Demande envoyée à ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
+            friendNotif.innerText = d.ok ? `Demande envoyÃ©e Ã  ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
             input.value = "";
             setTimeout(()=>friendNotif.innerText="",3000); 
         }
     });
 }
 
-// Gère l'acceptation/rejet d'une demande d'ami
+// GÃ¨re l'acceptation/rejet d'une demande d'ami (hReq pour 'handleRequest')
 window.hReq = async(id, a) => { 
     await fetch(`/api/friends/requests/${id}/${a}`, {method:'POST'}); 
+    // C'est cet appel qui assure la SYNCHRONISATION IMMÃ‰DIATE aprÃ¨s l'action
     loadSocial(); 
 };
 
-// --- LOGIQUE DE CHAT ---
+// --- LOGIQUE DE CHAT (Identique Ã  la version prÃ©cÃ©dente) ---
 
 async function fetchMessages(u) {
     const c = document.getElementById(`msg-${u}`);
@@ -718,7 +726,7 @@ window.openChat = (u) => {
         </div>
         <div class="chat-body" id="msg-${u}"></div>
         <form class="chat-input-area" onsubmit="sM(event,'${u}')">
-            <input type="text" placeholder="Écrire un message..." autocomplete="off">
+            <input type="text" placeholder="Ã‰crire un message..." autocomplete="off">
             <button type="submit"><i class="fas fa-paper-plane"></i></button>
         </form>
     `;
@@ -762,7 +770,7 @@ window.sM = async (e, u) => {
     renderCarousel(ALL_GAMES);
     
     // --- Initialisation SOCIAL ---
-    // Rétablit l'état de la sidebar (Amis) au chargement
+    // RÃ©tablit l'Ã©tat de la sidebar (Amis) au chargement
     if (localStorage.getItem('socialSidebarActive') === 'true' && friendsSidebar) {
         friendsSidebar.classList.add('active');
         const toggleBtn = document.querySelector('.toggle-friends-btn');
@@ -771,8 +779,8 @@ window.sM = async (e, u) => {
     
     // 1. Chargement initial
     loadSocial();
-    // 2. Le rafraîchissement périodique est CRUCIAL pour la synchro entre les pages.
-    setInterval(loadSocial, 5000); 
+    // 2. Le rafraÃ®chissement pÃ©riodique est CRUCIAL pour la synchro entre les pages.
+    setInterval(loadSocial, 5000); // RafraÃ®chissement toutes les 5 secondes
 })();
   </script>
 
