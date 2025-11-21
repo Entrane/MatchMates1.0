@@ -146,6 +146,46 @@
         cursor: pointer;
     }
 
+    /* AJOUTS POUR LA SÉLECTION DES DIVISIONS */
+    .division-title { 
+        color: var(--text-main); 
+        margin-top: 20px; 
+        margin-bottom: 10px; 
+        font-size: 1rem; 
+        font-weight: 600; 
+        border-top: 1px solid #334155; 
+        padding-top: 15px; 
+    }
+    .division-select-grid {
+        display: flex; 
+        gap: 10px; 
+        justify-content: space-around;
+    }
+    .division-item {
+        cursor: pointer;
+        background-color: #334155; 
+        border-radius: 6px;
+        padding: 8px 10px;
+        transition: background-color 0.2s, border-color 0.2s;
+        border: 2px solid transparent; 
+        flex-grow: 1;
+        text-align: center;
+    }
+    .division-item:hover {
+        background-color: #3f4e6b; 
+    }
+    .division-item.active {
+        border-color: var(--primary-color);
+        background: rgba(34, 197, 94, 0.2); 
+    }
+    .division-text {
+        color: var(--text-main);
+        font-weight: 700;
+        font-size: 0.9rem;
+        user-select: none;
+    }
+    /* FIN AJOUTS DIVISIONS */
+
     /* PARTIE RECHERCHE DE PARTENAIRE */
     #partnerSearchButton {
         width: 100%;
@@ -260,6 +300,22 @@
                     <div class="setting-title">Votre grade Actuel</div>
                     <div class="rank-grid" id="rankGrid">
                         </div>
+                    
+                    <h4 class="division-title" style="display:none;">Division</h4>
+                    <div class="division-select-grid" id="divisionGrid" style="display:none;">
+                        <div class="division-item" data-division="4" onclick="selectDivision(4)">
+                            <span class="division-text">IV</span>
+                        </div>
+                        <div class="division-item" data-division="3" onclick="selectDivision(3)">
+                            <span class="division-text">III</span>
+                        </div>
+                        <div class="division-item" data-division="2" onclick="selectDivision(2)">
+                            <span class="division-text">II</span>
+                        </div>
+                        <div class="division-item" data-division="1" onclick="selectDivision(1)">
+                            <span class="division-text">I</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="setting-box">
@@ -351,15 +407,15 @@
 
 const RANKS = {
   lol: [
-    { id: 'Iron',    name: 'Iron',    img: '/lol_rank/Iron.webp' },
-    { id: 'Bronze',  name: 'Bronze',  img: '/lol_rank/Bronze.webp' },
-    { id: 'Silver',  name: 'Silver',  img: '/lol_rank/Silver.webp' },
-    { id: 'Gold',    name: 'Gold',    img: '/lol_rank/Gold.webp' },
-    { id: 'Platinum',name: 'Platinum',img: '/lol_rank/Platinum.webp' },
-    { id: 'Emerald', name: 'Emerald', img: '/lol_rank/Emerald.webp' },
-    { id: 'diamond', name: 'diamond', img: '/lol_rank/diamond.webp' },
-    { id: 'Master',  name: 'Master',  img: '/lol_rank/Master.webp' },
-    { id: 'GrandM',  name: 'Grand Master', img: '/lol_rank/Grandmaster.webp' },
+    { id: 'Iron',    name: 'Iron',    img: '/Image/lol_rank/Iron.webp' }, // Correction du chemin
+    { id: 'Bronze',  name: 'Bronze',  img: '/Image/lol_rank/Bronze.webp' }, // Correction du chemin
+    { id: 'Silver',  name: 'Silver',  img: '/Image/lol_rank/Silver.webp' }, // Correction du chemin
+    { id: 'Gold',    name: 'Gold',    img: '/Image/lol_rank/Gold.webp' }, // Correction du chemin
+    { id: 'Platinum',name: 'Platinum',img: '/Image/lol_rank/Platinum.webp' }, // Correction du chemin
+    { id: 'Emerald', name: 'Émeraude', img: '/Image/lol_rank/Emerald.webp' }, // Correction du chemin et nom
+    { id: 'diamond', name: 'Diamant', img: '/Image/lol_rank/diamond.webp' }, // Correction du chemin et de la casse
+    { id: 'Master',  name: 'Master',  img: '/Image/lol_rank/Master.webp' }, // Correction du chemin
+    { id: 'GrandM',  name: 'Grand Master', img: '/Image/lol_rank/Grandmaster.webp' }, // Correction du chemin
             ],
             'valorant': [
     // IRON
@@ -409,6 +465,7 @@ const RANKS = {
 
         let userGameData = {
             rank: null,
+            division: 4, // AJOUT : 1 = I, 4 = IV
             mode: null,
             prefRanks: [],
             rankTolerance: 1,
@@ -472,13 +529,44 @@ const RANKS = {
                 </div>
             `).join('');
         }
+        
+        // Nouvelle fonction pour mettre Ã  jour l'affichage du rang et de la division
+        function updateRankDisplay() {
+            const rankInfo = RANKS[gameId]?.find(r => r.id === userGameData.rank) || { name: 'Non défini' };
+            const divisionRoman = ['I', 'II', 'III', 'IV'].find((_, index) => index === (4 - userGameData.division)) || '';
+            
+            // Afficher la division uniquement si le rang est sélectionné et si c'est un palier divisionné (Iron à Diamond pour LoL)
+            const showDivision = gameId === 'lol' && (userGameData.rank && ['Iron', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Emerald', 'diamond'].includes(userGameData.rank));
+            
+            document.getElementById('userRankDisplay').textContent = `${rankInfo.name} ${showDivision ? divisionRoman : ''}`.trim();
+            
+            // Mettre en surbrillance la division actuelle (sans dÃ©clencher la rÃ©-Ã©valuation de l'affichage)
+            selectDivision(userGameData.division, false);
+        }
 
         window.selectRank = (rankId) => {
             userGameData.rank = rankId;
             document.querySelectorAll('#rankGrid .rank-option').forEach(el => {
                 el.classList.toggle('active', el.getAttribute('data-rank-id') === rankId);
             });
-            document.getElementById('userRankDisplay').textContent = RANKS[gameId].find(r => r.id === rankId)?.name || 'Non dÃ©fini';
+            
+            // GÃ¨re l'affichage de la section des divisions
+            const divisionGrid = document.getElementById('divisionGrid');
+            const divisionTitle = document.querySelector('.division-title');
+            const show = gameId === 'lol' && ['Iron', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Emerald', 'diamond'].includes(rankId);
+
+            if (divisionGrid) divisionGrid.style.display = show ? 'flex' : 'none';
+            if (divisionTitle) divisionTitle.style.display = show ? 'block' : 'none';
+            
+            updateRankDisplay();
+        };
+        
+        window.selectDivision = (divisionId, updateDisplay = true) => {
+            userGameData.division = divisionId;
+            document.querySelectorAll('#divisionGrid .division-item').forEach(el => {
+                el.classList.toggle('active', parseInt(el.getAttribute('data-division')) === divisionId);
+            });
+            if(updateDisplay) updateRankDisplay();
         };
 
         window.togglePrefRank = (rankId) => {
@@ -522,6 +610,13 @@ const RANKS = {
             if (data.rank) {
                 selectRank(data.rank);
             }
+            // Appliquer la division
+            if (data.division !== undefined) {
+                userGameData.division = data.division;
+            } else {
+                // Initialise Ã  IV si aucune division trouvÃ©e
+                userGameData.division = 4;
+            }
             // Appliquer le mode
             if (data.mode) {
                 userGameData.mode = data.mode;
@@ -529,6 +624,9 @@ const RANKS = {
                 if (modeInput) modeInput.checked = true;
                 document.getElementById('gameModeDisplay').textContent = data.mode;
             }
+            
+            // Met Ã  jour l'affichage (rang et division)
+            updateRankDisplay();
         }
 
         // Simule le chargement des prÃ©fÃ©rences de partenaire
@@ -555,7 +653,11 @@ const RANKS = {
                 return;
             }
 
-            const gameSettings = { rank: userGameData.rank, mode: userGameData.mode };
+            const gameSettings = { 
+                rank: userGameData.rank, 
+                division: userGameData.division, // SAUVEGARDE DE LA DIVISION
+                mode: userGameData.mode 
+            };
             const partnerPrefs = { prefRanks: userGameData.prefRanks, rankTolerance: userGameData.rankTolerance };
             
             localStorage.setItem(`mm_game_${gameId}_settings`, JSON.stringify(gameSettings));
