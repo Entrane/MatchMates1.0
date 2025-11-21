@@ -414,37 +414,9 @@ const RANKS = {
         // Simule le nom d'utilisateur de l'utilisateur actuel (pour ne pas se matcher soi-même)
         const currentUsername = "UtilisateurActuel";
 
-        // Simule une base de données de profils utilisateurs actifs pour la recherche
-        // Ces profils sont disponibles pour être matchés si la recherche correspond
-        const simulatedProfiles = { 
-            // Profil de test (Exemple pour Valorant : Gold 2, Classé, Vocal Obligatoire)
-            "JoueurTest": {
-                username: "JoueurTest",
-                gameId: 'valorant', // Assurez-vous que c'est le même jeu que celui par défaut
-                rank: 'gold_2', 
-                mainMode: 'Classé', 
-                options: ['Vocal Obligatoire'], 
-                mode: 'Classé (+ Vocal Obligatoire)' 
-            },
-            // Second profil de test (Exemple pour Valorant : Silver 1, Non Classé, Pas de Vocal)
-             "AmiSansVocal": {
-                username: "AmiSansVocal",
-                gameId: 'valorant',
-                rank: 'silver_1', 
-                mainMode: 'Non Classé', 
-                options: [], 
-                mode: 'Non Classé' 
-            },
-            // Troisième profil de test (Exemple pour Valorant : Diamond 3, Classé, Vocal Obligatoire)
-             "HighRankPro": {
-                username: "HighRankPro",
-                gameId: 'valorant',
-                rank: 'diamond_3', 
-                mainMode: 'Classé', 
-                options: ['Vocal Obligatoire'], 
-                mode: 'Classé (+ Vocal Obligatoire)' 
-            }
-        };
+        // Simule une base de données de profils utilisateurs actifs pour la recherche.
+        // Maintenant, elle est chargée depuis localStorage pour la persistance.
+        let simulatedProfiles = {}; 
 
         let userGameData = {
             rank: null,
@@ -644,6 +616,22 @@ const RANKS = {
             }
         }
         
+        // Charge la base de données simulée depuis localStorage
+        function loadSimulatedProfiles() {
+            const data = localStorage.getItem('mm_simulated_profiles');
+            if (data) {
+                simulatedProfiles = JSON.parse(data);
+            } else {
+                 // Si c'est la première exécution, on initialise avec des profils de test pour Valorant
+                 simulatedProfiles = {
+                    "JoueurTest1": { username: "JoueurTest1", gameId: 'valorant', rank: 'gold_2', mainMode: 'Classé', options: ['Vocal Obligatoire'], mode: 'Classé (+ Vocal Obligatoire)' },
+                    "JoueurTest2": { username: "JoueurTest2", gameId: 'valorant', rank: 'silver_1', mainMode: 'Non Classé', options: [], mode: 'Non Classé' }
+                 };
+                 // Sauvegarde des profils par défaut pour la prochaine fois
+                 localStorage.setItem('mm_simulated_profiles', JSON.stringify(simulatedProfiles));
+            }
+        }
+
         // Sauvegarde les données de jeu de l'utilisateur
         window.saveGameSettings = async () => {
             if (!userGameData.rank || !userGameData.mainMode) {
@@ -661,7 +649,7 @@ const RANKS = {
             localStorage.setItem(`mm_game_${gameId}_settings`, JSON.stringify(gameSettings));
             localStorage.setItem(`mm_game_${gameId}_prefs`, JSON.stringify(partnerPrefs));
 
-            // >>> NOUVEAU: Stockage du profil pour la simulation de recherche <<<
+            // >>> MISE À JOUR : Stockage du profil pour la simulation de recherche et PERSISTANCE <<<
             simulatedProfiles[currentUsername] = {
                 username: currentUsername,
                 gameId: gameId,
@@ -670,6 +658,9 @@ const RANKS = {
                 options: userGameData.options,
                 mode: userGameData.mode // Mode complet affiché
             };
+
+            // Sauvegarde de la BDD simulée dans localStorage
+            localStorage.setItem('mm_simulated_profiles', JSON.stringify(simulatedProfiles));
 
             // Simule l'envoi au serveur
             await fetch(`/api/game/${gameId}/settings`, {
@@ -1092,6 +1083,7 @@ window.sM = async (e, u) => {
 
     // Chargement des données 
     await loadGameInfo();
+    loadSimulatedProfiles(); // <<< CHARGEMENT DE LA BDD SIMULÉE
     loadGameSettings();
     await loadPartnerPreferences();
     
