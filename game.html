@@ -79,14 +79,15 @@
     .setting-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-main); }
     .radio-group { display: flex; flex-direction: column; gap: 10px; }
     .radio-option { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-    .radio-option input[type="radio"] { display: none; }
+    .radio-option input[type="radio"], .radio-option input[type="checkbox"] { display: none; }
     .radio-option label { 
         padding: 8px 12px; border-radius: 6px; border: 2px solid #334155; 
         background: var(--bg-dark); color: var(--text-muted); 
         transition: all 0.2s; cursor: pointer;
         flex-grow: 1; text-align: center;
     }
-    .radio-option input[type="radio"]:checked + label {
+    .radio-option input[type="radio"]:checked + label,
+    .radio-option input[type="checkbox"]:checked + label {
         border-color: var(--primary-color);
         background: rgba(34, 197, 94, 0.2);
         color: var(--text-main);
@@ -243,6 +244,9 @@
 
             <div class="game-stats">
                 <div class="info-line"><span class="info-label">Joueurs actifs :</span><span id="playerCount" class="info-value">0</span></div>
+                <div class="info-line"><span class="info-label">Mode de jeu :</span><span id="gameModeDisplay" class="info-value">Non dÃ©fini</span></div>
+                <div class="info-line"><span class="info-label">Votre Rang :</span><span id="userRankDisplay" class="info-value">Non dÃ©fini</span></div>
+                <div class="info-line"><span class="info-label">TolÃ©rance :</span><span id="rankRangeDisplay" class="info-value">Â±1 Rang</span></div>
             </div>
             
             <button class="update-btn" onclick="saveGameSettings()">Mettre Ã  jour mes infos</button>
@@ -337,13 +341,15 @@
             valorant: {
                 title: 'Valorant',
                 img: '/Image/Image_jeux/valorant.jpg',
-                modes: ['Classé', 'Non Classé', 'Vocal Obligatoire'], // Ajout des modes
+                mainModes: ['Classé', 'Non Classé'], // Modes principaux (radio)
+                options: ['Vocal Obligatoire'], // Options supplémentaires (checkbox)
                 players: 15000 
             },
             lol: {
                 title: 'League of Legends',
                 img: '/Image/Image_jeux/lol.jpg',
-                modes: ['Classé', 'Non Classé', 'Vocal Obligatoire'], // Ajout des modes
+                mainModes: ['Classé', 'Non Classé'], // Modes principaux (radio)
+                options: ['Vocal Obligatoire'], // Options supplémentaires (checkbox)
                 players: 25000 
             }
         };
@@ -408,7 +414,9 @@ const RANKS = {
 
         let userGameData = {
             rank: null,
-            mode: null,
+            mainMode: null, // Nouveau: Mode principal (Classé/Non Classé)
+            options: [],     // Nouveau: Options supplémentaires (Vocal Obligatoire)
+            mode: null,      // Reste pour la recherche/affichage complet
             prefRanks: [],
             rankTolerance: 1,
             isSearching: false
@@ -437,14 +445,23 @@ const RANKS = {
             // Assurez-vous que info.players existe avant de l'appeler
             document.getElementById('playerCount').textContent = info.players ? info.players.toLocaleString() : '0';
 
-
-            const modesHtml = info.modes.map((mode, index) => `
+            // Génération des modes principaux (radio)
+            const mainModesHtml = info.mainModes.map((mode, index) => `
                 <div class="radio-option">
-                    <input type="radio" id="mode-${index}" name="gameMode" value="${mode}" onchange="updateMode('${mode}')">
-                    <label for="mode-${index}">${mode}</label>
+                    <input type="radio" id="mode-main-${index}" name="gameMode" value="${mode}" onchange="updateMainMode('${mode}')">
+                    <label for="mode-main-${index}">${mode}</label>
                 </div>
             `).join('');
-            document.getElementById('modeGroup').innerHTML = modesHtml;
+
+            // Génération des options (checkbox)
+            const optionsHtml = info.options.map((option, index) => `
+                <div class="radio-option" style="margin-top: 10px;">
+                    <input type="checkbox" id="mode-opt-${index}" name="gameOption" value="${option}" onchange="toggleOption('${option}')">
+                    <label for="mode-opt-${index}" style="border: 2px solid #334155; background: var(--bg-dark);">${option}</label>
+                </div>
+            `).join('');
+            
+            document.getElementById('modeGroup').innerHTML = mainModesHtml + optionsHtml;
         }
 
         // ====================================================
@@ -494,12 +511,43 @@ const RANKS = {
             });
         };
 
-        window.updateMode = (mode) => {
-            userGameData.mode = mode;
-            document.getElementById('gameModeDisplay').textContent = mode;
+        window.updateMainMode = (mode) => {
+            userGameData.mainMode = mode;
+            // Assurez-vous d'utiliser une combinaison des modes pour l'affichage
+            updateModeDisplay();
         };
 
-        // Ã‰vÃ©nement pour la tolÃ©rance de rang
+        window.toggleOption = (option) => {
+            if (!userGameData.options) userGameData.options = [];
+            const index = userGameData.options.indexOf(option);
+            
+            if (index > -1) {
+                userGameData.options.splice(index, 1); // Retirer l'option
+            } else {
+                userGameData.options.push(option); // Ajouter l'option
+            }
+            // Assurez-vous que le mode principal est défini si une option est cochée
+            if (!userGameData.mainMode && userGameData.options.length > 0) {
+                userGameData.mainMode = 'Non Classé'; // Défaut
+                // Cochez le bouton radio par défaut pour éviter un état invalide
+                const defaultRadio = document.querySelector(`#modeGroup input[name="gameMode"][value="Non Classé"]`);
+                if(defaultRadio) defaultRadio.checked = true;
+            }
+            
+            updateModeDisplay();
+        };
+        
+        // Fonction utilitaire pour mettre à jour l'affichage dans la colonne de gauche
+        function updateModeDisplay() {
+            let display = userGameData.mainMode || 'Non défini';
+            if (userGameData.options && userGameData.options.length > 0) {
+                 display += ` (+ ${userGameData.options.join(', ')})`;
+            }
+            userGameData.mode = display; // Mettre à jour la donnée complète pour la recherche
+            document.getElementById('gameModeDisplay').textContent = display;
+        }
+
+        // Événement pour la tolérance de rang
         if (rankRangeInput) {
             rankRangeInput.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
@@ -524,12 +572,25 @@ const RANKS = {
                 selectRank(data.rank);
             }
             // Appliquer le mode
-            if (data.mode) {
-                userGameData.mode = data.mode;
-                const modeInput = document.querySelector(`#modeGroup input[value="${data.mode}"]`);
+            if (data.mainMode) {
+                userGameData.mainMode = data.mainMode;
+                const modeInput = document.querySelector(`#modeGroup input[name="gameMode"][value="${data.mainMode}"]`);
                 if (modeInput) modeInput.checked = true;
-                document.getElementById('gameModeDisplay').textContent = data.mode;
+                // L'affichage sera mis à jour par updateModeDisplay après les options
             }
+            // Appliquer les options
+            if (Array.isArray(data.options)) {
+                 userGameData.options = []; // Réinitialiser avant d'appliquer
+                 data.options.forEach(option => {
+                    const optionInput = document.querySelector(`#modeGroup input[name="gameOption"][value="${option}"][type="checkbox"]`);
+                    if (optionInput) {
+                        optionInput.checked = true;
+                        userGameData.options.push(option); // Ajout manuel pour l'initialisation
+                    }
+                 });
+            }
+            
+            updateModeDisplay(); // Mettre à jour l'affichage après tout chargement
         }
 
         // Simule le chargement des prÃ©fÃ©rences de partenaire
@@ -551,12 +612,16 @@ const RANKS = {
         
         // Sauvegarde les donnÃ©es de jeu de l'utilisateur
         window.saveGameSettings = async () => {
-            if (!userGameData.rank || !userGameData.mode) {
+            if (!userGameData.rank || !userGameData.mainMode) {
                 alert("Veuillez sÃ©lectionner votre rang et votre mode de jeu.");
                 return;
             }
 
-            const gameSettings = { rank: userGameData.rank, mode: userGameData.mode };
+            const gameSettings = { 
+                rank: userGameData.rank, 
+                mainMode: userGameData.mainMode,
+                options: userGameData.options // Sauvegarde des options
+            };
             const partnerPrefs = { prefRanks: userGameData.prefRanks, rankTolerance: userGameData.rankTolerance };
             
             localStorage.setItem(`mm_game_${gameId}_settings`, JSON.stringify(gameSettings));
@@ -590,7 +655,7 @@ const RANKS = {
                 document.getElementById('matchCount').textContent = '0';
             } else {
                 // Lancer la recherche
-                if (!userGameData.rank || !userGameData.mode) {
+                if (!userGameData.rank || !userGameData.mainMode) {
                     alert("Veuillez dÃ©finir votre rang et votre mode de jeu avant de lancer la recherche.");
                     return;
                 }
@@ -603,7 +668,14 @@ const RANKS = {
                 await fetch(`/api/match/${gameId}/start`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(userGameData)
+                    // On envoie les donnÃ©es de recherche complÃ¨tes
+                    body: JSON.stringify({
+                        rank: userGameData.rank,
+                        mainMode: userGameData.mainMode,
+                        options: userGameData.options,
+                        prefRanks: userGameData.prefRanks,
+                        rankTolerance: userGameData.rankTolerance
+                    })
                 });
 
                 // DÃ©marrer la boucle de rafraÃ®chissement des matchs
@@ -633,13 +705,15 @@ const RANKS = {
 
             const matchHtml = matches.map(match => {
                 const rankInfo = RANKS[gameId].find(r => r.id === match.rank) || { name: 'Non classÃ©', img: '' };
+                // Utilisation de la donnÃ©e 'mode' qui doit inclure les options
+                const modeDisplay = match.mode || `${match.mainMode} (${match.options.join(', ')})`; 
                 return `
                     <div class="match-card">
                         <div class="match-info">
                             <img src="${rankInfo.img}" alt="${rankInfo.name}" class="match-rank-img">
                             <div>
                                 <div class="match-username">${match.username}</div>
-                                <div class="match-details">Rang: ${rankInfo.name} | Mode: ${match.mode}</div>
+                                <div class="match-details">Rang: ${rankInfo.name} | Mode: ${modeDisplay}</div>
                             </div>
                         </div>
                         <div class="match-actions">
