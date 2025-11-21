@@ -2,14 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Jeu – MatchMates</title>
+  <title>Jeu â€“ MatchMates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
   <style>
-    /* On réutilise les mêmes variables et styles de base pour la cohérence */
+    /* On rÃ©utilise les mÃªmes variables et styles de base pour la cohÃ©rence */
     :root { 
         --primary-color: #22c55e; 
         --sidebar-width: 320px; 
@@ -42,7 +42,7 @@
     .game-info-column {
         flex: 0 0 var(--game-info-width);
         position: sticky;
-        top: 95px; /* Décalage pour le header */
+        top: 95px; /* DÃ©calage pour le header */
         height: fit-content;
         padding: 20px;
         background: var(--bg-card);
@@ -191,11 +191,11 @@
     .add-friend-match { background: var(--primary-color); color: var(--bg-dark); }
     .send-msg-match { background: #3b82f6; color: white; }
 
-    /* SIDEBAR & CHAT STYLES (Copiés du dashboard) */
+    /* SIDEBAR & CHAT STYLES (CopiÃ©s du dashboard) */
     .toggle-friends-btn { position: fixed; top: 80px; right: 20px; z-index: 9999; background: var(--primary-color); color: #020617; border: none; padding: 10px 16px; border-radius: 30px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .toggle-friends-btn.active { right: calc(var(--sidebar-width) + 20px); background: #ef4444; color: white; }
     .toggle-friends-btn.active span { display: none; }
-    .toggle-friends-btn.active::after { content: "✕"; }
+    .toggle-friends-btn.active::after { content: "âœ•"; }
 
     .friends-sidebar { position: fixed; top: 0; right: calc(0px - var(--sidebar-width)); width: var(--sidebar-width); height: 100vh; background: rgba(15, 23, 42, 0.98); border-left: 1px solid rgba(255,255,255,0.1); box-shadow: -10px 0 30px rgba(0,0,0,0.5); padding: 80px 15px 20px; z-index: 1000; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(12px); box-sizing: border-box; }
     .friends-sidebar.active { right: 0; } 
@@ -228,7 +228,7 @@
         <a href="/dashboard" class="logo">MatchMates</a>
         <div class="nav-links">
             <a href="/dashboard">Tableau de bord</a>
-            <a href="/logout">Déconnexion</a>
+            <a href="/logout">DÃ©connexion</a>
         </div>
         <div class="profile-section">
             <div class="profile-avatar">U</div> 
@@ -243,23 +243,24 @@
 
             <div class="game-stats">
                 <div class="info-line"><span class="info-label">Joueurs actifs :</span><span id="playerCount" class="info-value">0</span></div>
-                <div class="info-line"><span class="info-label">Mode de jeu :</span><span id="gameModeDisplay" class="info-value">Non défini</span></div>
-                <div class="info-line"><span class="info-label">Votre Rang :</span><span id="userRankDisplay" class="info-value">Non défini</span></div>
-                <div class="info-line"><span class="info-label">Tolérance :</span><span id="rankRangeDisplay" class="info-value">±1 Rang</span></div>
+                <div class="info-line"><span class="info-label">Mode de jeu :</span><span id="gameModeDisplay" class="info-value">Non dÃ©fini</span></div>
+                <div class="info-line"><span class="info-label">Votre Rang :</span><span id="userRankDisplay" class="info-value">Non dÃ©fini</span></div>
+                <div class="info-line"><span class="info-label">TolÃ©rance :</span><span id="rankRangeDisplay" class="info-value">Â±1 Rang</span></div>
             </div>
             
-            <button class="update-btn" onclick="saveGameSettings()">Mettre à jour mes infos</button>
+            <button class="update-btn" onclick="saveGameSettings()">Mettre Ã  jour mes infos</button>
         </div>
 
         <div class="main-content-column">
             
-            <h2>Mes préférences de jeu</h2>
+            <h2>Mes prÃ©fÃ©rences de jeu</h2>
             <div class="settings-grid">
                 
                 <div class="setting-box">
                     <div class="setting-title">Votre Rang Actuel</div>
                     <div class="rank-grid" id="rankGrid">
-                        </div> </div>
+                        </div>
+                </div>
 
                 <div class="setting-box">
                     <div class="setting-title">Mode de Jeu</div>
@@ -272,11 +273,13 @@
             <h2>Recherche de partenaire</h2>
             
             <div class="setting-box">
-                <div class="setting-title">Préférences du partenaire</div>
+                <div class="setting-title">PrÃ©fÃ©rences du partenaire</div>
 
                 <div class="rank-grid" id="prefRankGrid">
-                    </div> <div class="range-selector">
-                    <label for="rankRange">Tolérance de Rang : <span id="rangeValue">±1 Rang</span></label>
+                    </div>
+                
+                <div class="range-selector">
+                    <label for="rankRange">TolÃ©rance de Rang : <span id="rangeValue">Â±1 Rang</span></label>
                     <input type="range" id="rankRange" min="0" max="3" step="1" value="1">
                 </div>
             </div>
@@ -315,11 +318,11 @@
             <p style="text-align:center; color:var(--text-muted); font-size:0.9rem;">Ajoutez des amis !</p>
         </div>
 
-        <div class="sidebar-section-title" id="receivedRequestsTitle" style="display:none;">Demandes reçues (<span id="receivedCount">0</span>)</div>
+        <div class="sidebar-section-title" id="receivedRequestsTitle" style="display:none;">Demandes reÃ§ues (<span id="receivedCount">0</span>)</div>
         <div id="requestsList">
             </div>
         
-        <div class="sidebar-section-title" id="sentRequestsTitle" style="display:none;">Demandes envoyées (<span id="sentCount">0</span>)</div>
+        <div class="sidebar-section-title" id="sentRequestsTitle" style="display:none;">Demandes envoyÃ©es (<span id="sentCount">0</span>)</div>
         <div id="sentList">
             </div>
 
@@ -328,20 +331,30 @@
     <div id="chat-container" class="chat-container"></div>
     <script>
         // ====================================================
-        // --- 0. DÉCLARATION DES VARIABLES GLOBALES ---
+        // --- 0. DÃ‰CLARATION DES VARIABLES GLOBALES ---
         // ====================================================
 
         // Variables de jeu
         const gameId = window.location.pathname.split('/').pop() || 'valorant';
         const gameInfo = {
-            'valorant': { title: 'Valorant', img: 'image match mates/valorant.jpg', modes: ['Compétitif', 'Non classé', 'Spike Rush'], players: 15000 },
-            'lol': { title: 'League of Legends', img: 'image match mates/lol.jpg', modes: ['Classé Solo/Duo', 'Classé Flex', 'Normal'], players: 25000 },
-            'minecraft': { title: 'Minecraft', img: 'image match mates/minecraft.avif', modes: ['Survie', 'Créatif', 'Mini-jeux'], players: 5000 },
+            'valorant': { title: 'Valorant', img: 'image match mates/valorant.jpg', modes: ['CompÃ©titif', 'Non classÃ©', 'Spike Rush'], players: 15000 },
+            'lol': { title: 'League of Legends', img: 'image match mates/lol.jpg', modes: ['ClassÃ© Solo/Duo', 'ClassÃ© Flex', 'Normal'], players: 25000 },
+            'minecraft': { title: 'Minecraft', img: 'image match mates/minecraft.avif', modes: ['Survie', 'CrÃ©atif', 'Mini-jeux'], players: 5000 },
             // ... (Autres jeux selon vos besoins)
         };
         const RANKS = {
+            'League of Legends': [
+                { id: 'iron', name: 'Iron', img: 'image match mates/valorant rank/iron.png' },
+                { id: 'bronze', name: 'Bronze', img: 'image match mates/valorant rank/bronze.png' },
+                { id: 'silver', name: 'Silver', img: 'image match mates/valorant rank/silver.png' },
+                { id: 'gold', name: 'Gold', img: 'image match mates/valorant rank/gold.png' },
+                { id: 'platinum', name: 'Platinum', img: 'image match mates/valorant rank/platinum.png' },
+                { id: 'diamond', name: 'Diamond', img: 'image match mates/valorant rank/diamond.png' },
+                { id: 'ascendant', name: 'Ascendant', img: 'image match mates/valorant rank/ascendant.png' },
+                { id: 'immortal', name: 'Immortal', img: 'image match mates/valorant rank/immortal.png' },
+                { id: 'radiant', name: 'Radiant', img: 'image match mates/valorant rank/radiant.png' },
+            ],
             'valorant': [
-                'valorant': [
                 // IRON
                 { id: 'iron_1', name: 'Iron 1', img: 'image match mates/image-rank-valorant/Iron_1_Rank.png' },
                 { id: 'iron_2', name: 'Iron 2', img: 'image match mates/image-rank-valorant/Iron_2_Rank.png' },
@@ -377,18 +390,6 @@
                 // RADIANT (un seul tier)
                 { id: 'radiant', name: 'Radiant', img: 'image match mates/image-rank-valorant/Radiant_Rank.png' },
             ],
-            'lol': [
-                { id: 'fer', name: 'Fer', img: 'image match mates/lol rank/fer.png' },
-                { id: 'bronze', name: 'Bronze', img: 'image match mates/lol rank/bronze.png' },
-                { id: 'argent', name: 'Argent', img: 'image match mates/lol rank/argent.png' },
-                { id: 'or', name: 'Or', img: 'image match mates/lol rank/or.png' },
-                { id: 'platine', name: 'Platine', img: 'image match mates/lol rank/platine.png' },
-                { id: 'emeraude', name: 'Émeraude', img: 'image match mates/lol rank/emeraude.png' },
-                { id: 'diamant', name: 'Diamant', img: 'image match mates/lol rank/diamant.png' },
-                { id: 'maitre', name: 'Maître', img: 'image match mates/lol rank/maitre.png' },
-                { id: 'grand-maitre', name: 'Grand Maître', img: 'image match mates/lol rank/Gransmaster.webp },
-                { id: 'challenger', name: 'Challenger', img: 'image match mates/lol rank/Challenger.webp' },
-            ],
             // ... (Autres rangs pour d'autres jeux)
         };
 
@@ -400,7 +401,7 @@
             isSearching: false
         };
 
-        // Variables sociales/chat (Copiées du dashboard)
+        // Variables sociales/chat (CopiÃ©es du dashboard)
         const activeChats = {}; 
         const friendsSidebar = document.getElementById('friendsSidebar');
         const chatContainer = document.getElementById('chat-container'); 
@@ -432,7 +433,7 @@
         }
 
         // ====================================================
-        // --- 2. LOGIQUE DES RANGS ET PRÉFÉRENCES ---
+        // --- 2. LOGIQUE DES RANGS ET PRÃ‰FÃ‰RENCES ---
         // ====================================================
 
         function setupRankGrids(ranks) {
@@ -449,7 +450,7 @@
                 </div>
             `).join('');
 
-            // Rendu de la grille de préférences (Rangs du partenaire)
+            // Rendu de la grille de prÃ©fÃ©rences (Rangs du partenaire)
             prefRankGrid.innerHTML = ranks.map(rank => `
                 <div class="rank-option" data-pref-rank-id="${rank.id}" onclick="togglePrefRank('${rank.id}')">
                     <img src="${rank.img}" alt="${rank.name}">
@@ -463,7 +464,7 @@
             document.querySelectorAll('#rankGrid .rank-option').forEach(el => {
                 el.classList.toggle('active', el.getAttribute('data-rank-id') === rankId);
             });
-            document.getElementById('userRankDisplay').textContent = RANKS[gameId].find(r => r.id === rankId)?.name || 'Non défini';
+            document.getElementById('userRankDisplay').textContent = RANKS[gameId].find(r => r.id === rankId)?.name || 'Non dÃ©fini';
         };
 
         window.togglePrefRank = (rankId) => {
@@ -483,12 +484,12 @@
             document.getElementById('gameModeDisplay').textContent = mode;
         };
 
-        // Événement pour la tolérance de rang
+        // Ã‰vÃ©nement pour la tolÃ©rance de rang
         if (rankRangeInput) {
             rankRangeInput.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 userGameData.rankTolerance = value;
-                const display = value === 0 ? 'Exact' : (value === 1 ? '±1 Rang' : `±${value} Rangs`);
+                const display = value === 0 ? 'Exact' : (value === 1 ? 'Â±1 Rang' : `Â±${value} Rangs`);
                 rangeValueSpan.textContent = display;
                 document.getElementById('rankRangeDisplay').textContent = display;
             });
@@ -499,7 +500,7 @@
         // --- 3. PERSISTENCE & SAUVEGARDE ---
         // ====================================================
 
-        // Simule le chargement des données utilisateur
+        // Simule le chargement des donnÃ©es utilisateur
         function loadGameSettings() {
             const data = JSON.parse(localStorage.getItem(`mm_game_${gameId}_settings`)) || {};
             
@@ -516,27 +517,27 @@
             }
         }
 
-        // Simule le chargement des préférences de partenaire
+        // Simule le chargement des prÃ©fÃ©rences de partenaire
         function loadPartnerPreferences() {
             const data = JSON.parse(localStorage.getItem(`mm_game_${gameId}_prefs`)) || {};
             
-            // Appliquer la tolérance
+            // Appliquer la tolÃ©rance
             if (data.rankTolerance !== undefined) {
                 rankRangeInput.value = data.rankTolerance;
-                rankRangeInput.dispatchEvent(new Event('input')); // Mettre à jour l'affichage
+                rankRangeInput.dispatchEvent(new Event('input')); // Mettre Ã  jour l'affichage
             }
             
-            // Appliquer les rangs préférés
+            // Appliquer les rangs prÃ©fÃ©rÃ©s
             if (Array.isArray(data.prefRanks)) {
-                userGameData.prefRanks = []; // Réinitialiser avant d'appliquer
+                userGameData.prefRanks = []; // RÃ©initialiser avant d'appliquer
                 data.prefRanks.forEach(rankId => togglePrefRank(rankId));
             }
         }
         
-        // Sauvegarde les données de jeu de l'utilisateur
+        // Sauvegarde les donnÃ©es de jeu de l'utilisateur
         window.saveGameSettings = async () => {
             if (!userGameData.rank || !userGameData.mode) {
-                alert("Veuillez sélectionner votre rang et votre mode de jeu.");
+                alert("Veuillez sÃ©lectionner votre rang et votre mode de jeu.");
                 return;
             }
 
@@ -553,7 +554,7 @@
                 body: JSON.stringify({ gameSettings, partnerPrefs })
             });
 
-            alert("Informations mises à jour et sauvegardées !");
+            alert("Informations mises Ã  jour et sauvegardÃ©es !");
         };
 
 
@@ -563,19 +564,19 @@
 
         window.toggleSearch = async () => {
             if (userGameData.isSearching) {
-                // Arrêter la recherche
+                // ArrÃªter la recherche
                 userGameData.isSearching = false;
                 partnerSearchButton.innerHTML = `<i class="fas fa-search"></i> <span>Rechercher un partenaire</span>`;
                 partnerSearchButton.classList.remove('searching');
                 
-                // Simule l'arrêt sur le serveur
+                // Simule l'arrÃªt sur le serveur
                 await fetch(`/api/match/${gameId}/stop`, { method: 'POST' });
-                matchListDiv.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 20px; background: var(--bg-card); border-radius: 8px;">Recherche arrêtée. Lancez une recherche pour trouver des joueurs !</p>`;
+                matchListDiv.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 20px; background: var(--bg-card); border-radius: 8px;">Recherche arrÃªtÃ©e. Lancez une recherche pour trouver des joueurs !</p>`;
                 document.getElementById('matchCount').textContent = '0';
             } else {
                 // Lancer la recherche
                 if (!userGameData.rank || !userGameData.mode) {
-                    alert("Veuillez définir votre rang et votre mode de jeu avant de lancer la recherche.");
+                    alert("Veuillez dÃ©finir votre rang et votre mode de jeu avant de lancer la recherche.");
                     return;
                 }
 
@@ -583,14 +584,14 @@
                 partnerSearchButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Recherche en cours...</span>`;
                 partnerSearchButton.classList.add('searching');
                 
-                // Simule le démarrage sur le serveur
+                // Simule le dÃ©marrage sur le serveur
                 await fetch(`/api/match/${gameId}/start`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(userGameData)
                 });
 
-                // Démarrer la boucle de rafraîchissement des matchs
+                // DÃ©marrer la boucle de rafraÃ®chissement des matchs
                 fetchMatches();
                 setInterval(fetchMatches, 5000); 
             }
@@ -599,7 +600,7 @@
         async function fetchMatches() {
             if (!userGameData.isSearching) return;
             
-            // Simule la réception des matchs du serveur
+            // Simule la rÃ©ception des matchs du serveur
             const response = await fetch(`/api/match/${gameId}/results`);
             const data = await response.json();
             
@@ -611,12 +612,12 @@
             if (!matchListDiv) return;
             
             if (matches.length === 0) {
-                matchListDiv.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 20px; background: var(--bg-card); border-radius: 8px;">Aucun partenaire trouvé pour l'instant. Patience...</p>`;
+                matchListDiv.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 20px; background: var(--bg-card); border-radius: 8px;">Aucun partenaire trouvÃ© pour l'instant. Patience...</p>`;
                 return;
             }
 
             const matchHtml = matches.map(match => {
-                const rankInfo = RANKS[gameId].find(r => r.id === match.rank) || { name: 'Non classé', img: '' };
+                const rankInfo = RANKS[gameId].find(r => r.id === match.rank) || { name: 'Non classÃ©', img: '' };
                 return `
                     <div class="match-card">
                         <div class="match-info">
@@ -637,20 +638,20 @@
             matchListDiv.innerHTML = matchHtml;
         }
         
-        // Simule l'envoi d'une demande d'ami depuis la liste de match (utilise la même logique que le dashboard)
+        // Simule l'envoi d'une demande d'ami depuis la liste de match (utilise la mÃªme logique que le dashboard)
         window.sendFriendRequest = async (username) => {
             await fetch('/api/friends/request', {
                 method:'POST',
                 headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({toUsername:username})
             });
-            alert(`Demande d'ami envoyée à ${username} !`);
-            loadSocial(); // Rafraîchit la sidebar
+            alert(`Demande d'ami envoyÃ©e Ã  ${username} !`);
+            loadSocial(); // RafraÃ®chit la sidebar
         };
 
 
 // ----------------------------------------------------------------
-// --- LOGIQUE SOCIALE (Ré-intégrée du Dashboard) ---
+// --- LOGIQUE SOCIALE (RÃ©-intÃ©grÃ©e du Dashboard) ---
 // ----------------------------------------------------------------
 
 // ====================================================
@@ -663,12 +664,12 @@ window.toggleSidebar = function() {
     
     if (toggleBtn) toggleBtn.classList.toggle('active', isActive);
     
-    // Si la sidebar est fermée, on ferme aussi tous les chats actifs.
+    // Si la sidebar est fermÃ©e, on ferme aussi tous les chats actifs.
     if (!isActive) {
         Object.keys(activeChats).forEach(closeChat);
     }
 
-    // Sauvegarde l'état dans le stockage local
+    // Sauvegarde l'Ã©tat dans le stockage local
     localStorage.setItem('socialSidebarActive', isActive);
 };
 
@@ -678,7 +679,7 @@ window.toggleSidebar = function() {
 
 async function loadSocial() {
     try {
-        // Appels API pour récupérer les données sociales
+        // Appels API pour rÃ©cupÃ©rer les donnÃ©es sociales
         const [fRes, rRes] = await Promise.all([fetch('/api/friends'), fetch('/api/friends/requests')]);
         const fData = await fRes.json();
         const rData = await rRes.json();
@@ -688,7 +689,7 @@ async function loadSocial() {
         renderSent(rData.outgoing || []); 
 
     } catch (e) {
-        // Afficher un état vide en cas d'erreur API
+        // Afficher un Ã©tat vide en cas d'erreur API
         renderFriends([]);
         renderRequests([]); 
         renderSent([]); 
@@ -774,7 +775,7 @@ function renderSent(list) {
     });
 }
 
-// Gère l'envoi de la demande d'ami
+// GÃ¨re l'envoi de la demande d'ami
 const addFriendForm = document.getElementById('add-friend-form');
 if (addFriendForm) {
     addFriendForm.addEventListener('submit', async function(e) { 
@@ -789,14 +790,14 @@ if (addFriendForm) {
         });
         const d = await res.json();
         
-        friendNotif.innerText = d.ok ? `Demande envoyée à ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
+        friendNotif.innerText = d.ok ? `Demande envoyÃ©e Ã  ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
         input.value = "";
         loadSocial();
         setTimeout(()=>friendNotif.innerText="",3000); 
     });
 }
 
-// Gère l'acceptation/rejet d'une demande d'ami
+// GÃ¨re l'acceptation/rejet d'une demande d'ami
 window.hReq = async(id, a) => { 
     await fetch(`/api/friends/requests/${id}/${a}`, {method:'POST'}); 
     loadSocial(); 
@@ -834,7 +835,7 @@ window.openChat = (u) => {
         </div>
         <div class="chat-body" id="msg-${u}"></div>
         <form class="chat-input-area" onsubmit="sM(event,'${u}')">
-            <input type="text" placeholder="Écrire un message..." autocomplete="off">
+            <input type="text" placeholder="Ã‰crire un message..." autocomplete="off">
             <button type="submit"><i class="fas fa-paper-plane"></i></button>
         </form>
     `;
@@ -878,18 +879,18 @@ window.sM = async (e, u) => {
     const gameRanks = RANKS[gameId.toLowerCase()] || RANKS.valorant;
     setupRankGrids(gameRanks); 
 
-    // Chargement des données 
+    // Chargement des donnÃ©es 
     await loadGameInfo();
     loadGameSettings();
     await loadPartnerPreferences();
     
-    // Rétablit l'état de la sidebar (Amis) au chargement
+    // RÃ©tablit l'Ã©tat de la sidebar (Amis) au chargement
     if (localStorage.getItem('socialSidebarActive') === 'true') {
         friendsSidebar.classList.add('active');
         document.querySelector('.toggle-friends-btn').classList.add('active');
     }
     
-    // Chargement des données sociales et rafraîchissement
+    // Chargement des donnÃ©es sociales et rafraÃ®chissement
     loadSocial();
     setInterval(loadSocial, 5000); 
 })();
