@@ -54,7 +54,7 @@
     .info-line { display: flex; justify-content: space-between; margin-bottom: 5px; }
     .info-label { font-weight: 500; color: var(--text-main); }
     .info-value { color: var(--text-muted); }
-    .update-btn { margin-top: 20px; width: 100%; padding: 10px; background: var(--primary-color); color: var(--bg-dark); border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+    /* L'ancienne règle .update-btn est retirée/modifiée ici */
     .update-btn:hover { opacity: 0.9; }
 
     /* COLONNE CENTRALE (OPTIONS & MATCH) */
@@ -249,8 +249,7 @@
                 <div class="info-line"><span class="info-label">Tolérance :</span><span id="rankRangeDisplay" class="info-value">±1 Rang</span></div>
             </div>
             
-            <button class="update-btn" onclick="saveGameSettings()">Mettre à jour mes infos</button>
-        </div>
+            </div>
 
         <div class="main-content-column">
             
@@ -270,7 +269,7 @@
                 </div>
 
             </div>
-
+            <button class="update-btn" onclick="saveGameSettings()" style="margin-top: -10px; margin-bottom: 30px; width: 50%; padding: 10px; background: var(--primary-color); color: var(--bg-dark); border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;">Mettre à jour mes infos</button>
             <h2>Recherche de partenaire</h2>
             
             <div class="setting-box">
