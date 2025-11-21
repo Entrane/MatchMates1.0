@@ -336,21 +336,30 @@
 
        // Variables de jeu
         const gameId = window.location.pathname.split('/').pop() || 'valorant';
-        const gameInfo = {
-            'valorant': { title: 'Valorant', img: 'Image/Image_jeux/valorant.jpg', modes: ['Classé', 'Non classé©', 'Spike Rush'], players: 15000 },
-            'lol': { title: 'League of Legends', img: 'Image/Image_jeux/lol.jpg', modes: ['Classé Solo/Duo', 'Classé Flex', 'Normal'], players: 25000 },
-        };
-        const RANKS = {
-            'lol': [
-                { id: 'Iron', name: 'Iron', img: 'lol_rank/Iron.webp' },
-                { id: 'Bronze', name: 'Bronze', img: 'lol_rank/Bronze.webp' },
-                { id: 'Silver', name: 'Silver', img: 'lol_rank/Silver.webp' },
-                { id: 'Gold', name: 'Gold', img: 'lol_rank/Gold.webp' },
-                { id: 'Platinum', name: 'Platinum', img: 'lol_rank/Platinum.webp' },
-                { id: 'Emeraude', name: 'Emeraude', img: 'lol_rank/Emerald.webp' },
-                { id: 'diamond', name: 'diamond', img: 'lol_rank/diamond.webp' },
-                { id: 'Master', name: 'Master', img: 'lol_rank/Master.webp' },
-                { id: 'Grand Maître', name: 'Grand Master', img: 'lol_rank/Grandmaster.webp' },
+       const gameInfo = {
+  valorant: {
+    title: 'Valorant',
+    img: '/Image/Image_jeux/valorant.jpg',
+    // ...
+  },
+  lol: {
+    title: 'League of Legends',
+    img: '/Image/Image_jeux/lol.jpg',
+    // ...
+  }
+};
+
+const RANKS = {
+  lol: [
+    { id: 'Iron',    name: 'Iron',    img: '/lol_rank/Iron.webp' },
+    { id: 'Bronze',  name: 'Bronze',  img: '/lol_rank/Bronze.webp' },
+    { id: 'Silver',  name: 'Silver',  img: '/lol_rank/Silver.webp' },
+    { id: 'Gold',    name: 'Gold',    img: '/lol_rank/Gold.webp' },
+    { id: 'Platinum',name: 'Platinum',img: '/lol_rank/Platinum.webp' },
+    { id: 'Emerald', name: 'Emerald', img: '/lol_rank/Emerald.webp' },
+    { id: 'diamond', name: 'diamond', img: '/lol_rank/diamond.webp' },
+    { id: 'Master',  name: 'Master',  img: '/lol_rank/Master.webp' },
+    { id: 'GrandM',  name: 'Grand Master', img: '/lol_rank/Grandmaster.webp' },
             ],
             'valorant': [
                 // IRON
