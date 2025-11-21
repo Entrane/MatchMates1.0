@@ -334,59 +334,59 @@
         // --- 0. DÃ‰CLARATION DES VARIABLES GLOBALES ---
         // ====================================================
 
-        // Variables de jeu
+       // Variables de jeu
         const gameId = window.location.pathname.split('/').pop() || 'valorant';
         const gameInfo = {
-            'valorant': { title: 'Valorant', img: 'image match mates/valorant.jpg', modes: ['Classé', 'Non classé©', 'Spike Rush'], players: 15000 },
-            'lol': { title: 'League of Legends', img: 'image match mates/lol.jpg', modes: ['Classé Solo/Duo', 'Classé Flex', 'Normal'], players: 25000 },
+            'valorant': { title: 'Valorant', img: 'images/valorant.jpg', modes: ['Classé', 'Non classé©', 'Spike Rush'], players: 15000 },
+            'lol': { title: 'League of Legends', img: 'images/lol.jpg', modes: ['Classé Solo/Duo', 'Classé Flex', 'Normal'], players: 25000 },
         };
         const RANKS = {
             'lol': [
-                { id: 'iron', name: 'Iron', img: 'image match mates/lol rank/Iron.webp' },
-                { id: 'bronze', name: 'Bronze', img: 'image match mates/lol rank/Bronze.webp' },
-                { id: 'silver', name: 'Silver', img: 'image match mates/lol rank/Silver.webp' },
-                { id: 'gold', name: 'Gold', img: 'image match mates/lol rank/Gold.webp' },
-                { id: 'Platine', name: 'Platine', img: 'image match mates/lol rank/Platinum.webp' },
-                { id: 'Emeraude', name: 'Emeraude', img: 'image match mates/lol rank/Emerald.webp' },
-                { id: 'Diamant', name: 'Diamant', img: 'image match mates/lol rank/diamond.webp' },
-                { id: 'Maître', name: 'Maître', img: 'image match mates/lol rank/Master.webp' },
-                { id: 'Grand Maître', name: 'Grand Maître', img: 'image match mates/lol rank/Grandmaster.webp' },
+                { id: 'iron', name: 'Iron', img: 'images/lol rank/Iron.webp' },
+                { id: 'bronze', name: 'Bronze', img: 'images/lol rank/Bronze.webp' },
+                { id: 'silver', name: 'Silver', img: 'images/lol rank/Silver.webp' },
+                { id: 'gold', name: 'Gold', img: 'images/lol rank/Gold.webp' },
+                { id: 'platinum', name: 'Platinum', img: 'images/lol rank/Platinum.webp' },
+                { id: 'Emerald', name: 'Ascendant', img: 'images/lol rank/Emerald.webp' },
+                { id: 'Diamond', name: 'Diamond', img: 'images/lol rank/diamond.webp' },
+                { id: 'Master', name: 'Master', img: 'images/lol rank/Master.webp' },
+                { id: 'Grand Maître', name: 'Grand Master', img: 'images/lol rank/Grandmaster.webp' },
             ],
             'valorant': [
                 // IRON
-                { id: 'iron_1', name: 'Iron 1', img: 'image match mates/image-rank-valorant/Iron_1_Rank.png' },
-                { id: 'iron_2', name: 'Iron 2', img: 'image match mates/image-rank-valorant/Iron_2_Rank.png' },
-                { id: 'iron_3', name: 'Iron 3', img: 'image match mates/image-rank-valorant/Iron_3_Rank.png' },
+                { id: 'iron_1', name: 'Iron 1', img: 'images/image-rank-valorant/Iron_1_Rank.png' },
+                { id: 'iron_2', name: 'Iron 2', img: 'images/image-rank-valorant/Iron_2_Rank.png' },
+                { id: 'iron_3', name: 'Iron 3', img: 'images/image-rank-valorant/Iron_3_Rank.png' },
                 // BRONZE
-                { id: 'bronze_1', name: 'Bronze 1', img: 'image match mates/image-rank-valorant/Bronze_1_Rank.png' },
-                { id: 'bronze_2', name: 'Bronze 2', img: 'image match mates/image-rank-valorant/Bronze_2_Rank.png' },
-                { id: 'bronze_3', name: 'Bronze 3', img: 'image match mates/image-rank-valorant/Bronze_3_Rank.png' },
+                { id: 'bronze_1', name: 'Bronze 1', img: 'images/image-rank-valorant/Bronze_1_Rank.png' },
+                { id: 'bronze_2', name: 'Bronze 2', img: 'images/image-rank-valorant/Bronze_2_Rank.png' },
+                { id: 'bronze_3', name: 'Bronze 3', img: 'images/image-rank-valorant/Bronze_3_Rank.png' },
                 // SILVER
-                { id: 'silver_1', name: 'Silver 1', img: 'image match mates/image-rank-valorant/Silver_1_Rank.png' },
-                { id: 'silver_2', name: 'Silver 2', img: 'image match mates/image-rank-valorant/Silver_2_Rank.png' },
-                { id: 'silver_3', name: 'Silver 3', img: 'image match mates/image-rank-valorant/Silver_3_Rank.png' },
+                { id: 'silver_1', name: 'Silver 1', img: 'images/image-rank-valorant/Silver_1_Rank.png' },
+                { id: 'silver_2', name: 'Silver 2', img: 'images/image-rank-valorant/Silver_2_Rank.png' },
+                { id: 'silver_3', name: 'Silver 3', img: 'images/image-rank-valorant/Silver_3_Rank.png' },
                 // GOLD
-                { id: 'gold_1', name: 'Gold 1', img: 'image match mates/image-rank-valorant/Gold_1_Rank.png' },
-                { id: 'gold_2', name: 'Gold 2', img: 'image match mates/image-rank-valorant/Gold_2_Rank.png' },
-                { id: 'gold_3', name: 'Gold 3', img: 'image match mates/image-rank-valorant/Gold_3_Rank.png' },
+                { id: 'gold_1', name: 'Gold 1', img: 'images/image-rank-valorant/Gold_1_Rank.png' },
+                { id: 'gold_2', name: 'Gold 2', img: 'images/image-rank-valorant/Gold_2_Rank.png' },
+                { id: 'gold_3', name: 'Gold 3', img: 'images/image-rank-valorant/Gold_3_Rank.png' },
                 // PLATINUM
-                { id: 'platinum_1', name: 'Platinum 1', img: 'image match mates/image-rank-valorant/Platinum_1_Rank.png' },
-                { id: 'platinum_2', name: 'Platinum 2', img: 'image match mates/image-rank-valorant/Platinum_2_Rank.png' },
-                { id: 'platinum_3', name: 'Platinum 3', img: 'image match mates/image-rank-valorant/Platinum_3_Rank.png' },
+                { id: 'platinum_1', name: 'Platinum 1', img: 'images/image-rank-valorant/Platinum_1_Rank.png' },
+                { id: 'platinum_2', name: 'Platinum 2', img: 'images/image-rank-valorant/Platinum_2_Rank.png' },
+                { id: 'platinum_3', name: 'Platinum 3', img: 'images/image-rank-valorant/Platinum_3_Rank.png' },
                 // DIAMOND
-                { id: 'diamond_1', name: 'Diamond 1', img: 'image match mates/image-rank-valorant/Diamond_1_Rank.png' },
-                { id: 'diamond_2', name: 'Diamond 2', img: 'image match mates/image-rank-valorant/Diamond_2_Rank.png' },
-                { id: 'diamond_3', name: 'Diamond 3', img: 'image match mates/image-rank-valorant/Diamond_3_Rank.png' },
+                { id: 'diamond_1', name: 'Diamond 1', img: 'images/image-rank-valorant/Diamond_1_Rank.png' },
+                { id: 'diamond_2', name: 'Diamond 2', img: 'images/image-rank-valorant/Diamond_2_Rank.png' },
+                { id: 'diamond_3', name: 'Diamond 3', img: 'images/image-rank-valorant/Diamond_3_Rank.png' },
                 // ASCENDANT
-                { id: 'ascendant_1', name: 'Ascendant 1', img: 'image match mates/image-rank-valorant/Ascendant_1_Rank.png' },
-                { id: 'ascendant_2', name: 'Ascendant 2', img: 'image match mates/image-rank-valorant/Ascendant_2_Rank.png' },
-                { id: 'ascendant_3', name: 'Ascendant 3', img: 'image match mates/image-rank-valorant/Ascendant_3_Rank.png' },
+                { id: 'ascendant_1', name: 'Ascendant 1', img: 'images/image-rank-valorant/Ascendant_1_Rank.png' },
+                { id: 'ascendant_2', name: 'Ascendant 2', img: 'images/image-rank-valorant/Ascendant_2_Rank.png' },
+                { id: 'ascendant_3', name: 'Ascendant 3', img: 'images/image-rank-valorant/Ascendant_3_Rank.png' },
                 // IMMORTAL
-                { id: 'immortal_1', name: 'Immortal 1', img: 'image match mates/image-rank-valorant/Immortal_1_Rank.png' },
-                { id: 'immortal_2', name: 'Immortal 2', img: 'image match mates/image-rank-valorant/Immortal_2_Rank.png' },
-                { id: 'immortal_3', name: 'Immortal 3', img: 'image match mates/image-rank-valorant/Immortal_3_Rank.png' },
+                { id: 'immortal_1', name: 'Immortal 1', img: 'images/image-rank-valorant/Immortal_1_Rank.png' },
+                { id: 'immortal_2', name: 'Immortal 2', img: 'images/image-rank-valorant/Immortal_2_Rank.png' },
+                { id: 'immortal_3', name: 'Immortal 3', img: 'images/image-rank-valorant/Immortal_3_Rank.png' },
                 // RADIANT (un seul tier)
-                { id: 'radiant', name: 'Radiant', img: 'image match mates/image-rank-valorant/Radiant_Rank.png' },
+                { id: 'radiant', name: 'Radiant', img: 'images/image-rank-valorant/Radiant_Rank.png' },
             ],
         };
 
