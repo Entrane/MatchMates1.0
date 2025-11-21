@@ -411,7 +411,7 @@ const RANKS = {
 ],
         };
         
-        // Simule le nom d'utilisateur de l'utilisateur actuel (pour ne pas se matcher soi-même)
+        // Simule le nom d'utilisateur de l'utilisateur actuel (POUR TESTER, CHANGEZ CETTE VALEUR)
         const currentUsername = "UtilisateurActuel";
 
         // Simule une base de données de profils utilisateurs actifs pour la recherche.
@@ -740,9 +740,8 @@ const RANKS = {
             if (!userGameData.isSearching) return;
             
             // 1. Récupération des critères de recherche de l'utilisateur actuel
-            const searchPrefs = JSON.parse(localStorage.getItem(`mm_game_${gameId}_prefs`)) || {};
-            const { rank: userRank, mainMode: userMode, options: userOptions } = userGameData;
-            const { prefRanks: preferredRanks = [], rankTolerance: tolerance = 1 } = searchPrefs;
+            // NOTE: On utilise userGameData (mis à jour à la fin de saveGameSettings) pour les données de recherche
+            const { rank: userRank, mainMode: userMode, options: userOptions, prefRanks: preferredRanks, rankTolerance: tolerance } = userGameData;
             
             const foundMatches = [];
 
@@ -769,23 +768,21 @@ const RANKS = {
                     continue;
                 }
                 
-                // d) Vérification du Rang (Basé sur la tolérance OU les préférences)
+                // d) Vérification du Rang
                 let rankMatch = false;
 
-                // Priorité 1: Le rang du profil cible est-il dans les préférences de rang de l'utilisateur qui cherche ?
+                // 1. Si l'utilisateur a sélectionné des rangs préférés, le profil doit correspondre à l'un d'eux.
                 if (preferredRanks.length > 0) {
-                     if (preferredRanks.includes(targetProfile.rank)) {
+                    if (preferredRanks.includes(targetProfile.rank)) {
                         rankMatch = true;
-                     }
-                } 
-                
-                // Priorité 2: Sinon, le rang du profil cible est-il dans la tolérance autour du propre rang de l'utilisateur ?
-                if (!rankMatch) {
+                    }
+                } else {
+                    // 2. Si aucune préférence n'est définie, utiliser le rang de l'utilisateur et la tolérance.
                     if (isRankWithinTolerance(userRank, targetProfile.rank, tolerance)) {
                         rankMatch = true;
                     }
                 }
-
+                
                 if (!rankMatch) {
                     continue;
                 }
@@ -1083,7 +1080,7 @@ window.sM = async (e, u) => {
 
     // Chargement des données 
     await loadGameInfo();
-    loadSimulatedProfiles(); // <<< CHARGEMENT DE LA BDD SIMULÉE
+    loadSimulatedProfiles(); // <<< CHARGEMENT DE LA BDD SIMULÉE DEPUIS localStorage
     loadGameSettings();
     await loadPartnerPreferences();
     
