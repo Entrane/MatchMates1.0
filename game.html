@@ -405,6 +405,11 @@
             rankTolerance: 1,
             isSearching: false
         };
+        
+        // NOUVEAU: Variables pour l'utilisateur actif
+        let activeUsername = null;
+        let activeUserId = null;
+
 
         // Variables sociales/chat
         const activeChats = {}; 
@@ -579,16 +584,19 @@
 
         /** Charge le profil complet de l'utilisateur depuis le serveur. */
         async function loadProfileAndSettings() {
-            const response = await fetchProtected('/api/user/profile');
+            const response = await fetchProtected('/api/user/profile?gameId=' + gameId);
             
             if (!response.ok) {
-                 // Le 401 est géré par fetchProtected, pour les autres erreurs on continue avec les valeurs par défaut.
                  return;
             }
 
             const profile = await response.json();
             const settings = profile.gameSettings;
             const prefs = profile.partnerPreferences;
+            
+            // NOUVEAU: Stockage de l'ID utilisateur
+            activeUserId = profile.id;
+            activeUsername = profile.username;
 
             // Mise à jour de userGameData
             userGameData.rank = settings.rank;
@@ -674,7 +682,7 @@
             });
 
             if (prefsRes.ok) {
-                // Message de confirmation discrèt ou rien.
+                // Confirmation discrète
             } else if (prefsRes.status !== 401) {
                 console.error("Erreur lors de la sauvegarde des préférences de partenaire.");
             }
@@ -691,8 +699,7 @@
                 partnerSearchButton.innerHTML = `<i class="fas fa-search"></i> <span>Rechercher un partenaire</span>`;
                 partnerSearchButton.classList.remove('searching');
                 
-                // Simule l'arrêt sur le serveur (si un endpoint d'arrêt est nécessaire)
-                // await fetchProtected(`/api/match/${gameId}/stop`, { method: 'POST' }); 
+                // Arrêt visuel et réinitialisation de la liste
                 matchListDiv.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 20px; background: var(--bg-card); border-radius: 8px;">Recherche arrêtée. Lancez une recherche pour trouver des joueurs !</p>`;
                 document.getElementById('matchCount').textContent = '0';
             } else {
@@ -706,9 +713,6 @@
                 partnerSearchButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Recherche en cours...</span>`;
                 partnerSearchButton.classList.add('searching');
                 
-                // Lancement (Simulé si nécessaire)
-                // await fetchProtected(`/api/match/${gameId}/start`, { method: 'POST' });
-
                 // Démarrer la boucle de rafraîchissement des matchs
                 fetchMatches();
                 // Mise à jour toutes les 5 secondes
@@ -776,11 +780,11 @@
             matchListDiv.innerHTML = matchHtml;
         }
         
-        // Simule l'envoi d'une demande d'ami depuis la liste de match (utilise la même logique que le dashboard)
+        // CORRIGÉ: Utilise /api/friends/send et le bon payload
         window.sendFriendRequest = async (username) => {
-            const res = await fetchProtected('/api/friends/request', {
+            const res = await fetchProtected('/api/friends/send', {
                 method:'POST',
-                body:JSON.stringify({toUsername:username})
+                body:JSON.stringify({receiverUsername:username})
             });
             const d = await res.json();
             alert(d.message || d.error || `Demande d'ami envoyée à ${username} !`);
@@ -789,7 +793,7 @@
 
 
 // ----------------------------------------------------------------
-// --- LOGIQUE SOCIALE (Ré-intégrée du Dashboard et mise à jour JWT) ---
+// --- LOGIQUE SOCIALE (Mise à jour pour JWT et harmonisation) ---
 // ----------------------------------------------------------------
 
 // ====================================================
@@ -814,24 +818,21 @@ window.toggleSidebar = function() {
 // --- 2. LOGIQUE SOCIALE (Amis/Requests) ---
 // ====================================================
 
+// CORRIGÉ: Appel à la seule route /api/friends
 async function loadSocial() {
     try {
-        // Utilisation de fetchProtected
-        const [fRes, rRes] = await Promise.all([
-            fetchProtected('/api/friends'), 
-            fetchProtected('/api/friends/requests')
-        ]);
+        const fRes = await fetchProtected('/api/friends'); 
         
-        if (!fRes.ok || !rRes.ok) {
+        if (!fRes.ok) {
             throw new Error("Erreur de récupération des données sociales.");
         }
         
         const fData = await fRes.json();
-        const rData = await rRes.json();
 
+        // Le serveur retourne un objet avec les 3 listes
         renderFriends(fData.friends || []);
-        renderRequests(rData.incoming || []); 
-        renderSent(rData.outgoing || []); 
+        renderRequests(fData.incomingRequests || []); 
+        renderSent(fData.outgoingRequests || []); 
 
     } catch (e) {
         renderFriends([]);
@@ -867,6 +868,7 @@ function renderFriends(list) {
     });
 }
 
+// CORRIGÉ: Utilise le username du sender dans l'onclick
 function renderRequests(list) {
     const c = document.getElementById('requestsList');
     if (!c) return;
@@ -881,18 +883,19 @@ function renderRequests(list) {
         d.className = 'friend-card';
         d.innerHTML = `
             <div style="display: flex; align-items: center; flex-grow: 1;">
-                <div class="friend-avatar">${r.from_username.charAt(0).toUpperCase()}</div>
-                <span>${r.from_username}</span>
+                <div class="friend-avatar">${r.username.charAt(0).toUpperCase()}</div>
+                <span>${r.username}</span>
             </div>
             <div class="request-actions" style="display:flex; gap:5px;">
-                <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #10b981;" onclick="hReq(${r.id}, 'accept')"><i class="fas fa-check"></i></button>
-                <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #ef4444;" onclick="hReq(${r.id}, 'reject')"><i class="fas fa-times"></i></button>
+                <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #10b981;" onclick="hReq('${r.username}', 'accept')"><i class="fas fa-check"></i></button>
+                <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #ef4444;" onclick="hReq('${r.username}', 'reject')"><i class="fas fa-times"></i></button>
             </div>
         `;
         c.appendChild(d);
     });
 }
 
+// CORRIGÉ: Simplification (retrait du bouton 'reject' qui n'est pas supporté par l'API pour les requêtes envoyées)
 function renderSent(list) {
     const c = document.getElementById('sentList');
     if (!c) return;
@@ -908,11 +911,8 @@ function renderSent(list) {
         d.style.opacity = 0.7; 
         d.innerHTML = `
             <div style="display: flex; align-items: center; flex-grow: 1;">
-                <div class="friend-avatar">${r.to_username.charAt(0).toUpperCase()}</div>
-                <span style="font-style:italic;">${r.to_username} (En attente)</span>
-            </div>
-            <div class="request-actions">
-                <button class="action-btn" style="padding: 5px 8px; font-size: 0.8rem; background: #334155;" onclick="hReq(${r.id}, 'reject')"><i class="fas fa-minus-circle"></i></button>
+                <div class="friend-avatar">${r.username.charAt(0).toUpperCase()}</div>
+                <span style="font-style:italic;">${r.username} (En attente)</span>
             </div>
         `;
         c.appendChild(d);
@@ -927,9 +927,10 @@ if (addFriendForm) {
         const input = document.getElementById('friend-input'); 
         const friendNotif = document.getElementById('friend-notif');
         
-        const res = await fetchProtected('/api/friends/request', {
+        // CORRIGÉ: URL et Payload mis à jour
+        const res = await fetchProtected('/api/friends/send', {
             method:'POST',
-            body:JSON.stringify({toUsername:input.value})
+            body:JSON.stringify({receiverUsername:input.value})
         });
         const d = await res.json();
         
@@ -940,9 +941,21 @@ if (addFriendForm) {
     });
 }
 
-// Gère l'acceptation/rejet d'une demande d'ami
-window.hReq = async(id, a) => { 
-    await fetchProtected(`/api/friends/requests/${id}/${a}`, {method:'POST'}); 
+// CORRIGÉ: Gère l'acceptation/rejet d'une demande d'ami entrante (utilise le username du sender)
+window.hReq = async(username, action) => { 
+    // Seul l'accept/reject des requêtes entrantes est géré par /api/friends/respond
+    if (action === 'accept' || action === 'reject') {
+        const payload = { 
+            senderUsername: username, 
+            action: action
+        };
+        
+        await fetchProtected('/api/friends/respond', {
+            method:'POST',
+            body:JSON.stringify(payload)
+        });
+    }
+
     loadSocial(); 
 };
 
@@ -950,23 +963,25 @@ window.hReq = async(id, a) => {
 // --- 3. LOGIQUE DE CHAT ---
 // ====================================================
 
+// CORRIGÉ: Utilise activeUserId pour déterminer si c'est 'self' et gère le format de réponse du serveur
 async function fetchMessages(u) {
     const c = document.getElementById(`msg-${u}`);
-    if (!c) return;
+    if (!c || !activeUserId) return; // S'assure d'avoir l'ID de l'utilisateur
 
     const res = await fetchProtected(`/api/messages/${u}`);
     
     if(!res.ok) return;
 
-    const d = await res.json();
+    // Le serveur retourne un tableau de messages directement: [{ sender_id, content, timestamp, sender_username }, ...]
+    const d = await res.json(); 
     
     const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 1;
     
-    c.innerHTML = d.messages.map(m =>
-        `<div class="msg ${m.fromSelf ? 'self' : 'other'}">${m.content}</div>`
+    c.innerHTML = d.map(m =>
+        `<div class="msg ${m.sender_id === activeUserId ? 'self' : 'other'}">${m.content}</div>`
     ).join('');
     
-    if (isScrolledToBottom || d.messages.length <= 10) { // Scroll au premier chargement ou si on est proche du bas
+    if (isScrolledToBottom || d.length <= 10) { // Utilise d.length au lieu de d.messages.length
         c.scrollTop = c.scrollHeight;
     }
 }
@@ -1006,6 +1021,7 @@ window.sM = async (e, u) => {
     const input = e.target.querySelector('input');
     if (!input.value.trim()) return; 
 
+    // CORRIGÉ: toUsername est utilisé dans le payload
     await fetchProtected('/api/messages', {
         method: 'POST',
         body: JSON.stringify({ toUsername: u, content: input.value.trim() })
@@ -1032,7 +1048,7 @@ window.sM = async (e, u) => {
 
     // Chargement des données 
     await loadGameInfo();
-    await loadProfileAndSettings(); // Charge les données du serveur
+    await loadProfileAndSettings(); // Charge les données du serveur (et l'ID utilisateur)
     
     // Rétablit l'état de la sidebar (Amis) au chargement
     const friendsSidebarActive = localStorage.getItem('socialSidebarActive') === 'true';
