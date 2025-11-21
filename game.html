@@ -214,7 +214,7 @@
     .chat-window { width: 300px; height: 400px; background: var(--bg-card); border-radius: 12px 12px 0 0; display: flex; flex-direction: column; box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4); pointer-events: auto; }
     .chat-header { padding: 10px 15px; background: var(--primary-color); color: var(--bg-dark); font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-radius: 10px 10px 0 0; }
     .chat-body { flex-grow: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: #141c2c; }
-    .msg { max-width: 80%; padding: 8px 12px; border-radius: 16px; font-size: 0.9rem; word-wrap: break-word; }
+    .msg { max-width: 80%; padding: 8px 12px; border-radius: 16px; font-size: 0.9rem; word-wrap: word-wrap; }
     .msg.self { background: var(--primary-color); color: var(--bg-dark); align-self: flex-end; border-bottom-right-radius: 4px; }
     .msg.other { background: #334155; color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; }
     .chat-input-area { display: flex; padding: 10px; border-top: 1px solid #334155; }
@@ -415,13 +415,13 @@ const RANKS = {
         const currentUsername = "UtilisateurActuel";
 
         // Simule une base de données de profils utilisateurs actifs pour la recherche.
-        // Maintenant, elle est chargée depuis localStorage pour la persistance.
+        // Elle est chargée depuis localStorage pour la persistance.
         let simulatedProfiles = {}; 
 
         let userGameData = {
             rank: null,
             mainMode: null, // Nouveau: Mode principal (Classé/Non Classé)
-            options: [],     // Nouveau: Options supplémentaires (Vocal Obligatoire)
+            options: [],     // Nouveau: Options supplémentaires (checkbox)
             mode: null,      // Reste pour la recherche/affichage complet
             prefRanks: [],
             rankTolerance: 1,
@@ -622,13 +622,9 @@ const RANKS = {
             if (data) {
                 simulatedProfiles = JSON.parse(data);
             } else {
-                 // Si c'est la première exécution, on initialise avec des profils de test pour Valorant
-                 simulatedProfiles = {
-                    "JoueurTest1": { username: "JoueurTest1", gameId: 'valorant', rank: 'gold_2', mainMode: 'Classé', options: ['Vocal Obligatoire'], mode: 'Classé (+ Vocal Obligatoire)' },
-                    "JoueurTest2": { username: "JoueurTest2", gameId: 'valorant', rank: 'silver_1', mainMode: 'Non Classé', options: [], mode: 'Non Classé' }
-                 };
-                 // Sauvegarde des profils par défaut pour la prochaine fois
-                 localStorage.setItem('mm_simulated_profiles', JSON.stringify(simulatedProfiles));
+                 // Si c'est la première exécution, on initialise avec un objet vide.
+                 // Les profils seront ajoutés uniquement lorsque les utilisateurs cliquent sur "Mettre à jour mes infos".
+                 simulatedProfiles = {};
             }
         }
 
@@ -650,6 +646,7 @@ const RANKS = {
             localStorage.setItem(`mm_game_${gameId}_prefs`, JSON.stringify(partnerPrefs));
 
             // >>> MISE À JOUR : Stockage du profil pour la simulation de recherche et PERSISTANCE <<<
+            // Le profil de l'utilisateur actuel est ajouté/mis à jour dans la liste des profils actifs.
             simulatedProfiles[currentUsername] = {
                 username: currentUsername,
                 gameId: gameId,
@@ -669,7 +666,7 @@ const RANKS = {
                 body: JSON.stringify({ gameSettings, partnerPrefs })
             });
 
-            alert("Informations mises à jour et sauvegardées !");
+            alert(`Profil de ${currentUsername} mis à jour et sauvegardé !`);
         };
 
         // Fonction utilitaire pour vérifier si un rang est dans la tolérance du rang de recherche
@@ -1080,7 +1077,7 @@ window.sM = async (e, u) => {
 
     // Chargement des données 
     await loadGameInfo();
-    loadSimulatedProfiles(); // <<< CHARGEMENT DE LA BDD SIMULÉE DEPUIS localStorage
+    loadSimulatedProfiles(); // <<< CHARGEMENT DE LA BDD SIMULÉE (maintenant vide au départ)
     loadGameSettings();
     await loadPartnerPreferences();
     
