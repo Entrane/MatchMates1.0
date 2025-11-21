@@ -410,6 +410,41 @@ const RANKS = {
     { id: 'radiant', name: 'Radiant', img: '/Valorant_rank/Radiant_Rank.webp' },
 ],
         };
+        
+        // Simule le nom d'utilisateur de l'utilisateur actuel (pour ne pas se matcher soi-même)
+        const currentUsername = "UtilisateurActuel";
+
+        // Simule une base de données de profils utilisateurs actifs pour la recherche
+        // Ces profils sont disponibles pour être matchés si la recherche correspond
+        const simulatedProfiles = { 
+            // Profil de test (Exemple pour Valorant : Gold 2, Classé, Vocal Obligatoire)
+            "JoueurTest": {
+                username: "JoueurTest",
+                gameId: 'valorant', // Assurez-vous que c'est le même jeu que celui par défaut
+                rank: 'gold_2', 
+                mainMode: 'Classé', 
+                options: ['Vocal Obligatoire'], 
+                mode: 'Classé (+ Vocal Obligatoire)' 
+            },
+            // Second profil de test (Exemple pour Valorant : Silver 1, Non Classé, Pas de Vocal)
+             "AmiSansVocal": {
+                username: "AmiSansVocal",
+                gameId: 'valorant',
+                rank: 'silver_1', 
+                mainMode: 'Non Classé', 
+                options: [], 
+                mode: 'Non Classé' 
+            },
+            // Troisième profil de test (Exemple pour Valorant : Diamond 3, Classé, Vocal Obligatoire)
+             "HighRankPro": {
+                username: "HighRankPro",
+                gameId: 'valorant',
+                rank: 'diamond_3', 
+                mainMode: 'Classé', 
+                options: ['Vocal Obligatoire'], 
+                mode: 'Classé (+ Vocal Obligatoire)' 
+            }
+        };
 
         let userGameData = {
             rank: null,
@@ -626,6 +661,16 @@ const RANKS = {
             localStorage.setItem(`mm_game_${gameId}_settings`, JSON.stringify(gameSettings));
             localStorage.setItem(`mm_game_${gameId}_prefs`, JSON.stringify(partnerPrefs));
 
+            // >>> NOUVEAU: Stockage du profil pour la simulation de recherche <<<
+            simulatedProfiles[currentUsername] = {
+                username: currentUsername,
+                gameId: gameId,
+                rank: userGameData.rank,
+                mainMode: userGameData.mainMode,
+                options: userGameData.options,
+                mode: userGameData.mode // Mode complet affiché
+            };
+
             // Simule l'envoi au serveur
             await fetch(`/api/game/${gameId}/settings`, {
                 method: 'POST',
@@ -635,6 +680,23 @@ const RANKS = {
 
             alert("Informations mises à jour et sauvegardées !");
         };
+
+        // Fonction utilitaire pour vérifier si un rang est dans la tolérance du rang de recherche
+        function isRankWithinTolerance(searchRankId, targetRankId, tolerance) {
+            const ranks = RANKS[gameId];
+            if (!ranks) return false; // Jeu sans rangs définis
+
+            const searchIndex = ranks.findIndex(r => r.id === searchRankId);
+            const targetIndex = ranks.findIndex(r => r.id === targetRankId);
+
+            if (searchIndex === -1 || targetIndex === -1) {
+                // Si l'un des rangs n'est pas trouvé (erreur de donnée), on suppose que ce n'est pas compatible
+                return false; 
+            }
+
+            // Vérifie si la différence d'index est inférieure ou égale à la tolérance
+            return Math.abs(searchIndex - targetIndex) <= tolerance;
+        }
 
 
         // ====================================================
@@ -686,11 +748,72 @@ const RANKS = {
         async function fetchMatches() {
             if (!userGameData.isSearching) return;
             
-            // Simule la réception des matchs du serveur
-            const response = await fetch(`/api/match/${gameId}/results`);
-            const data = await response.json();
+            // 1. Récupération des critères de recherche de l'utilisateur actuel
+            const searchPrefs = JSON.parse(localStorage.getItem(`mm_game_${gameId}_prefs`)) || {};
+            const { rank: userRank, mainMode: userMode, options: userOptions } = userGameData;
+            const { prefRanks: preferredRanks = [], rankTolerance: tolerance = 1 } = searchPrefs;
             
-            renderMatches(data.matches || []);
+            const foundMatches = [];
+
+            // 2. Itération et application des règles de matching
+            for (const profileName in simulatedProfiles) {
+                const targetProfile = simulatedProfiles[profileName];
+
+                // a) Ne pas se matcher soi-même et vérifier que le jeu est le même
+                if (targetProfile.username === currentUsername || targetProfile.gameId !== gameId) {
+                    continue; 
+                }
+
+                // b) Vérification du Mode de Jeu (Doit correspondre exactement au MainMode)
+                if (targetProfile.mainMode !== userMode) {
+                    continue;
+                }
+                
+                // c) Vérification de l'Option Vocal Obligatoire
+                const vocalRequired = userOptions.includes('Vocal Obligatoire');
+                const targetHasVocal = targetProfile.options.includes('Vocal Obligatoire');
+                
+                // Si la recherche exige le vocal, le profil ciblé doit l'avoir.
+                if (vocalRequired && !targetHasVocal) {
+                    continue;
+                }
+                
+                // d) Vérification du Rang (Basé sur la tolérance OU les préférences)
+                let rankMatch = false;
+
+                // Priorité 1: Le rang du profil cible est-il dans les préférences de rang de l'utilisateur qui cherche ?
+                if (preferredRanks.length > 0) {
+                     if (preferredRanks.includes(targetProfile.rank)) {
+                        rankMatch = true;
+                     }
+                } 
+                
+                // Priorité 2: Sinon, le rang du profil cible est-il dans la tolérance autour du propre rang de l'utilisateur ?
+                if (!rankMatch) {
+                    if (isRankWithinTolerance(userRank, targetProfile.rank, tolerance)) {
+                        rankMatch = true;
+                    }
+                }
+
+                if (!rankMatch) {
+                    continue;
+                }
+                
+                // Si toutes les conditions sont remplies, c'est un match !
+                foundMatches.push({
+                    username: targetProfile.username,
+                    rank: targetProfile.rank,
+                    mainMode: targetProfile.mainMode,
+                    options: targetProfile.options,
+                    mode: targetProfile.mode 
+                });
+            }
+            
+            // 3. Affichage des matchs trouvés
+            renderMatches(foundMatches);
+            
+            // Simule l'appel serveur pour maintenir la structure de l'application
+            await fetch(`/api/match/${gameId}/status`); 
         }
 
         function renderMatches(matches) {
