@@ -2,14 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Jeu Ã¢â‚¬â€œ MatchMates</title>
+  <title>Jeu â€“ MatchMates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
   <style>
-    /* On rÃƒÂ©utilise les mÃƒÂªmes variables et styles de base pour la cohÃƒÂ©rence */
+    /* On rÃ©utilise les mÃªmes variables et styles de base pour la cohÃ©rence */
     :root { 
         --primary-color: #22c55e; 
         --sidebar-width: 320px; 
@@ -42,7 +42,7 @@
     .game-info-column {
         flex: 0 0 var(--game-info-width);
         position: sticky;
-        top: 95px; /* DÃƒÂ©calage pour le header */
+        top: 95px; /* DÃ©calage pour le header */
         height: fit-content;
         padding: 20px;
         background: var(--bg-card);
@@ -191,11 +191,11 @@
     .add-friend-match { background: var(--primary-color); color: var(--bg-dark); }
     .send-msg-match { background: #3b82f6; color: white; }
 
-    /* SIDEBAR & CHAT STYLES (CopiÃƒÂ©s du dashboard) */
+    /* SIDEBAR & CHAT STYLES (CopiÃ©s du dashboard) */
     .toggle-friends-btn { position: fixed; top: 80px; right: 20px; z-index: 9999; background: var(--primary-color); color: #020617; border: none; padding: 10px 16px; border-radius: 30px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .toggle-friends-btn.active { right: calc(var(--sidebar-width) + 20px); background: #ef4444; color: white; }
     .toggle-friends-btn.active span { display: none; }
-    .toggle-friends-btn.active::after { content: "Ã¢Å“â€¢"; }
+    .toggle-friends-btn.active::after { content: "âœ•"; }
 
     .friends-sidebar { position: fixed; top: 0; right: calc(0px - var(--sidebar-width)); width: var(--sidebar-width); height: 100vh; background: rgba(15, 23, 42, 0.98); border-left: 1px solid rgba(255,255,255,0.1); box-shadow: -10px 0 30px rgba(0,0,0,0.5); padding: 80px 15px 20px; z-index: 1000; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(12px); box-sizing: border-box; }
     .friends-sidebar.active { right: 0; } 
@@ -228,7 +228,7 @@
         <a href="/dashboard" class="logo">MatchMates</a>
         <div class="nav-links">
             <a href="/dashboard">Tableau de bord</a>
-            <a href="/logout">DÃƒÂ©connexion</a>
+            <a href="/logout">DÃ©connexion</a>
         </div>
         <div class="profile-section">
             <div class="profile-avatar">U</div> 
@@ -243,17 +243,17 @@
 
             <div class="game-stats">
                 <div class="info-line"><span class="info-label">Joueurs actifs :</span><span id="playerCount" class="info-value">0</span></div>
-                <div class="info-line"><span class="info-label">Mode de jeu :</span><span id="gameModeDisplay" class="info-value">Non dÃƒÂ©fini</span></div>
-                <div class="info-line"><span class="info-label">Votre Rang :</span><span id="userRankDisplay" class="info-value">Non dÃƒÂ©fini</span></div>
-                <div class="info-line"><span class="info-label">TolÃƒÂ©rance :</span><span id="rankRangeDisplay" class="info-value">Ã‚Â±1 Rang</span></div>
+                <div class="info-line"><span class="info-label">Mode de jeu :</span><span id="gameModeDisplay" class="info-value">Non dÃ©fini</span></div>
+                <div class="info-line"><span class="info-label">Votre Rang :</span><span id="userRankDisplay" class="info-value">Non dÃ©fini</span></div>
+                <div class="info-line"><span class="info-label">TolÃ©rance :</span><span id="rankRangeDisplay" class="info-value">Â±1 Rang</span></div>
             </div>
             
-            <button class="update-btn" onclick="saveGameSettings()">Mettre ÃƒÂ  jour mes infos</button>
+            <button class="update-btn" onclick="saveGameSettings()">Mettre Ã  jour mes infos</button>
         </div>
 
         <div class="main-content-column">
             
-            <h2>Mes prÃƒÂ©fÃƒÂ©rences de jeu</h2>
+            <h2>Mes prÃ©fÃ©rences de jeu</h2>
             <div class="settings-grid">
                 
                 <div class="setting-box">
@@ -273,13 +273,13 @@
             <h2>Recherche de partenaire</h2>
             
             <div class="setting-box">
-                <div class="setting-title">PrÃƒÂ©fÃƒÂ©rences du partenaire</div>
+                <div class="setting-title">PrÃ©fÃ©rences du partenaire</div>
 
                 <div class="rank-grid" id="prefRankGrid">
                     </div>
                 
                 <div class="range-selector">
-                    <label for="rankRange">TolÃƒÂ©rance de Rang : <span id="rangeValue">Ã‚Â±1 Rang</span></label>
+                    <label for="rankRange">TolÃ©rance de Rang : <span id="rangeValue">Â±1 Rang</span></label>
                     <input type="range" id="rankRange" min="0" max="3" step="1" value="1">
                 </div>
             </div>
@@ -318,11 +318,11 @@
             <p style="text-align:center; color:var(--text-muted); font-size:0.9rem;">Ajoutez des amis !</p>
         </div>
 
-        <div class="sidebar-section-title" id="receivedRequestsTitle" style="display:none;">Demandes reÃƒÂ§ues (<span id="receivedCount">0</span>)</div>
+        <div class="sidebar-section-title" id="receivedRequestsTitle" style="display:none;">Demandes reÃ§ues (<span id="receivedCount">0</span>)</div>
         <div id="requestsList">
             </div>
         
-        <div class="sidebar-section-title" id="sentRequestsTitle" style="display:none;">Demandes envoyÃƒÂ©es (<span id="sentCount">0</span>)</div>
+        <div class="sidebar-section-title" id="sentRequestsTitle" style="display:none;">Demandes envoyÃ©es (<span id="sentCount">0</span>)</div>
         <div id="sentList">
             </div>
 
@@ -331,23 +331,25 @@
     <div id="chat-container" class="chat-container"></div>
     <script>
         // ====================================================
-        // --- 0. DÃƒâ€°CLARATION DES VARIABLES GLOBALES ---
+        // --- 0. DÃ‰CLARATION DES VARIABLES GLOBALES ---
         // ====================================================
 
        // Variables de jeu
         const gameId = window.location.pathname.split('/').pop() || 'valorant';
        const gameInfo = {
-  valorant: {
-    title: 'Valorant',
-    img: '/Image/Image_jeux/valorant.jpg',
-    // ...
-  },
-  lol: {
-    title: 'League of Legends',
-    img: '/Image/Image_jeux/lol.jpg',
-    // ...
-  }
-};
+            valorant: {
+                title: 'Valorant',
+                img: '/Image/Image_jeux/valorant.jpg',
+                modes: ['Classé', 'Non Classé', 'Vocal Obligatoire'], // Ajout des modes
+                players: 15000 
+            },
+            lol: {
+                title: 'League of Legends',
+                img: '/Image/Image_jeux/lol.jpg',
+                modes: ['Classé', 'Non Classé', 'Vocal Obligatoire'], // Ajout des modes
+                players: 25000 
+            }
+        };
 
 const RANKS = {
   lol: [
@@ -415,7 +417,7 @@ const RANKS = {
             isSearching: false
         };
 
-        // Variables sociales/chat (CopiÃƒÂ©es du dashboard)
+        // Variables sociales/chat (CopiÃ©es du dashboard)
         const activeChats = {}; 
         const friendsSidebar = document.getElementById('friendsSidebar');
         const chatContainer = document.getElementById('chat-container'); 
@@ -435,7 +437,9 @@ const RANKS = {
             document.getElementById('gameTitle').textContent = info.title;
             document.getElementById('gameImg').src = info.img;
             document.getElementById('gameImg').alt = info.title;
-            document.getElementById('playerCount').textContent = info.players.toLocaleString();
+            // Assurez-vous que info.players existe avant de l'appeler
+            document.getElementById('playerCount').textContent = info.players ? info.players.toLocaleString() : '0';
+
 
             const modesHtml = info.modes.map((mode, index) => `
                 <div class="radio-option">
@@ -447,7 +451,7 @@ const RANKS = {
         }
 
         // ====================================================
-        // --- 2. LOGIQUE DES RANGS ET PRÃƒâ€°FÃƒâ€°RENCES ---
+        // --- 2. LOGIQUE DES RANGS ET PRÃ‰FÃ‰RENCES ---
         // ====================================================
 
         function setupRankGrids(ranks) {
@@ -464,7 +468,7 @@ const RANKS = {
                 </div>
             `).join('');
 
-            // Rendu de la grille de prÃƒÂ©fÃƒÂ©rences (Rangs du partenaire)
+            // Rendu de la grille de prÃ©fÃ©rences (Rangs du partenaire)
             prefRankGrid.innerHTML = ranks.map(rank => `
                 <div class="rank-option" data-pref-rank-id="${rank.id}" onclick="togglePrefRank('${rank.id}')">
                     <img src="${rank.img}" alt="${rank.name}">
@@ -478,7 +482,7 @@ const RANKS = {
             document.querySelectorAll('#rankGrid .rank-option').forEach(el => {
                 el.classList.toggle('active', el.getAttribute('data-rank-id') === rankId);
             });
-            document.getElementById('userRankDisplay').textContent = RANKS[gameId].find(r => r.id === rankId)?.name || 'Non dÃƒÂ©fini';
+            document.getElementById('userRankDisplay').textContent = RANKS[gameId].find(r => r.id === rankId)?.name || 'Non dÃ©fini';
         };
 
         window.togglePrefRank = (rankId) => {
@@ -498,12 +502,12 @@ const RANKS = {
             document.getElementById('gameModeDisplay').textContent = mode;
         };
 
-        // Ãƒâ€°vÃƒÂ©nement pour la tolÃƒÂ©rance de rang
+        // Ã‰vÃ©nement pour la tolÃ©rance de rang
         if (rankRangeInput) {
             rankRangeInput.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 userGameData.rankTolerance = value;
-                const display = value === 0 ? 'Exact' : (value === 1 ? 'Ã‚Â±1 Rang' : `Ã‚Â±${value} Rangs`);
+                const display = value === 0 ? 'Exact' : (value === 1 ? 'Â±1 Rang' : `Â±${value} Rangs`);
                 rangeValueSpan.textContent = display;
                 document.getElementById('rankRangeDisplay').textContent = display;
             });
@@ -514,7 +518,7 @@ const RANKS = {
         // --- 3. PERSISTENCE & SAUVEGARDE ---
         // ====================================================
 
-        // Simule le chargement des donnÃƒÂ©es utilisateur
+        // Simule le chargement des donnÃ©es utilisateur
         function loadGameSettings() {
             const data = JSON.parse(localStorage.getItem(`mm_game_${gameId}_settings`)) || {};
             
@@ -531,27 +535,27 @@ const RANKS = {
             }
         }
 
-        // Simule le chargement des prÃƒÂ©fÃƒÂ©rences de partenaire
+        // Simule le chargement des prÃ©fÃ©rences de partenaire
         function loadPartnerPreferences() {
             const data = JSON.parse(localStorage.getItem(`mm_game_${gameId}_prefs`)) || {};
             
-            // Appliquer la tolÃƒÂ©rance
-            if (data.rankTolerance !== undefined) {
+            // Appliquer la tolÃ©rance
+            if (rankRangeInput && data.rankTolerance !== undefined) {
                 rankRangeInput.value = data.rankTolerance;
-                rankRangeInput.dispatchEvent(new Event('input')); // Mettre ÃƒÂ  jour l'affichage
+                rankRangeInput.dispatchEvent(new Event('input')); // Mettre Ã  jour l'affichage
             }
             
-            // Appliquer les rangs prÃƒÂ©fÃƒÂ©rÃƒÂ©s
+            // Appliquer les rangs prÃ©fÃ©rÃ©s
             if (Array.isArray(data.prefRanks)) {
-                userGameData.prefRanks = []; // RÃƒÂ©initialiser avant d'appliquer
+                userGameData.prefRanks = []; // RÃ©initialiser avant d'appliquer
                 data.prefRanks.forEach(rankId => togglePrefRank(rankId));
             }
         }
         
-        // Sauvegarde les donnÃƒÂ©es de jeu de l'utilisateur
+        // Sauvegarde les donnÃ©es de jeu de l'utilisateur
         window.saveGameSettings = async () => {
             if (!userGameData.rank || !userGameData.mode) {
-                alert("Veuillez sÃƒÂ©lectionner votre rang et votre mode de jeu.");
+                alert("Veuillez sÃ©lectionner votre rang et votre mode de jeu.");
                 return;
             }
 
@@ -568,7 +572,7 @@ const RANKS = {
                 body: JSON.stringify({ gameSettings, partnerPrefs })
             });
 
-            alert("Informations mises ÃƒÂ  jour et sauvegardÃƒÂ©es !");
+            alert("Informations mises Ã  jour et sauvegardÃ©es !");
         };
 
 
@@ -578,19 +582,19 @@ const RANKS = {
 
         window.toggleSearch = async () => {
             if (userGameData.isSearching) {
-                // ArrÃƒÂªter la recherche
+                // ArrÃªter la recherche
                 userGameData.isSearching = false;
                 partnerSearchButton.innerHTML = `<i class="fas fa-search"></i> <span>Rechercher un partenaire</span>`;
                 partnerSearchButton.classList.remove('searching');
                 
-                // Simule l'arrÃƒÂªt sur le serveur
+                // Simule l'arrÃªt sur le serveur
                 await fetch(`/api/match/${gameId}/stop`, { method: 'POST' });
-                matchListDiv.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 20px; background: var(--bg-card); border-radius: 8px;">Recherche arrÃƒÂªtÃƒÂ©e. Lancez une recherche pour trouver des joueurs !</p>`;
+                matchListDiv.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 20px; background: var(--bg-card); border-radius: 8px;">Recherche arrÃªtÃ©e. Lancez une recherche pour trouver des joueurs !</p>`;
                 document.getElementById('matchCount').textContent = '0';
             } else {
                 // Lancer la recherche
                 if (!userGameData.rank || !userGameData.mode) {
-                    alert("Veuillez dÃƒÂ©finir votre rang et votre mode de jeu avant de lancer la recherche.");
+                    alert("Veuillez dÃ©finir votre rang et votre mode de jeu avant de lancer la recherche.");
                     return;
                 }
 
@@ -598,14 +602,14 @@ const RANKS = {
                 partnerSearchButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Recherche en cours...</span>`;
                 partnerSearchButton.classList.add('searching');
                 
-                // Simule le dÃƒÂ©marrage sur le serveur
+                // Simule le dÃ©marrage sur le serveur
                 await fetch(`/api/match/${gameId}/start`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(userGameData)
                 });
 
-                // DÃƒÂ©marrer la boucle de rafraÃƒÂ®chissement des matchs
+                // DÃ©marrer la boucle de rafraÃ®chissement des matchs
                 fetchMatches();
                 setInterval(fetchMatches, 5000); 
             }
@@ -614,7 +618,7 @@ const RANKS = {
         async function fetchMatches() {
             if (!userGameData.isSearching) return;
             
-            // Simule la rÃƒÂ©ception des matchs du serveur
+            // Simule la rÃ©ception des matchs du serveur
             const response = await fetch(`/api/match/${gameId}/results`);
             const data = await response.json();
             
@@ -626,12 +630,12 @@ const RANKS = {
             if (!matchListDiv) return;
             
             if (matches.length === 0) {
-                matchListDiv.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 20px; background: var(--bg-card); border-radius: 8px;">Aucun partenaire trouvÃƒÂ© pour l'instant. Patience...</p>`;
+                matchListDiv.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 20px; background: var(--bg-card); border-radius: 8px;">Aucun partenaire trouvÃ© pour l'instant. Patience...</p>`;
                 return;
             }
 
             const matchHtml = matches.map(match => {
-                const rankInfo = RANKS[gameId].find(r => r.id === match.rank) || { name: 'Non classÃƒÂ©', img: '' };
+                const rankInfo = RANKS[gameId].find(r => r.id === match.rank) || { name: 'Non classÃ©', img: '' };
                 return `
                     <div class="match-card">
                         <div class="match-info">
@@ -652,20 +656,20 @@ const RANKS = {
             matchListDiv.innerHTML = matchHtml;
         }
         
-        // Simule l'envoi d'une demande d'ami depuis la liste de match (utilise la mÃƒÂªme logique que le dashboard)
+        // Simule l'envoi d'une demande d'ami depuis la liste de match (utilise la mÃªme logique que le dashboard)
         window.sendFriendRequest = async (username) => {
             await fetch('/api/friends/request', {
                 method:'POST',
                 headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({toUsername:username})
             });
-            alert(`Demande d'ami envoyÃƒÂ©e ÃƒÂ  ${username} !`);
-            loadSocial(); // RafraÃƒÂ®chit la sidebar
+            alert(`Demande d'ami envoyÃ©e Ã  ${username} !`);
+            loadSocial(); // RafraÃ®chit la sidebar
         };
 
 
 // ----------------------------------------------------------------
-// --- LOGIQUE SOCIALE (RÃƒÂ©-intÃƒÂ©grÃƒÂ©e du Dashboard) ---
+// --- LOGIQUE SOCIALE (RÃ©-intÃ©grÃ©e du Dashboard) ---
 // ----------------------------------------------------------------
 
 // ====================================================
@@ -678,12 +682,12 @@ window.toggleSidebar = function() {
     
     if (toggleBtn) toggleBtn.classList.toggle('active', isActive);
     
-    // Si la sidebar est fermÃƒÂ©e, on ferme aussi tous les chats actifs.
+    // Si la sidebar est fermÃ©e, on ferme aussi tous les chats actifs.
     if (!isActive) {
         Object.keys(activeChats).forEach(closeChat);
     }
 
-    // Sauvegarde l'ÃƒÂ©tat dans le stockage local
+    // Sauvegarde l'Ã©tat dans le stockage local
     localStorage.setItem('socialSidebarActive', isActive);
 };
 
@@ -693,7 +697,7 @@ window.toggleSidebar = function() {
 
 async function loadSocial() {
     try {
-        // Appels API pour rÃƒÂ©cupÃƒÂ©rer les donnÃƒÂ©es sociales
+        // Appels API pour rÃ©cupÃ©rer les donnÃ©es sociales
         const [fRes, rRes] = await Promise.all([fetch('/api/friends'), fetch('/api/friends/requests')]);
         const fData = await fRes.json();
         const rData = await rRes.json();
@@ -703,7 +707,7 @@ async function loadSocial() {
         renderSent(rData.outgoing || []); 
 
     } catch (e) {
-        // Afficher un ÃƒÂ©tat vide en cas d'erreur API
+        // Afficher un Ã©tat vide en cas d'erreur API
         renderFriends([]);
         renderRequests([]); 
         renderSent([]); 
@@ -789,7 +793,7 @@ function renderSent(list) {
     });
 }
 
-// GÃƒÂ¨re l'envoi de la demande d'ami
+// GÃ¨re l'envoi de la demande d'ami
 const addFriendForm = document.getElementById('add-friend-form');
 if (addFriendForm) {
     addFriendForm.addEventListener('submit', async function(e) { 
@@ -804,14 +808,14 @@ if (addFriendForm) {
         });
         const d = await res.json();
         
-        friendNotif.innerText = d.ok ? `Demande envoyÃƒÂ©e ÃƒÂ  ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
+        friendNotif.innerText = d.ok ? `Demande envoyÃ©e Ã  ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
         input.value = "";
         loadSocial();
         setTimeout(()=>friendNotif.innerText="",3000); 
     });
 }
 
-// GÃƒÂ¨re l'acceptation/rejet d'une demande d'ami
+// GÃ¨re l'acceptation/rejet d'une demande d'ami
 window.hReq = async(id, a) => { 
     await fetch(`/api/friends/requests/${id}/${a}`, {method:'POST'}); 
     loadSocial(); 
@@ -849,7 +853,7 @@ window.openChat = (u) => {
         </div>
         <div class="chat-body" id="msg-${u}"></div>
         <form class="chat-input-area" onsubmit="sM(event,'${u}')">
-            <input type="text" placeholder="Ãƒâ€°crire un message..." autocomplete="off">
+            <input type="text" placeholder="Ã‰crire un message..." autocomplete="off">
             <button type="submit"><i class="fas fa-paper-plane"></i></button>
         </form>
     `;
@@ -893,18 +897,18 @@ window.sM = async (e, u) => {
     const gameRanks = RANKS[gameId.toLowerCase()] || RANKS.valorant;
     setupRankGrids(gameRanks); 
 
-    // Chargement des donnÃƒÂ©es 
+    // Chargement des donnÃ©es 
     await loadGameInfo();
     loadGameSettings();
     await loadPartnerPreferences();
     
-    // RÃƒÂ©tablit l'ÃƒÂ©tat de la sidebar (Amis) au chargement
+    // RÃ©tablit l'Ã©tat de la sidebar (Amis) au chargement
     if (localStorage.getItem('socialSidebarActive') === 'true') {
         friendsSidebar.classList.add('active');
         document.querySelector('.toggle-friends-btn').classList.add('active');
     }
     
-    // Chargement des donnÃƒÂ©es sociales et rafraÃƒÂ®chissement
+    // Chargement des donnÃ©es sociales et rafraÃ®chissement
     loadSocial();
     setInterval(loadSocial, 5000); 
 })();
