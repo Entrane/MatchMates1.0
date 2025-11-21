@@ -329,7 +329,7 @@
     </aside>
     
     <div id="chat-container" class="chat-container"></div>
-    <script>
+<script>
         // ====================================================
         // --- 0. DÉCLARATION DES VARIABLES GLOBALES ---
         // ====================================================
@@ -353,82 +353,60 @@
             }
         };
 
-const RANKS = {
-  lol: [
-    { id: 'Iron',    name: 'Iron',    img: '/lol_rank/Iron.webp' },
-    { id: 'Bronze',  name: 'Bronze',  img: '/lol_rank/Bronze.webp' },
-    { id: 'Silver',  name: 'Silver',  img: '/lol_rank/Silver.webp' },
-    { id: 'Gold',    name: 'Gold',    img: '/lol_rank/Gold.webp' },
-    { id: 'Platinum',name: 'Platinum',img: '/lol_rank/Platinum.webp' },
-    { id: 'Emerald', name: 'Emerald', img: '/lol_rank/Emerald.webp' },
-    { id: 'diamond', name: 'diamond', img: '/lol_rank/diamond.webp' },
-    { id: 'Master',  name: 'Master',  img: '/lol_rank/Master.webp' },
-    { id: 'GrandM',  name: 'Grand Master', img: '/lol_rank/Grandmaster.webp' },
+        // Rangs unifiés avec le serveur (IDs raccourcis pour Valorant)
+        const RANKS = {
+            lol: [
+                { id: 'Iron',    name: 'Iron',    img: '/lol_rank/Iron.webp' },
+                { id: 'Bronze',  name: 'Bronze',  img: '/lol_rank/Bronze.webp' },
+                { id: 'Silver',  name: 'Silver',  img: '/lol_rank/Silver.webp' },
+                { id: 'Gold',    name: 'Gold',    img: '/lol_rank/Gold.webp' },
+                { id: 'Platinum',name: 'Platinum',img: '/lol_rank/Platinum.webp' },
+                { id: 'Emerald', name: 'Emerald', img: '/lol_rank/Emerald.webp' },
+                { id: 'diamond', name: 'Diamant', img: '/lol_rank/diamond.webp' },
+                { id: 'Master',  name: 'Master',  img: '/lol_rank/Master.webp' },
+                { id: 'GrandM',  name: 'Grand Master', img: '/lol_rank/Grand_Master.webp' },
+                { id: 'Challenger', name: 'Challenger', img: '/lol_rank/Challenger.webp' },
             ],
-            'valorant': [
-    // IRON
-    { id: 'iron_1', name: 'Iron 1', img: '/Valorant_rank/Iron_1_Rank.webp' },
-    { id: 'iron_2', name: 'Iron 2', img: '/Valorant_rank/Iron_2_Rank.webp' },
-    { id: 'iron_3', name: 'Iron 3', img: '/Valorant_rank/Iron_3_Rank.webp' },
-
-    // BRONZE
-    { id: 'bronze_1', name: 'Bronze 1', img: '/Valorant_rank/Bronze_1_Rank.webp' },
-    { id: 'bronze_2', name: 'Bronze 2', img: '/Valorant_rank/Bronze_2_Rank.webp' },
-    { id: 'bronze_3', name: 'Bronze 3', img: '/Valorant_rank/Bronze_3_Rank.webp' },
-
-    // SILVER
-    { id: 'silver_1', name: 'Silver 1', img: '/Valorant_rank/Silver_1_Rank.webp' },
-    { id: 'silver_2', name: 'Silver 2', img: '/Valorant_rank/Silver_2_Rank.webp' },
-    { id: 'silver_3', name: 'Silver 3', img: '/Valorant_rank/Silver_3_Rank.webp' },
-
-    // GOLD
-    { id: 'gold_1', name: 'Gold 1', img: '/Valorant_rank/Gold_1_Rank.webp' },
-    { id: 'gold_2', name: 'Gold 2', img: '/Valorant_rank/Gold_2_Rank.webp' },
-    { id: 'gold_3', name: 'Gold 3', img: '/Valorant_rank/Gold_3_Rank.webp' },
-
-    // PLATINUM
-    { id: 'platinum_1', name: 'Platinum 1', img: '/Valorant_rank/Platinum_1_Rank.webp' },
-    { id: 'platinum_2', name: 'Platinum 2', img: '/Valorant_rank/Platinum_2_Rank.webp' },
-    { id: 'platinum_3', name: 'Platinum 3', img: '/Valorant_rank/Platinum_3_Rank.webp' },
-
-    // DIAMOND
-    { id: 'diamond_1', name: 'Diamond 1', img: '/Valorant_rank/Diamond_1_Rank.webp' },
-    { id: 'diamond_2', name: 'Diamond 2', img: '/Valorant_rank/Diamond_2_Rank.webp' },
-    { id: 'diamond_3', name: 'Diamond 3', img: '/Valorant_rank/Diamond_3_Rank.webp' },
-
-    // ASCENDANT
-    { id: 'ascendant_1', name: 'Ascendant 1', img: '/Valorant_rank/Ascendant_1_Rank.webp' },
-    { id: 'ascendant_2', name: 'Ascendant 2', img: '/Valorant_rank/Ascendant_2_Rank.webp' },
-    { id: 'ascendant_3', name: 'Ascendant 3', img: '/Valorant_rank/Ascendant_3_Rank.webp' },
-
-    // IMMORTAL
-    { id: 'immortal_1', name: 'Immortal 1', img: '/Valorant_rank/Immortal_1_Rank.webp' },
-    { id: 'immortal_2', name: 'Immortal 2', img: '/Valorant_rank/Immortal_2_Rank.webp' },
-    { id: 'immortal_3', name: 'Immortal 3', img: '/Valorant_rank/Immortal_3_Rank.webp' },
-
-    // RADIANT
-    { id: 'radiant', name: 'Radiant', img: '/Valorant_rank/Radiant_Rank.webp' },
-],
+            valorant: [
+                { id: 'fer1', name: 'Fer 1', img: '/Valorant_rank/Iron_1_Rank.webp' },
+                { id: 'fer2', name: 'Fer 2', img: '/Valorant_rank/Iron_2_Rank.webp' },
+                { id: 'fer3', name: 'Fer 3', img: '/Valorant_rank/Iron_3_Rank.webp' },
+                { id: 'bronze1', name: 'Bronze 1', img: '/Valorant_rank/Bronze_1_Rank.webp' },
+                { id: 'bronze2', name: 'Bronze 2', img: '/Valorant_rank/Bronze_2_Rank.webp' },
+                { id: 'bronze3', name: 'Bronze 3', img: '/Valorant_rank/Bronze_3_Rank.webp' },
+                { id: 'argent1', name: 'Argent 1', img: '/Valorant_rank/Silver_1_Rank.webp' },
+                { id: 'argent2', name: 'Argent 2', img: '/Valorant_rank/Silver_2_Rank.webp' },
+                { id: 'argent3', name: 'Argent 3', img: '/Valorant_rank/Silver_3_Rank.webp' },
+                { id: 'or1', name: 'Or 1', img: '/Valorant_rank/Gold_1_Rank.webp' },
+                { id: 'or2', name: 'Or 2', img: '/Valorant_rank/Gold_2_Rank.webp' },
+                { id: 'or3', name: 'Or 3', img: '/Valorant_rank/Gold_3_Rank.webp' },
+                { id: 'platine1', name: 'Platine 1', img: '/Valorant_rank/Platinum_1_Rank.webp' },
+                { id: 'platine2', name: 'Platine 2', img: '/Valorant_rank/Platinum_2_Rank.webp' },
+                { id: 'platine3', name: 'Platine 3', img: '/Valorant_rank/Platinum_3_Rank.webp' },
+                { id: 'diamant1', name: 'Diamant 1', img: '/Valorant_rank/Diamond_1_Rank.webp' },
+                { id: 'diamant2', name: 'Diamant 2', img: '/Valorant_rank/Diamond_2_Rank.webp' },
+                { id: 'diamant3', name: 'Diamant 3', img: '/Valorant_rank/Diamond_3_Rank.webp' },
+                { id: 'ascendant_1', name: 'Ascendant 1', img: '/Valorant_rank/Ascendant_1_Rank.webp' },
+                { id: 'ascendant_2', name: 'Ascendant 2', img: '/Valorant_rank/Ascendant_2_Rank.webp' },
+                { id: 'ascendant_3', name: 'Ascendant 3', img: '/Valorant_rank/Ascendant_3_Rank.webp' },
+                { id: 'immortal_1', name: 'Immortal 1', img: '/Valorant_rank/Immortal_1_Rank.webp' },
+                { id: 'immortal_2', name: 'Immortal 2', img: '/Valorant_rank/Immortal_2_Rank.webp' },
+                { id: 'immortal_3', name: 'Immortal 3', img: '/Valorant_rank/Immortal_3_Rank.webp' },
+                { id: 'radiant', name: 'Radiant', img: '/Valorant_rank/Radiant_Rank.webp' },
+            ],
         };
-        
-        // Simule le nom d'utilisateur de l'utilisateur actuel (POUR TESTER, CHANGEZ CETTE VALEUR)
-        const currentUsername = "UtilisateurActuel";
-
-        // Simule une base de données de profils utilisateurs actifs pour la recherche.
-        // Elle est chargée depuis localStorage pour la persistance.
-        let simulatedProfiles = {}; 
 
         let userGameData = {
             rank: null,
-            mainMode: null, // Nouveau: Mode principal (Classé/Non Classé)
-            options: [],     // Nouveau: Options supplémentaires (checkbox)
-            mode: null,      // Reste pour la recherche/affichage complet
+            mainMode: null, 
+            options: [],     
+            mode: null,      
             prefRanks: [],
             rankTolerance: 1,
             isSearching: false
         };
 
-        // Variables sociales/chat (Copiées du dashboard)
+        // Variables sociales/chat
         const activeChats = {}; 
         const friendsSidebar = document.getElementById('friendsSidebar');
         const chatContainer = document.getElementById('chat-container'); 
@@ -441,6 +419,40 @@ const RANKS = {
 
 
         // ====================================================
+        // --- NOUVELLES FONCTIONS JWT UTILS ---
+        // ====================================================
+
+        /** Récupère l'en-tête d'autorisation JWT. */
+        function getAuthHeader() {
+            const token = localStorage.getItem('token');
+            return token ? { 'Authorization': `Bearer ${token}` } : {};
+        }
+
+        /** Wrapper fetch pour les requêtes protégées. */
+        async function fetchProtected(url, options = {}) {
+            const headers = {
+                'Content-Type': 'application/json',
+                ...getAuthHeader(),
+                ...(options.headers || {})
+            };
+
+            const response = await fetch(url, {
+                ...options,
+                headers: headers,
+            });
+
+            // Gère l'expiration ou l'invalidité du token
+            if (response.status === 401) {
+                alert("Session expirée. Veuillez vous reconnecter.");
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                window.location.href = '/login';
+            }
+
+            return response;
+        }
+
+        // ====================================================
         // --- 1. LOGIQUE D'AFFICHAGE DU JEU ---
         // ====================================================
         async function loadGameInfo() {
@@ -448,7 +460,6 @@ const RANKS = {
             document.getElementById('gameTitle').textContent = info.title;
             document.getElementById('gameImg').src = info.img;
             document.getElementById('gameImg').alt = info.title;
-            // Assurez-vous que info.players existe avant de l'appeler
             document.getElementById('playerCount').textContent = info.players ? info.players.toLocaleString() : '0';
 
             // Génération des modes principaux (radio)
@@ -502,10 +513,10 @@ const RANKS = {
             document.querySelectorAll('#rankGrid .rank-option').forEach(el => {
                 el.classList.toggle('active', el.getAttribute('data-rank-id') === rankId);
             });
-            document.getElementById('userRankDisplay').textContent = RANKS[gameId].find(r => r.id === rankId)?.name || 'Non défini';
+            document.getElementById('userRankDisplay').textContent = RANKS[gameId.toLowerCase()].find(r => r.id === rankId)?.name || 'Non défini';
         };
 
-        window.togglePrefRank = (rankId) => {
+        window.togglePrefRank = async (rankId) => {
             const index = userGameData.prefRanks.indexOf(rankId);
             if (index > -1) {
                 userGameData.prefRanks.splice(index, 1);
@@ -515,11 +526,12 @@ const RANKS = {
             document.querySelectorAll('#prefRankGrid .rank-option').forEach(el => {
                 el.classList.toggle('active', userGameData.prefRanks.includes(el.getAttribute('data-pref-rank-id')));
             });
+            // Sauvegarde immédiate des préférences lors du changement de rangs préférés
+            await savePartnerPreferences();
         };
 
         window.updateMainMode = (mode) => {
             userGameData.mainMode = mode;
-            // Assurez-vous d'utiliser une combinaison des modes pour l'affichage
             updateModeDisplay();
         };
 
@@ -528,16 +540,9 @@ const RANKS = {
             const index = userGameData.options.indexOf(option);
             
             if (index > -1) {
-                userGameData.options.splice(index, 1); // Retirer l'option
+                userGameData.options.splice(index, 1); 
             } else {
-                userGameData.options.push(option); // Ajouter l'option
-            }
-            // Assurez-vous que le mode principal est défini si une option est cochée
-            if (!userGameData.mainMode && userGameData.options.length > 0) {
-                userGameData.mainMode = 'Non Classé'; // Défaut
-                // Cochez le bouton radio par défaut pour éviter un état invalide
-                const defaultRadio = document.querySelector(`#modeGroup input[name="gameMode"][value="Non Classé"]`);
-                if(defaultRadio) defaultRadio.checked = true;
+                userGameData.options.push(option); 
             }
             
             updateModeDisplay();
@@ -549,7 +554,7 @@ const RANKS = {
             if (userGameData.options && userGameData.options.length > 0) {
                  display += ` (+ ${userGameData.options.join(', ')})`;
             }
-            userGameData.mode = display; // Mettre à jour la donnée complète pour la recherche
+            userGameData.mode = display; 
             document.getElementById('gameModeDisplay').textContent = display;
         }
 
@@ -561,134 +566,122 @@ const RANKS = {
                 const display = value === 0 ? 'Exact' : (value === 1 ? '±1 Rang' : `±${value} Rangs`);
                 rangeValueSpan.textContent = display;
                 document.getElementById('rankRangeDisplay').textContent = display;
+                
+                // Sauvegarde immédiate de la tolérance (optionnel, mais pratique)
+                savePartnerPreferences();
             });
         }
 
 
         // ====================================================
-        // --- 3. PERSISTENCE & SAUVEGARDE ---
+        // --- 3. PERSISTENCE & SAUVEGARDE (API) ---
         // ====================================================
 
-        // Simule le chargement des données utilisateur
-        function loadGameSettings() {
-            const data = JSON.parse(localStorage.getItem(`mm_game_${gameId}_settings`)) || {};
+        /** Charge le profil complet de l'utilisateur depuis le serveur. */
+        async function loadProfileAndSettings() {
+            const response = await fetchProtected('/api/user/profile');
             
-            // Appliquer le rang
-            if (data.rank) {
-                selectRank(data.rank);
+            if (!response.ok) {
+                 // Le 401 est géré par fetchProtected, pour les autres erreurs on continue avec les valeurs par défaut.
+                 return;
             }
-            // Appliquer le mode
-            if (data.mainMode) {
-                userGameData.mainMode = data.mainMode;
-                const modeInput = document.querySelector(`#modeGroup input[name="gameMode"][value="${data.mainMode}"]`);
+
+            const profile = await response.json();
+            const settings = profile.gameSettings;
+            const prefs = profile.partnerPreferences;
+
+            // Mise à jour de userGameData
+            userGameData.rank = settings.rank;
+            userGameData.mainMode = settings.mainMode;
+            userGameData.options = settings.options || [];
+            userGameData.prefRanks = prefs.prefRanks || [];
+            userGameData.rankTolerance = prefs.rankTolerance || 1;
+            
+            // --- Application à l'interface ---
+            
+            // 1. Rang
+            if (settings.rank) {
+                selectRank(settings.rank); 
+            }
+
+            // 2. Mode principal (Radio)
+            if (settings.mainMode) {
+                const modeInput = document.querySelector(`#modeGroup input[name="gameMode"][value="${settings.mainMode}"]`);
                 if (modeInput) modeInput.checked = true;
-                // L'affichage sera mis à jour par updateModeDisplay après les options
             }
-            // Appliquer les options
-            if (Array.isArray(data.options)) {
-                 userGameData.options = []; // Réinitialiser avant d'appliquer
-                 data.options.forEach(option => {
+
+            // 3. Options (Checkbox)
+            if (Array.isArray(settings.options)) {
+                 settings.options.forEach(option => {
                     const optionInput = document.querySelector(`#modeGroup input[name="gameOption"][value="${option}"][type="checkbox"]`);
-                    if (optionInput) {
-                        optionInput.checked = true;
-                        userGameData.options.push(option); // Ajout manuel pour l'initialisation
-                    }
+                    if (optionInput) optionInput.checked = true;
                  });
             }
             
-            updateModeDisplay(); // Mettre à jour l'affichage après tout chargement
-        }
+            updateModeDisplay(); 
 
-        // Simule le chargement des préférences de partenaire
-        function loadPartnerPreferences() {
-            const data = JSON.parse(localStorage.getItem(`mm_game_${gameId}_prefs`)) || {};
-            
-            // Appliquer la tolérance
-            if (rankRangeInput && data.rankTolerance !== undefined) {
-                rankRangeInput.value = data.rankTolerance;
-                rankRangeInput.dispatchEvent(new Event('input')); // Mettre à jour l'affichage
+            // 4. Tolérance de rang
+            if (rankRangeInput && prefs.rankTolerance !== undefined) {
+                rankRangeInput.value = prefs.rankTolerance;
+                rankRangeInput.dispatchEvent(new Event('input')); 
             }
             
-            // Appliquer les rangs préférés
-            if (Array.isArray(data.prefRanks)) {
-                userGameData.prefRanks = []; // Réinitialiser avant d'appliquer
-                data.prefRanks.forEach(rankId => togglePrefRank(rankId));
-            }
-        }
-        
-        // Charge la base de données simulée depuis localStorage
-        function loadSimulatedProfiles() {
-            const data = localStorage.getItem('mm_simulated_profiles');
-            if (data) {
-                simulatedProfiles = JSON.parse(data);
-            } else {
-                 // Si c'est la première exécution, on initialise avec un objet vide.
-                 // Les profils seront ajoutés uniquement lorsque les utilisateurs cliquent sur "Mettre à jour mes infos".
-                 simulatedProfiles = {};
+            // 5. Rangs préférés
+            if (Array.isArray(prefs.prefRanks)) {
+                // Bascule de l'état "active" pour chaque rang préféré
+                document.querySelectorAll('#prefRankGrid .rank-option').forEach(el => {
+                    el.classList.toggle('active', prefs.prefRanks.includes(el.getAttribute('data-pref-rank-id')));
+                });
             }
         }
 
-        // Sauvegarde les données de jeu de l'utilisateur
+        /** Sauvegarde des settings de jeu (Rang/Mode/Options) */
         window.saveGameSettings = async () => {
             if (!userGameData.rank || !userGameData.mainMode) {
                 alert("Veuillez sélectionner votre rang et votre mode de jeu.");
                 return;
             }
 
-            const gameSettings = { 
+            const settingsPayload = { 
+                gameId: gameId,
                 rank: userGameData.rank, 
                 mainMode: userGameData.mainMode,
-                options: userGameData.options // Sauvegarde des options
+                options: userGameData.options
             };
-            const partnerPrefs = { prefRanks: userGameData.prefRanks, rankTolerance: userGameData.rankTolerance };
             
-            localStorage.setItem(`mm_game_${gameId}_settings`, JSON.stringify(gameSettings));
-            localStorage.setItem(`mm_game_${gameId}_prefs`, JSON.stringify(partnerPrefs));
-
-            // >>> MISE À JOUR : Stockage du profil pour la simulation de recherche et PERSISTANCE <<<
-            // Le profil de l'utilisateur actuel est ajouté/mis à jour dans la liste des profils actifs.
-            simulatedProfiles[currentUsername] = {
-                username: currentUsername,
-                gameId: gameId,
-                rank: userGameData.rank,
-                mainMode: userGameData.mainMode,
-                options: userGameData.options,
-                mode: userGameData.mode // Mode complet affiché
-            };
-
-            // Sauvegarde de la BDD simulée dans localStorage
-            localStorage.setItem('mm_simulated_profiles', JSON.stringify(simulatedProfiles));
-
-            // Simule l'envoi au serveur
-            await fetch(`/api/game/${gameId}/settings`, {
+            const settingsRes = await fetchProtected('/api/game/settings', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ gameSettings, partnerPrefs })
+                body: JSON.stringify(settingsPayload)
             });
 
-            alert(`Profil de ${currentUsername} mis à jour et sauvegardé !`);
+            if (settingsRes.ok) {
+                alert(`Paramètres de jeu sauvegardés !`);
+            } else if (settingsRes.status !== 401) {
+                alert("Erreur lors de la sauvegarde des paramètres de jeu.");
+            }
         };
 
-        // Fonction utilitaire pour vérifier si un rang est dans la tolérance du rang de recherche
-        function isRankWithinTolerance(searchRankId, targetRankId, tolerance) {
-            const ranks = RANKS[gameId];
-            if (!ranks) return false; // Jeu sans rangs définis
+        /** Sauvegarde des préférences de partenaire (Rangs Préférés/Tolérance) */
+        async function savePartnerPreferences() {
+             const prefsPayload = { 
+                prefRanks: userGameData.prefRanks, 
+                rankTolerance: userGameData.rankTolerance 
+            };
+            
+            const prefsRes = await fetchProtected('/api/game/preferences', {
+                method: 'POST',
+                body: JSON.stringify(prefsPayload)
+            });
 
-            const searchIndex = ranks.findIndex(r => r.id === searchRankId);
-            const targetIndex = ranks.findIndex(r => r.id === targetRankId);
-
-            if (searchIndex === -1 || targetIndex === -1) {
-                // Si l'un des rangs n'est pas trouvé (erreur de donnée), on suppose que ce n'est pas compatible
-                return false; 
+            if (prefsRes.ok) {
+                // Message de confirmation discrèt ou rien.
+            } else if (prefsRes.status !== 401) {
+                console.error("Erreur lors de la sauvegarde des préférences de partenaire.");
             }
-
-            // Vérifie si la différence d'index est inférieure ou égale à la tolérance
-            return Math.abs(searchIndex - targetIndex) <= tolerance;
         }
-
-
+        
         // ====================================================
-        // --- 4. LOGIQUE DE RECHERCHE DE PARTENAIRE ---
+        // --- 4. LOGIQUE DE RECHERCHE DE PARTENAIRE (SERVEUR) ---
         // ====================================================
 
         window.toggleSearch = async () => {
@@ -698,8 +691,8 @@ const RANKS = {
                 partnerSearchButton.innerHTML = `<i class="fas fa-search"></i> <span>Rechercher un partenaire</span>`;
                 partnerSearchButton.classList.remove('searching');
                 
-                // Simule l'arrêt sur le serveur
-                await fetch(`/api/match/${gameId}/stop`, { method: 'POST' });
+                // Simule l'arrêt sur le serveur (si un endpoint d'arrêt est nécessaire)
+                // await fetchProtected(`/api/match/${gameId}/stop`, { method: 'POST' }); 
                 matchListDiv.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 20px; background: var(--bg-card); border-radius: 8px;">Recherche arrêtée. Lancez une recherche pour trouver des joueurs !</p>`;
                 document.getElementById('matchCount').textContent = '0';
             } else {
@@ -713,92 +706,40 @@ const RANKS = {
                 partnerSearchButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Recherche en cours...</span>`;
                 partnerSearchButton.classList.add('searching');
                 
-                // Simule le démarrage sur le serveur
-                await fetch(`/api/match/${gameId}/start`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    // On envoie les données de recherche complètes
-                    body: JSON.stringify({
-                        rank: userGameData.rank,
-                        mainMode: userGameData.mainMode,
-                        options: userGameData.options,
-                        prefRanks: userGameData.prefRanks,
-                        rankTolerance: userGameData.rankTolerance
-                    })
-                });
+                // Lancement (Simulé si nécessaire)
+                // await fetchProtected(`/api/match/${gameId}/start`, { method: 'POST' });
 
                 // Démarrer la boucle de rafraîchissement des matchs
                 fetchMatches();
+                // Mise à jour toutes les 5 secondes
                 setInterval(fetchMatches, 5000); 
             }
         };
 
+        /** Récupère les matchs depuis l'API serveur */
         async function fetchMatches() {
             if (!userGameData.isSearching) return;
             
-            // 1. Récupération des critères de recherche de l'utilisateur actuel
-            // NOTE: On utilise userGameData (mis à jour à la fin de saveGameSettings) pour les données de recherche
-            const { rank: userRank, mainMode: userMode, options: userOptions, prefRanks: preferredRanks, rankTolerance: tolerance } = userGameData;
-            
-            const foundMatches = [];
+            // Appel au nouveau endpoint serveur de recherche
+            const response = await fetchProtected(`/api/match/search/${gameId}`);
 
-            // 2. Itération et application des règles de matching
-            for (const profileName in simulatedProfiles) {
-                const targetProfile = simulatedProfiles[profileName];
-
-                // a) Ne pas se matcher soi-même et vérifier que le jeu est le même
-                if (targetProfile.username === currentUsername || targetProfile.gameId !== gameId) {
-                    continue; 
-                }
-
-                // b) Vérification du Mode de Jeu (Doit correspondre exactement au MainMode)
-                if (targetProfile.mainMode !== userMode) {
-                    continue;
-                }
+            if (response.ok) {
+                const foundMatches = await response.json();
+                renderMatches(foundMatches);
+            } else if (response.status !== 401) {
+                // En cas d'erreur côté serveur (ex: 400 - pas de settings)
+                partnerSearchButton.innerHTML = `<i class="fas fa-search"></i> <span>Rechercher un partenaire</span>`;
+                partnerSearchButton.classList.remove('searching');
+                userGameData.isSearching = false;
+                renderMatches([]); 
                 
-                // c) Vérification de l'Option Vocal Obligatoire
-                const vocalRequired = userOptions.includes('Vocal Obligatoire');
-                const targetHasVocal = targetProfile.options.includes('Vocal Obligatoire');
-                
-                // Si la recherche exige le vocal, le profil ciblé doit l'avoir.
-                if (vocalRequired && !targetHasVocal) {
-                    continue;
+                try {
+                     const err = await response.json();
+                     alert("Erreur de recherche : " + (err.message || "Veuillez vérifier vos paramètres de jeu."));
+                } catch {
+                     alert("Erreur de recherche. Serveur injoignable.");
                 }
-                
-                // d) Vérification du Rang
-                let rankMatch = false;
-
-                // 1. Si l'utilisateur a sélectionné des rangs préférés, le profil doit correspondre à l'un d'eux.
-                if (preferredRanks.length > 0) {
-                    if (preferredRanks.includes(targetProfile.rank)) {
-                        rankMatch = true;
-                    }
-                } else {
-                    // 2. Si aucune préférence n'est définie, utiliser le rang de l'utilisateur et la tolérance.
-                    if (isRankWithinTolerance(userRank, targetProfile.rank, tolerance)) {
-                        rankMatch = true;
-                    }
-                }
-                
-                if (!rankMatch) {
-                    continue;
-                }
-                
-                // Si toutes les conditions sont remplies, c'est un match !
-                foundMatches.push({
-                    username: targetProfile.username,
-                    rank: targetProfile.rank,
-                    mainMode: targetProfile.mainMode,
-                    options: targetProfile.options,
-                    mode: targetProfile.mode 
-                });
             }
-            
-            // 3. Affichage des matchs trouvés
-            renderMatches(foundMatches);
-            
-            // Simule l'appel serveur pour maintenir la structure de l'application
-            await fetch(`/api/match/${gameId}/status`); 
         }
 
         function renderMatches(matches) {
@@ -806,14 +747,15 @@ const RANKS = {
             if (!matchListDiv) return;
             
             if (matches.length === 0) {
-                matchListDiv.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 20px; background: var(--bg-card); border-radius: 8px;">Aucun partenaire trouvé pour l'instant. Patience...</p>`;
+                matchListDiv.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 20px; background: var(--bg-card); border-radius: 8px;">${userGameData.isSearching ? "Aucun partenaire trouvé pour l'instant. Patience..." : "Lancez une recherche pour trouver des joueurs !"}</p>`;
                 return;
             }
 
             const matchHtml = matches.map(match => {
-                const rankInfo = RANKS[gameId].find(r => r.id === match.rank) || { name: 'Non classé', img: '' };
-                // Utilisation de la donnée 'mode' qui doit inclure les options
-                const modeDisplay = match.mode || `${match.mainMode} (${match.options.join(', ')})`; 
+                const gameRanks = RANKS[gameId.toLowerCase()] || [];
+                const rankInfo = gameRanks.find(r => r.id === match.rank) || { name: 'Non classé', img: '' };
+                const modeDisplay = match.mainMode + (match.options && match.options.length > 0 ? ` (${match.options.join(', ')})` : ''); 
+                
                 return `
                     <div class="match-card">
                         <div class="match-info">
@@ -836,18 +778,18 @@ const RANKS = {
         
         // Simule l'envoi d'une demande d'ami depuis la liste de match (utilise la même logique que le dashboard)
         window.sendFriendRequest = async (username) => {
-            await fetch('/api/friends/request', {
+            const res = await fetchProtected('/api/friends/request', {
                 method:'POST',
-                headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({toUsername:username})
             });
-            alert(`Demande d'ami envoyée à ${username} !`);
+            const d = await res.json();
+            alert(d.message || d.error || `Demande d'ami envoyée à ${username} !`);
             loadSocial(); // Rafraîchit la sidebar
         };
 
 
 // ----------------------------------------------------------------
-// --- LOGIQUE SOCIALE (Ré-intégrée du Dashboard) ---
+// --- LOGIQUE SOCIALE (Ré-intégrée du Dashboard et mise à jour JWT) ---
 // ----------------------------------------------------------------
 
 // ====================================================
@@ -865,7 +807,6 @@ window.toggleSidebar = function() {
         Object.keys(activeChats).forEach(closeChat);
     }
 
-    // Sauvegarde l'état dans le stockage local
     localStorage.setItem('socialSidebarActive', isActive);
 };
 
@@ -875,8 +816,16 @@ window.toggleSidebar = function() {
 
 async function loadSocial() {
     try {
-        // Appels API pour récupérer les données sociales
-        const [fRes, rRes] = await Promise.all([fetch('/api/friends'), fetch('/api/friends/requests')]);
+        // Utilisation de fetchProtected
+        const [fRes, rRes] = await Promise.all([
+            fetchProtected('/api/friends'), 
+            fetchProtected('/api/friends/requests')
+        ]);
+        
+        if (!fRes.ok || !rRes.ok) {
+            throw new Error("Erreur de récupération des données sociales.");
+        }
+        
         const fData = await fRes.json();
         const rData = await rRes.json();
 
@@ -885,7 +834,6 @@ async function loadSocial() {
         renderSent(rData.outgoing || []); 
 
     } catch (e) {
-        // Afficher un état vide en cas d'erreur API
         renderFriends([]);
         renderRequests([]); 
         renderSent([]); 
@@ -979,14 +927,13 @@ if (addFriendForm) {
         const input = document.getElementById('friend-input'); 
         const friendNotif = document.getElementById('friend-notif');
         
-        const res = await fetch('/api/friends/request', {
+        const res = await fetchProtected('/api/friends/request', {
             method:'POST',
-            headers:{'Content-Type':'application/json'},
             body:JSON.stringify({toUsername:input.value})
         });
         const d = await res.json();
         
-        friendNotif.innerText = d.ok ? `Demande envoyée à ${input.value} !` : d.error || `Erreur: impossible d'envoyer la demande.`;
+        friendNotif.innerText = d.message || d.error || `Erreur: impossible d'envoyer la demande.`;
         input.value = "";
         loadSocial();
         setTimeout(()=>friendNotif.innerText="",3000); 
@@ -995,7 +942,7 @@ if (addFriendForm) {
 
 // Gère l'acceptation/rejet d'une demande d'ami
 window.hReq = async(id, a) => { 
-    await fetch(`/api/friends/requests/${id}/${a}`, {method:'POST'}); 
+    await fetchProtected(`/api/friends/requests/${id}/${a}`, {method:'POST'}); 
     loadSocial(); 
 };
 
@@ -1007,7 +954,10 @@ async function fetchMessages(u) {
     const c = document.getElementById(`msg-${u}`);
     if (!c) return;
 
-    const res = await fetch(`/api/messages/${u}`);
+    const res = await fetchProtected(`/api/messages/${u}`);
+    
+    if(!res.ok) return;
+
     const d = await res.json();
     
     const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 1;
@@ -1016,7 +966,7 @@ async function fetchMessages(u) {
         `<div class="msg ${m.fromSelf ? 'self' : 'other'}">${m.content}</div>`
     ).join('');
     
-    if (isScrolledToBottom || d.messages.length === 1) {
+    if (isScrolledToBottom || d.messages.length <= 10) { // Scroll au premier chargement ou si on est proche du bas
         c.scrollTop = c.scrollHeight;
     }
 }
@@ -1056,9 +1006,8 @@ window.sM = async (e, u) => {
     const input = e.target.querySelector('input');
     if (!input.value.trim()) return; 
 
-    await fetch('/api/messages', {
+    await fetchProtected('/api/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toUsername: u, content: input.value.trim() })
     });
     
@@ -1071,20 +1020,26 @@ window.sM = async (e, u) => {
 // --- 5. INITIALISATION FINALE ---
 // ====================================================
 (async function() {
+    // Vérifie le token (redirection automatique par fetchProtected si absent/expiré)
+    if (!localStorage.getItem('token')) {
+        window.location.href = '/login';
+        return;
+    }
+    
     // Initialisation des grilles de rangs
     const gameRanks = RANKS[gameId.toLowerCase()] || RANKS.valorant;
     setupRankGrids(gameRanks); 
 
     // Chargement des données 
     await loadGameInfo();
-    loadSimulatedProfiles(); // <<< CHARGEMENT DE LA BDD SIMULÉE (maintenant vide au départ)
-    loadGameSettings();
-    await loadPartnerPreferences();
+    await loadProfileAndSettings(); // Charge les données du serveur
     
     // Rétablit l'état de la sidebar (Amis) au chargement
-    if (localStorage.getItem('socialSidebarActive') === 'true') {
+    const friendsSidebarActive = localStorage.getItem('socialSidebarActive') === 'true';
+    if (friendsSidebarActive) {
         friendsSidebar.classList.add('active');
-        document.querySelector('.toggle-friends-btn').classList.add('active');
+        const toggleBtn = document.querySelector('.toggle-friends-btn');
+        if (toggleBtn) toggleBtn.classList.add('active');
     }
     
     // Chargement des données sociales et rafraîchissement
